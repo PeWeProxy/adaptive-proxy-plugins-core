@@ -65,14 +65,16 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			addToCache("connection", con);
 			addToCache("uid", uid);
 		} catch(ServiceUnavailableException e) {
+			log.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e.getCause().getMessage());
 			return false;
 		}
 
 		try {
 			String clearText = handle.getService(ClearTextExtractionService.class).getCleartext();
+			log.info("clear text OK");
 			addToCache("clearText", clearText);
 		} catch (ServiceUnavailableException e) {
-			// toto nie je dolezita sluzba, keywordy sa nezaloguju
+			log.warn("clearTextserviceUnavailable", e);
 		}
 		
 		return true;
