@@ -37,20 +37,20 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 	private class UserServiceProvider extends RequestAndResponseServiceProviderAdapter implements UserIdentificationService{
 		private final String userId;
 		
-		public UserServiceProvider(String quotedUserIDString) {
-			if(quotedUserIDString == null) {
+		public UserServiceProvider(String userIDString) {
+			if(userIDString == null) {
 				this.userId = null;
 			} else {
-				this.userId = quotedUserIDString.substring(1, quotedUserIDString.length()-1);
+				this.userId = userIDString;
 			}
 		}
 		
 		@Override
 		public void setRequestContext(ModifiableHttpRequest request) {
-			String quotedUID = getUIDForMessage(request.getProxyRequestHeaders());
-			if (quotedUID != null) {
+			String uID = getUIDForMessage(request.getProxyRequestHeaders());
+			if (uID != null) {
 				String uaHeader = request.getProxyRequestHeaders().getHeader(USER_AGENT);
-				String uaIDPart = idPart+quotedUID; 
+				String uaIDPart = idPart+uID; 
 				int indexOfIdPart = uaHeader.indexOf(uaIDPart);
 				int endOfIdPart = indexOfIdPart + uaIDPart.length();
 				while (delimiters.contains(uaHeader.charAt(indexOfIdPart-1))) {
