@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -20,9 +19,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import sk.fiit.keyextractor.JKeyExtractor;
-import sk.fiit.keyextractor.extractors.JATRKeyExtractor;
-import sk.fiit.keyextractor.jatrwrapper.JATR_ALGORITHM;
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.AsynchronousResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
@@ -161,28 +157,6 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		if(arr == null) return null;
 		
 		return Arrays.toString(arr.toArray());
-	}
-
-	private String extractKeywordsOld(String clearText) {
-		
-		if(clearText == null || clearText.trim() == "") {
-			return "";
-		}
-		
-		JKeyExtractor ke = new JKeyExtractor();
-		ke.addAlgorithm(new JATRKeyExtractor(JATR_ALGORITHM.TFIDF));
-		ke.addAlgorithm(new JATRKeyExtractor(JATR_ALGORITHM.Weirdness));
-		ke.addAlgorithm(new JATRKeyExtractor(JATR_ALGORITHM.GlossEx));
-		
-		List<String> l = ke.getAllKeysForText(clearText);
-
-		String kws = "";
-		
-		for (String kw : l) {
-			kws += kw + ",";
-		}
-		
-		return kws.substring(0, kws.length() - 1);
 	}
 
 	private String getKeywordsFromCache(String checksum, Connection con) {
