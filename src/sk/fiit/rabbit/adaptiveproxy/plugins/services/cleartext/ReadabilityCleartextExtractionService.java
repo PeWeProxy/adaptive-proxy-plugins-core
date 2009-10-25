@@ -3,8 +3,11 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext;
 import java.util.List;
 import java.util.Set;
 
+import javax.script.ScriptException;
+
 import org.apache.log4j.Logger;
 
+import sk.fiit.keyextractor.downloader.Downloader;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
@@ -39,7 +42,16 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 
 		@Override
 		public String getCleartext() {
-			return content;
+			try {
+				Downloader d = Downloader.getInstance();
+				String text = d.getTextFromPage(content);
+				Logger.getLogger(ReadabilityCleartextExtractionServiceProvider.class).info(text);
+				Logger.getRootLogger().fatal(text);
+				return (text);
+			} catch (ScriptException e) {
+				Logger.getLogger(ReadabilityCleartextExtractionServiceProvider.class).error("Failed to provide readability service, due to following cause: " + e.getCause().getMessage());
+				return null;
+			}			
 		}
 	}
 
