@@ -71,7 +71,7 @@ public class KeywordsDisplayService extends RequestAndResponseProcessingPluginAd
 				return ResponseProcessingActions.PROCEED;
 			}
 			
-			sb.insert(bodyEndIDx, "<div id='_ap_messagebox' style='position:absolute;top:0;left:0;z-index:10;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right'>Loading keywords..</div>" +
+			sb.insert(bodyEndIDx, "<div id='_ap_messagebox' style='position:absolute;top:0;left:0;z-index:10;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right;cursor:pointer;'>Loading keywords..</div>" +
                                   "<script type='text/javascript'>" +
                                     "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                                   "</script>" +
