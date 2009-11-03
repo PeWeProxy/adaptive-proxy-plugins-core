@@ -8,6 +8,8 @@ import javax.script.ScriptException;
 import org.apache.log4j.Logger;
 
 import sk.fiit.keyextractor.downloader.Downloader;
+import sk.fiit.keyextractor.downloader.WebPageAquirer;
+import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
@@ -42,16 +44,17 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 
 		@Override
 		public String getCleartext() {
+			
+			String clearText = null;
 			try {
-				Downloader d = Downloader.getInstance();
-				String text = d.getTextFromPage(content);
-				Logger.getLogger(ReadabilityCleartextExtractionServiceProvider.class).info(text);
-				Logger.getRootLogger().fatal(text);
-				return (text);
-			} catch (ScriptException e) {
-				Logger.getLogger(ReadabilityCleartextExtractionServiceProvider.class).error("Failed to provide readability service, due to following cause: " + e.getCause().getMessage());
-				return null;
-			}			
+				clearText = WebPageAquirer.getPageContent(content);
+			} catch (JKeyExtractorException e) {
+				e.printStackTrace();
+			}
+			return clearText;
+	
+			
+						
 		}
 	}
 
