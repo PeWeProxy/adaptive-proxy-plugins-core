@@ -49,8 +49,10 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 			try {
 				clearText = WebPageAquirer.getPageContent(content);
 			} catch (JKeyExtractorException e) {
-				e.printStackTrace();
+				logger.error("clearTextExtraction failed: " + e);
+				//e.printStackTrace();
 			}
+			logger.info("------------" + clearText + "---------------");
 			return clearText;
 	
 			

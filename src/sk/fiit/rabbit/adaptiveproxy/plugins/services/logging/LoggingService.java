@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -19,6 +20,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import sk.fiit.keyextractor.JKeyExtractor;
+import sk.fiit.keyextractor.extractors.JATRKeyExtractor;
+import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
+import sk.fiit.keyextractor.jatrwrapper.JATR_ALGORITHM;
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.AsynchronousResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
@@ -117,7 +122,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		if(keywords == null) {
 			log.debug("Keywords Cache MISS");
 			
-			keywords = extractKeywords(requestURI);
+			keywords = extractKeywords(clearText);
 			
 			if(keywords != null) {
 				saveKeywords(keywords, checksum, connection);
@@ -129,36 +134,18 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		return keywords;
 	}
 	
-	private String extractKeywords(String url) {
-		String reqURL;
-		try {
-			reqURL = "http://www.tagthe.net/api?url=" + URLEncoder.encode(url, "UTF-8") + "&view=json";
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-			return null;
+	private String extractKeywords(String clearText) {
+		
+		if(clearText == null || clearText.trim() == "") {
+			return "";
 		}
 		
-		JSONObject obj = null;
-		try {
-			obj = (JSONObject) new JSONParser().parse(new InputStreamReader(new URL(reqURL).openStream()));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		JKeyExtractor ke = new JKeyExtractor();
+		ke.addAlgorithm(new TagTheNetKeyExtractor());
 		
-		JSONArray arr = (JSONArray) obj.get("memes");
-		if(arr == null) return null;
-		obj = (JSONObject) arr.get(0);
-		if(obj == null) return null;
-		obj = (JSONObject) obj.get("dimensions");
-		if(obj == null) return null;
-		arr = (JSONArray) obj.get("topic");
-		if(arr == null) return null;
-		
-		return Arrays.toString(arr.toArray());
+		List<String> l = ke.getAllKeysForText(clearText);
+		String kws = Arrays.toString(l.toArray());
+		return kws;
 	}
 
 	private String getKeywordsFromCache(String checksum, Connection con) {
