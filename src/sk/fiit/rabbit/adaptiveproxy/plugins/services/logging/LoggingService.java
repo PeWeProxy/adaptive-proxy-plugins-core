@@ -184,7 +184,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 
 		try {
 			PreparedStatement stmt = connection
-					.prepareStatement("INSERT INTO access_log(userid, timestamp, url, keywords) VALUES(?, ?, ?, ?)");
+					.prepareStatement("INSERT INTO access_logs(userid, timestamp, url, keywords) VALUES(?, ?, ?, ?)");
 			stmt.setString(1, userId);
 			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 			stmt.setString(3, requestURL);
