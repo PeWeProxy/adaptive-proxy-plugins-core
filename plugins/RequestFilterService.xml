@@ -6,5 +6,6 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
+		<param name="patternFile">filter.txt</param>
 	</parameters>
 </plugin>

@@ -1,6 +1,8 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.filter;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,7 +32,7 @@ public class RequestFilterService extends ResponseProcessingPluginAdapter {
 		try {
 			String line;
 			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("filter.txt")));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(props.getProperty("patternFile")))));
 
 			// toto nebude fungovat pre filtre tvaru |swf| ale take
 			// aj tak nemaju zmysel
