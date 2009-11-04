@@ -1,0 +1,12 @@
+<plugin>
+	<name>UserAgentUserIdentification</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentification</className>
+	<types>
+		<type>RequestServicePlugin</type>
+		<type>ResponseServicePlugin</type>
+	</types>
+	<parameters>
+		<param name="idPart">AdaptiveProxyUID=</param>
+	</parameters>
+</plugin>

@@ -1,0 +1,11 @@
+<plugin>
+	<name>ReadabilityCleartextExtractionService</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionService</className>
+	<types>
+		<type>ResponseServicePlugin</type>
+	</types>
+	<parameters>
+	</parameters>
+</plugin>
+

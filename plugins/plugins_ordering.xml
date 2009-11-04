@@ -1,0 +1,12 @@
+<plugins>
+	<request>
+		<plugin>UserAgentUserService</plugin>
+		<plugin>UserIdentificationEnforceService</plugin>
+		<plugin>UserAgentUserService</plugin>
+	</request>
+	<response>
+		<plugin>RequestFilterService</plugin>
+		<plugin>UserAgentUserService</plugin>
+		<plugin>DatabaseLoggingService</plugin>
+	</response>
+</plugins>

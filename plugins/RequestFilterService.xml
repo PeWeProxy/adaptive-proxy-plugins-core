@@ -1,0 +1,10 @@
+<plugin>
+	<name>RequestFilterService</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.filter.RequestFilterService</className>
+	<types>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+	</parameters>
+</plugin>

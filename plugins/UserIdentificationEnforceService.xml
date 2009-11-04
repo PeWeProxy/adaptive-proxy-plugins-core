@@ -1,0 +1,11 @@
+<plugin>
+	<name>UserIdentificationEnforceService</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationEnforceService</className>
+	<types>
+		<type>RequestProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="redirectTo">http://localhost:9666/static/info.html</param>
+	</parameters>
+</plugin>

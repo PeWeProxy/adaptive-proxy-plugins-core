@@ -1,0 +1,13 @@
+<plugin>
+	<name>KeywordsDisplayService</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.KeywordsDisplayService</className>
+	<types>
+		<type>ResponseProcessingPlugin</type>
+		<type>RequestProcessingPlugin</type>
+	</types>
+	<parameters>
+	  <param name="kwServiceRoot">http://127.0.0.1:3000/</param>
+	  <param name="kwCallback">keywords/load</param>
+	</parameters>
+</plugin>
