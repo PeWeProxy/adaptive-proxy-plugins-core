@@ -23,15 +23,7 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 	private static final Logger logger = Logger.getLogger(UserAgentUserIdentification.class);
 	
 	private static final String USER_AGENT = "User-Agent";
-	private static final Set<Character> delimiters;
-	
-	static {
-		delimiters = new HashSet<Character>();
-		delimiters.add(' ');
-		delimiters.add(';');
-		delimiters.add('(');
-	}
-	
+
 	String idPart = null;
 	
 	private class UserServiceProvider extends RequestAndResponseServiceProviderAdapter implements UserIdentificationService{
@@ -45,23 +37,6 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			}
 		}
 		
-		@Override
-		public void setRequestContext(ModifiableHttpRequest request) {
-			String uID = getUIDForMessage(request.getProxyRequestHeaders());
-			if (uID != null) {
-				String uaHeader = request.getProxyRequestHeaders().getHeader(USER_AGENT);
-				String uaIDPart = idPart+uID; 
-				int indexOfIdPart = uaHeader.indexOf(uaIDPart);
-				int endOfIdPart = indexOfIdPart + uaIDPart.length();
-				while (delimiters.contains(uaHeader.charAt(indexOfIdPart-1))) {
-					indexOfIdPart--;
-				}
-				uaHeader = uaHeader.substring(0, indexOfIdPart) + uaHeader.substring(endOfIdPart);
-				request.getProxyRequestHeaders().setHeader(USER_AGENT, uaHeader);
-			}
-		}
-
-
 		@Override
 		public Class<? extends ProxyService> getServiceClass() {
 			return UserIdentificationService.class;
