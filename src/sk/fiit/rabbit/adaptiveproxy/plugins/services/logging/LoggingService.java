@@ -72,7 +72,6 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 
 		try {
 			String clearText = handle.getService(ClearTextExtractionService.class).getCleartext();
-			log.info("clear text OK");
 			addToCache("clearText", clearText);
 		} catch (ServiceUnavailableException e) {
 			log.warn("clearTextserviceUnavailable", e);
@@ -97,10 +96,8 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		try {
 			keywords = getKeywords(requestURI, clearText, con);
 		} catch (Exception e) {
-			log.warn("Keyword extracting error: " + e);
+			log.warn("Keyword extracting error", e);
 		} 
-
-		log.info("keywords - " + keywords + " : " + response.getProxyRequestHeaders().getRequestURI());
 
 		log(con, uid, requestURI, keywords);	
 
@@ -120,15 +117,11 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		String keywords = getKeywordsFromCache(checksum, connection);
 		
 		if(keywords == null) {
-			log.debug("Keywords Cache MISS");
-			
 			keywords = extractKeywords(clearText);
 			
 			if(keywords != null) {
 				saveKeywords(keywords, checksum, connection);
 			}
-		} else {
-			log.debug("Keywords Cache HIT");
 		}
 
 		return keywords;
@@ -176,7 +169,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			
 			stmt.execute();
 		} catch (SQLException e) {
-			log.error("Error inserting keywords into cache: " + e.getMessage());
+			log.error("Error inserting keywords into cache", e);
 		}
 	}
 
