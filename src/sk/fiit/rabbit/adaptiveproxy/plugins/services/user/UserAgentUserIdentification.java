@@ -78,10 +78,10 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			HttpRequest request) {
 		List<RequestServiceProvider> retVal = null;
 		String uidString = getUIDForMessage(request.getClientRequestHeaders());
-		
+		if (uidString != null) {
 		retVal = new ArrayList<RequestServiceProvider>(1);
 		retVal.add(new UserServiceProvider(uidString));
-
+		}
 		return retVal;
 	}
 	

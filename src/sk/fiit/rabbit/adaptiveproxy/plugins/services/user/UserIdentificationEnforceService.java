@@ -1,4 +1,4 @@
-package unused;
+package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
 import org.apache.log4j.Logger;
 
@@ -12,7 +12,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.processing.RequestProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
 public class UserIdentificationEnforceService implements RequestProcessingPlugin {
 	
@@ -56,8 +55,7 @@ public class UserIdentificationEnforceService implements RequestProcessingPlugin
 				return RequestProcessingActions.PROCEED;
 			}
 		} catch (ServiceUnavailableException e) {
-			logger.error("Service unavailable");
-			return RequestProcessingActions.PROCEED;
+			return RequestProcessingActions.NEW_RESPONSE;
 		}
 	}
 

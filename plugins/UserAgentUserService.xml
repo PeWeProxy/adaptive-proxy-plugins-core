@@ -7,6 +7,6 @@
 		<type>ResponseServicePlugin</type>
 	</types>
 	<parameters>
-		<param name="idPart">AdaptiveProxyUID=</param>
+		<param name="idPart">APUID=</param>
 	</parameters>
 </plugin>
