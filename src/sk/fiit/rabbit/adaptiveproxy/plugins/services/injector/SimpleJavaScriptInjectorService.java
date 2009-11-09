@@ -29,7 +29,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	
 	Logger logger = Logger.getLogger(SimpleJavaScriptInjectorService.class);
 	
-	List<JavaScript> javaScripts = new LinkedList<JavaScript>();
+	Set<JavaScript> javaScripts = new HashSet<JavaScript>();
 	
 	String currentBypass;
 
