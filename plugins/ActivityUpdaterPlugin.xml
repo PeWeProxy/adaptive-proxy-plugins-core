@@ -1,0 +1,10 @@
+<plugin>
+	<name>ActivityUpdaterPlugin</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.ActivityUpdaterPlugin</className>
+	<types>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+	</parameters>
+</plugin>

@@ -24,7 +24,7 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 	private static Connection connection;
 	
 	
-	private class DerbyDatabaseConnectionProvider extends RequestAndResponseServiceProviderAdapter 
+	private class MySQLDatabaseConnectionProvider extends RequestAndResponseServiceProviderAdapter 
 	    implements DatabaseConnectionProviderService {
 		
 		@Override
@@ -40,12 +40,12 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 
 	@Override
 	protected void addProvidedRequestServices(List<RequestServiceProvider> providedServices, HttpRequest request) {
-		providedServices.add(new DerbyDatabaseConnectionProvider());
+		providedServices.add(new MySQLDatabaseConnectionProvider());
 	}
 	
 	@Override
 	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
-		providedServices.add(new DerbyDatabaseConnectionProvider());
+		providedServices.add(new MySQLDatabaseConnectionProvider());
 	}
 	
 	@Override

@@ -1,0 +1,13 @@
+<plugin>
+	<name>SimpleJavaScriptInjector</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.SimpleJavaScriptInjectorService</className>
+	<types>
+		<type>ResponseProcessingPlugin</type>
+	    <type>RequestProcessingPlugin</type>
+		<type>ResponseServicePlugin</type>
+	</types>
+	<parameters>
+		<param name="javascriptServer">http://127.0.0.1:3000/</param>
+	</parameters>
+</plugin>
