@@ -1,29 +1,18 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import sk.fiit.keyextractor.JKeyExtractor;
-import sk.fiit.keyextractor.extractors.JATRKeyExtractor;
 import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
-import sk.fiit.keyextractor.jatrwrapper.JATR_ALGORITHM;
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.AsynchronousResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
@@ -36,7 +25,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationServ
 
 public class LoggingService extends AsynchronousResponseProcessingPluginAdapter {
 	
-	private static final Logger log = Logger.getLogger(LoggingService.class);
+	private static final Logger logger = Logger.getLogger(LoggingService.class);
 	
 	private String[] blacklist;
 
@@ -66,7 +55,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			addToCache("connection", con);
 			addToCache("uid", uid);
 		} catch(ServiceUnavailableException e) {
-			log.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e.getCause().getMessage());
+			logger.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e.getCause().getMessage());
 			return false;
 		}
 
@@ -74,7 +63,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			String clearText = handle.getService(ClearTextExtractionService.class).getCleartext();
 			addToCache("clearText", clearText);
 		} catch (ServiceUnavailableException e) {
-			log.warn("clearTextserviceUnavailable", e);
+			logger.trace("ClearTextExtractionService is unavailable", e);
 		}
 		
 		return true;
@@ -92,40 +81,79 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		String uid = (String) getFromCache("uid");
 		String clearText = (String) getFromCache("clearText");
 		
-		String keywords = "";
-		try {
-			keywords = getKeywords(requestURI, clearText, con);
-		} catch (Exception e) {
-			log.warn("Keyword extracting error", e);
-		} 
-
-		log(con, uid, requestURI, keywords);	
-
-			
+		String checksum = (clearText != null ? Checksum.md5(clearText) : null);
+		
+		Long pageId = getPageIdFromCache(requestURI, checksum, con);
+		
+		if(pageId == null) {
+			pageId = savePageInformation(con, clearText, checksum, requestURI);
+		}
+		
+		if(pageId != null) {
+			log(con, uid, pageId);
+		}
 	}
 	
-	private String getKeywords(String requestURI,
-			                   String clearText, 
-			                   Connection connection) {
+	private Long savePageInformation(Connection con, String clearText, String checksum, String requestURI) {
+		Integer contentLength = 0;
 		
-		if(clearText == null) {
-			return "";
+		if(clearText != null) {
+			contentLength = clearText.length();
 		}
 		
-		String checksum = Checksum.md5(clearText);
+		String query = "INSERT INTO pages(url, checksum, content_length, keywords) VALUES(?, ?, ?, ?)";
 		
-		String keywords = getKeywordsFromCache(checksum, connection);
-		
-		if(keywords == null) {
-			keywords = extractKeywords(clearText);
+		try {
+			PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, requestURI);
+			stmt.setString(2, checksum);
+			stmt.setInt(3, contentLength);
+			stmt.setString(4, extractKeywords(clearText));
 			
-			if(keywords != null) {
-				saveKeywords(keywords, checksum, connection);
+			stmt.execute();
+			
+			ResultSet keys = stmt.getGeneratedKeys();
+			
+			if(keys.next()) {
+				return keys.getLong(1);
+			} else {
+				return null;
 			}
+		} catch (SQLException e) {
+			logger.error("Could not save page information", e);
+			return null;
 		}
-
-		return keywords;
 	}
+	
+	private Long getPageIdFromCache(String requestURI, String checksum, Connection con) {
+		
+		try {
+			String query = "SELECT id FROM pages WHERE url = ?";
+			
+			if(checksum != null) {
+				query += " AND checksum = ?";
+			}
+			
+			PreparedStatement stmt = con.prepareStatement(query);
+			stmt.setString(1, requestURI);
+			
+			if(checksum != null) {
+				stmt.setString(2, checksum);
+			}
+	
+			ResultSet rs = stmt.executeQuery();
+			
+			if(rs.next()) {
+				return rs.getLong(1);
+			} else {
+				return null;
+			}
+		} catch(SQLException e) {
+			logger.error("Could not load pageId from cache", e);
+			return null;
+		}
+	}
+
 	
 	private String extractKeywords(String clearText) {
 		
@@ -141,52 +169,18 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		return kws;
 	}
 
-	private String getKeywordsFromCache(String checksum, Connection con) {
-		PreparedStatement stmt;
-		try {
-			stmt = con.prepareStatement("SELECT keywords FROM keyword_cache WHERE checksum = ?");
-			stmt.setString(1, checksum);
-			
-			ResultSet rs = stmt.executeQuery();
-			
-			if(rs.next()) {
-				return rs.getString(1);
-			} else {
-				return null;
-			}
-				
-		} catch (SQLException e) {
-			return null;
-		}
-	}
-	
-	private void saveKeywords(String keywords, String checksum,  Connection con) {
-		PreparedStatement stmt;
-		try {
-			stmt = con.prepareStatement("INSERT INTO keyword_cache(checksum, keywords) VALUES(?, ?)");
-			stmt.setString(1, checksum);
-			stmt.setString(2, keywords);
-			
-			stmt.execute();
-		} catch (SQLException e) {
-			log.error("Error inserting keywords into cache", e);
-		}
-	}
-
-	private void log(Connection connection, String userId, String requestURL, String keywords) {
+	private void log(Connection connection, String userId, Long pageId) {
 
 		try {
 			PreparedStatement stmt = connection
-					.prepareStatement("INSERT INTO access_logs(userid, timestamp, url, keywords) VALUES(?, ?, ?, ?)");
+					.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id) VALUES(?, ?, ?)");
 			stmt.setString(1, userId);
 			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-			stmt.setString(3, requestURL);
-			stmt.setString(4, keywords);
+			stmt.setLong(3, pageId);
 			
 			stmt.execute();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Could not save access log", e);
 		}
 	}
 	
