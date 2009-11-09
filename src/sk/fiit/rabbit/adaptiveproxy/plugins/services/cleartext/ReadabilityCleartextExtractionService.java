@@ -3,11 +3,8 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext;
 import java.util.List;
 import java.util.Set;
 
-import javax.script.ScriptException;
-
 import org.apache.log4j.Logger;
 
-import sk.fiit.keyextractor.downloader.Downloader;
 import sk.fiit.keyextractor.downloader.WebPageAquirer;
 import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
@@ -29,12 +26,12 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 		private String content;
 		
 		@Override
-		public void setResponseContext(ModifiableHttpResponse request) {
+		public void setResponseContext(ModifiableHttpResponse response) {
 			try {
-				StringContentService stringContentService = request.getServiceHandle().getService(StringContentService.class);
+				StringContentService stringContentService = response.getServiceHandle().getService(StringContentService.class);
 				content = stringContentService.getContent();
 			} catch (ServiceUnavailableException e) {
-				content = "";
+				content = null;
 			}
 		}
 
@@ -53,9 +50,6 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 				logger.error("clearTextExtraction failed", e);
 			}
 			return clearText;
-	
-			
-						
 		}
 	}
 
@@ -71,7 +65,12 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 
 	@Override
 	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
-		providedServices.add(new ReadabilityCleartextExtractionServiceProvider());
+		try {
+			response.getServiceHandle().getService(StringContentService.class);
+			providedServices.add(new ReadabilityCleartextExtractionServiceProvider());
+		} catch (ServiceUnavailableException e) {
+			logger.trace("StringContentService unavailable, that makes ReadabilityCleartextExtractionService unavailable too");
+		}
 	}
 
 	@Override
