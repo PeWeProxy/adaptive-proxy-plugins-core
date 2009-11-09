@@ -11,6 +11,6 @@
 		<param name="userName">rabbit</param>
 		<param name="password">rabbit</param>
 		
-		<param name="blacklist">css js png jpg jpeg gif tiff ico swf xml</param>
+		<param name="nologgingParamName">nologging</param>
 	</parameters>
 </plugin>

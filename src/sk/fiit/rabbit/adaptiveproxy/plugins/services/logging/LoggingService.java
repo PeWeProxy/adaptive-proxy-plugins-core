@@ -27,22 +27,11 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	
 	private static final Logger logger = Logger.getLogger(LoggingService.class);
 	
-	private String[] blacklist;
+	private String nologgingParamName;
 
 	@Override
 	public boolean setup(PluginProperties props) {
-		
-		String blacklistLine = props.getProperty("blacklist", "");
-		
-		String[] extensions = blacklistLine.split(" ");
-		blacklist = new String[extensions.length];
-		
-		int i = 0;
-		for(String extension : extensions) {
-			blacklist[i] = "." + extension.trim();
-			i++;
-		}
-		
+		nologgingParamName = props.getProperty("nologgingParamName", "nologging");
 		return true;
 	}
 	
@@ -185,27 +174,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	}
 	
 	private boolean shouldLog(String requestURL) {
-		
-		// nestaci spravit endsWith na requestURI lebo je celkom bezne za
-		// resourcom sa kvoli cachovaniu nachadza este query string
-		// napr. image.jpg?23454
-		
-		String fileName;
-		
-		int lastIdx = requestURL.lastIndexOf("?");
-		if(lastIdx > 0) {
-			fileName = requestURL.substring(0, lastIdx);
-		} else {
-			fileName = requestURL;
-		}
-		
-		for (String extension : blacklist) {
-			if (fileName.endsWith(extension)) {
-				return false;
-			}
-		}
-
-		return true;
+		return !requestURL.contains(nologgingParamName);
 	}
 
 }
