@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServiceProviderAdapter;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
@@ -37,12 +39,12 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 	}
 
 	@Override
-	protected void addProvidedRequestServices(List<RequestServiceProvider> providedServices) {
+	protected void addProvidedRequestServices(List<RequestServiceProvider> providedServices, HttpRequest request) {
 		providedServices.add(new DerbyDatabaseConnectionProvider());
 	}
 	
 	@Override
-	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices) {
+	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
 		providedServices.add(new DerbyDatabaseConnectionProvider());
 	}
 	

@@ -13,6 +13,7 @@ import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
@@ -69,7 +70,7 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 	}
 
 	@Override
-	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices) {
+	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
 		providedServices.add(new ReadabilityCleartextExtractionServiceProvider());
 	}
 
