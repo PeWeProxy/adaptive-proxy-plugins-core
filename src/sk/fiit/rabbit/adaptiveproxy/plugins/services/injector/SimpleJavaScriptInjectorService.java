@@ -116,7 +116,8 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
                              "<script type='text/javascript'>" +
                                "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                               "</script>" +
-                              "<script src='" + javascriptServer + "javascripts/jquery-1.3.2.min.js'></script>";
+                              "<script src='" + javascriptServer + "javascripts/jquery-1.3.2.min.js'></script>" +
+                              "<script>jQuery.noConflict();</script>";
 			
 			for (JavaScript js : javaScripts) {
 				scripts += "<script src='" + js.script + "'></script>";
