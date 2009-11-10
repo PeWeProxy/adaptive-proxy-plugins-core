@@ -6,7 +6,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/application.js</param>
+		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/keywords.js</param>
 		<param name="bypassPattern">keywords/load</param>
 		<param name="bypassTo">http://127.0.0.1:3000/keywords/load</param>
 	</parameters>
