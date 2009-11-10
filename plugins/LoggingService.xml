@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE note SYSTEM "PluginConfiguration.dtd">
 <plugin>
 	<name>DatabaseLoggingService</name>
 	<classLocation/>
@@ -11,6 +13,6 @@
 		<param name="userName">rabbit</param>
 		<param name="password">rabbit</param>
 		
-		<param name="nologgingParamName">nologging</param>
+		<param name="blacklist">css js png jpg jpeg gif tiff ico swf xml</param>
 	</parameters>
 </plugin>

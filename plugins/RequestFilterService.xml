@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE note SYSTEM "PluginConfiguration.dtd">
 <plugin>
 	<name>RequestFilterService</name>
 	<classLocation/>
@@ -6,6 +8,6 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="patternFile">filter.txt</param>
+	  <param name="patternFile">filter.txt</param>
 	</parameters>
 </plugin>
