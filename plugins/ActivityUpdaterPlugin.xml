@@ -1,10 +1,13 @@
 <plugin>
 	<name>ActivityUpdaterPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.ActivityUpdaterPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.JavaScriptInjectingPlugin</className>
 	<types>
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
+		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/timelog.js</param>
+		<param name="bypassPattern">activity/update</param>
+		<param name="bypassTo">http://127.0.0.1:3000/activity/update</param>
 	</parameters>
 </plugin>
