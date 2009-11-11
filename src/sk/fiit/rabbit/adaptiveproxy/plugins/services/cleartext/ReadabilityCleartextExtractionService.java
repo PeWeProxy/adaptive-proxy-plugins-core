@@ -11,7 +11,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
@@ -25,16 +24,10 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 
 		private String content;
 		
-		@Override
-		public void setResponseContext(ModifiableHttpResponse response) {
-			try {
-				StringContentService stringContentService = response.getServiceHandle().getService(StringContentService.class);
-				content = stringContentService.getContent();
-			} catch (ServiceUnavailableException e) {
-				content = null;
-			}
+		public ReadabilityCleartextExtractionServiceProvider(String content) {
+			this.content = content;
 		}
-
+		
 		@Override
 		public Class<? extends ProxyService> getServiceClass() {
 			return ClearTextExtractionService.class;
@@ -66,10 +59,10 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 	@Override
 	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
 		try {
-			response.getServiceHandle().getService(StringContentService.class);
-			providedServices.add(new ReadabilityCleartextExtractionServiceProvider());
+			String content = response.getServiceHandle().getService(StringContentService.class).getContent();
+			providedServices.add(new ReadabilityCleartextExtractionServiceProvider(content));
 		} catch (ServiceUnavailableException e) {
-			logger.trace("StringContentService unavailable, that makes ReadabilityCleartextExtractionService unavailable too");
+			logger.debug("StringContentService unavailable, that makes ReadabilityCleartextExtractionService unavailable too");
 		}
 	}
 
