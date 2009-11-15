@@ -69,7 +69,13 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				Thread t = new Thread() {
 					@Override
 					public void run() {
-						extractPageInformation(pi);
+						try {
+							extractPageInformation(pi);
+						} finally {
+							try {
+								connection.close();
+							} catch (SQLException e) {}
+						}
 						
 						logger.error("UNLOCKING MONITOR");
 						synchronized (thiz) {

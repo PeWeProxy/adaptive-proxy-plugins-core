@@ -59,11 +59,19 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		}
 		
 		Connection con = ((DatabaseConnectionProviderService) getFromCache("connection")).getDatabaseConnection();
-		String uid = ((UserIdentificationService) getFromCache("uid")).getClientIdentification();
-		PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
+
+		try {
+			String uid = ((UserIdentificationService) getFromCache("uid")).getClientIdentification();
+			PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
 		
-		if(pi.getId() != null) {
-			log(con, uid, pi.getId());
+			if(pi.getId() != null) {
+				log(con, uid, pi.getId());
+			}
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException e) {}
+			
 		}
 	}
 	
