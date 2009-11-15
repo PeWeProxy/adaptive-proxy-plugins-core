@@ -23,6 +23,7 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 	private class ReadabilityCleartextExtractionServiceProvider extends ResponseServiceProviderAdapter implements ClearTextExtractionService {
 
 		private String content;
+		private String clearText;
 		
 		public ReadabilityCleartextExtractionServiceProvider(String content) {
 			this.content = content;
@@ -36,12 +37,14 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 		@Override
 		public String getCleartext() {
 			
-			String clearText = null;
-			try {
-				clearText = WebPageAquirer.getPageContent(content);
-			} catch (JKeyExtractorException e) {
-				logger.error("clearTextExtraction failed", e);
+			if(clearText == null) {
+				try {
+					clearText = WebPageAquirer.getPageContent(content);
+				} catch (JKeyExtractorException e) {
+					logger.error("clearTextExtraction failed", e);
+				}
 			}
+			
 			return clearText;
 		}
 	}
