@@ -77,10 +77,10 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	
 
 	private void log(Connection connection, String userId, Long pageId) {
+		PreparedStatement stmt = null;
 
 		try {
-			PreparedStatement stmt = connection
-					.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id) VALUES(?, ?, ?)");
+			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id) VALUES(?, ?, ?)");
 			stmt.setString(1, userId);
 			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(3, pageId);
@@ -88,6 +88,12 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			stmt.execute();
 		} catch (SQLException e) {
 			logger.error("Could not save access log", e);
+		} finally {
+			try {
+				if(stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {}
 		}
 	}
 	

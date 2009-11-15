@@ -63,7 +63,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			
 			pi = new PageInformation();
 			
-			final Object thiz = this;
+			final Object lock = new Object();
 			
 			try {
 				Thread t = new Thread() {
@@ -75,10 +75,10 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 							try {
 								connection.close();
 							} catch (SQLException e) {}
-						}
-						
-						synchronized (thiz) {
-							thiz.notify();
+							
+							synchronized (lock) {
+								lock.notifyAll();
+							}
 						}
 					}
 				};
@@ -87,14 +87,14 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 					@Override
 					public void uncaughtException(Thread t, Throwable e) {
 						logger.warn("Uncaught exception, releasing the lock");
-						thiz.notify();
+						lock.notify();
 					}
 				});
 				
 				t.start();
 				
-				synchronized (this) {
-					this.wait();
+				synchronized (lock) {
+					lock.wait();
 				}
 			} catch (InterruptedException e) {
 			}
@@ -121,6 +121,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				return;
 			}
 			
+			PreparedStatement stmt = null;
+			
 			try {
 				String query = "SELECT id, content_length, keywords FROM pages WHERE url = ?";
 				
@@ -128,7 +130,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 					query += " AND checksum = ?";
 				}
 				
-				PreparedStatement stmt = connection.prepareStatement(query);
+				stmt = connection.prepareStatement(query);
 				stmt.setString(1, requestURI);
 				
 				if(pi.checksum != null) {
@@ -144,6 +146,12 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				}
 			} catch(SQLException e) {
 				logger.error("Could not load pageId from cache", e);
+			} finally {
+				if(stmt != null) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {}
+				}
 			}
 		}
 
@@ -170,8 +178,9 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			
 			String query = "INSERT INTO pages(url, checksum, content_length, keywords) VALUES(?, ?, ?, ?)";
 			
+			PreparedStatement stmt = null;
 			try {
-				PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				stmt.setString(1, pi.getUrl());
 				stmt.setString(2, pi.getChecksum());
 				stmt.setInt(3, pi.getContentLength());
@@ -186,6 +195,12 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				}
 			} catch (SQLException e) {
 				logger.error("Could not save page information", e);
+			} finally {
+				if(stmt != null) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {}
+				}
 			}
 		}
 		
