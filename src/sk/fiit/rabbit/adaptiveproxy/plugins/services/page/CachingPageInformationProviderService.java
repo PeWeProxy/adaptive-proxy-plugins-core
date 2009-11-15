@@ -77,9 +77,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 							} catch (SQLException e) {}
 						}
 						
-						logger.error("UNLOCKING MONITOR");
 						synchronized (thiz) {
-							logger.error("UNLOCKING MONITOR INSIDE");
 							thiz.notify();
 						}
 					}
@@ -95,9 +93,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				
 				t.start();
 				
-				logger.error("WAITING FOR MONITOR");
 				synchronized (this) {
-					logger.error("WAITING FOR MONITOR INSIDE");
 					this.wait();
 				}
 			} catch (InterruptedException e) {

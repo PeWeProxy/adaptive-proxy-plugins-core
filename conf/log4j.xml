@@ -7,32 +7,24 @@
 		</layout>
     </appender>
     <logger name="org.apache">
-    	<level value="all" />
+    	<level value="warn" />
+    </logger>
+    <logger name="org.apache.commons.httpclient.Wire">
+    	<level value="warn" />
     </logger>
     <logger name="rabbit">
-    	<level value="all" />
+    	<level value="warn" />
     </logger>
     <logger name="sk.fiit.rabbit.adaptiveproxy">
-    	<level value="all" />
-    </logger>
-     <logger name="sk.fiit.rabbit.adaptiveproxy.AdaptiveEngine">
-    	<level value="all" />
-    </logger>
-    <logger name="rabbit.handler.AdaptiveHandler">
-    	<level value="all" />
+    	<level value="warn" />
     </logger>
     <logger name="sk.fiit.rabbit.adaptiveproxy.plugins.services">
     	<level value="all" />
     </logger>
     <logger name="sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandleBase">
-    	<level value="all" />
+    	<level value="warn" />
     </logger>
-    <logger name="sk.fiit.rabbit.adaptiveproxy.plugins.PluginHandler">
-    	<level value="all" />
-    </logger>
-    <logger name="sk.fiit.redeemer.test">
-    	<level value="all" />
-    </logger>
+    
     <!--ROOT Logger-->
     <root>
         <level value="all" />

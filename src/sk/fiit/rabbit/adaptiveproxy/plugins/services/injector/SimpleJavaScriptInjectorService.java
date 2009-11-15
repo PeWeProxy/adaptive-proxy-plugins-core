@@ -44,7 +44,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 
 		@Override
 		public void registerJavascript(JavaScript js) {
-			logger.info("Registering javascript");
+			logger.debug("Registering javascript " + js.script);
 			javaScripts.add(js);
 		}
 		
@@ -68,7 +68,6 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		logger.info("Processing request");
 		String requestURI = request.getClientRequestHeaders().getRequestURI();
 		
 		for (JavaScript js : javaScripts) {
@@ -83,8 +82,6 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		logger.info("Processing response");
-		
 		ClearTextExtractionService clearTextService;
 		try {
 			clearTextService = response.getServiceHandle().getService(ClearTextExtractionService.class);
