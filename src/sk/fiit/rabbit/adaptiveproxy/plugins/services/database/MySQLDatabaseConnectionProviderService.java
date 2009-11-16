@@ -98,6 +98,11 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		}
 
 		GenericObjectPool connectionPool = new GenericObjectPool(null);
+		
+		connectionPool.setMaxActive(Integer.parseInt(props.getProperty("maxActive", "20")));
+		connectionPool.setMaxIdle(Integer.parseInt(props.getProperty("maxIdle", "-1")));
+		connectionPool.setMaxWait(Integer.parseInt(props.getProperty("maxWait", "2000")));
+		
 		DriverManagerConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, username, password);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, connectionPool, null, null, false, true);
 		driver = new PoolingDriver();

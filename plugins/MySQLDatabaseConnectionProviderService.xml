@@ -13,5 +13,8 @@
 		<param name="driver">com.mysql.jdbc.Driver</param>
 		<param name="userName">proxy</param>
 		<param name="password">rabbit</param>
+		<param name="maxActive">20</param>
+		<param name="maxIdle">-1</param>
+		<param name="maxWait">2000</param>
 	</parameters>
 </plugin>
