@@ -52,12 +52,13 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			return PageInformationProviderService.class;
 		}
 
-		PageInformation pi;
+		volatile PageInformation pi;
+		volatile boolean extracted = false;
 		
 		@Override
 		public PageInformation getPageInformation() {
 			
-			if(pi != null) {
+			if(extracted) {
 				return pi;
 			}
 			
@@ -71,6 +72,10 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 					public void run() {
 						try {
 							extractPageInformation(pi);
+							
+							synchronized (lock) {
+								extracted = true;
+							}
 						} finally {
 							try {
 								connection.close();
@@ -87,14 +92,19 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 					@Override
 					public void uncaughtException(Thread t, Throwable e) {
 						logger.warn("Uncaught exception, releasing the lock");
-						lock.notify();
+						synchronized (lock) {
+							lock.notifyAll();
+						}
 					}
 				});
 				
 				t.start();
 				
 				synchronized (lock) {
-					lock.wait();
+					if(!extracted) {
+						lock.wait();
+					} else {
+					}
 				}
 			} catch (InterruptedException e) {
 			}
