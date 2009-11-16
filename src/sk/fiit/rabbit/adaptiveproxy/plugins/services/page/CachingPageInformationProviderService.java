@@ -23,6 +23,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandle;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 
 public class CachingPageInformationProviderService extends ResponseServicePluginAdapter {
@@ -36,13 +37,15 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 	private class CachingPageInformationProviderServiceProvider extends ResponseServiceProviderAdapter 
 		implements PageInformationProviderService {
 		
-		Connection connection;
+		DatabaseConnectionProviderService connectionService;
 		String clearText;
 		String requestURI;
+		
+		Connection connection;
 
 		public CachingPageInformationProviderServiceProvider(String requestURI,
-				Connection connection, String clearText) {
-			this.connection = connection;
+				DatabaseConnectionProviderService connectionService, String clearText) {
+			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
 		}
@@ -77,10 +80,6 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 								extracted = true;
 							}
 						} finally {
-							try {
-								connection.close();
-							} catch (SQLException e) {}
-							
 							synchronized (lock) {
 								lock.notifyAll();
 							}
@@ -91,7 +90,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 					@Override
 					public void uncaughtException(Thread t, Throwable e) {
-						logger.warn("Uncaught exception, releasing the lock");
+						logger.warn("Uncaught exception, releasing the lock, closing connection");
+						
 						synchronized (lock) {
 							lock.notifyAll();
 						}
@@ -113,15 +113,22 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		}
 		
 		private void extractPageInformation(PageInformation pi) {
-			pi.url = requestURI;
-			pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
-			loadPageInformationFromCache(pi);
+			Connection connection = connectionService.getDatabaseConnection();
 			
-			if(pi.id == null && clearText != null) {
-				pi.contentLength = clearText.length();
-				pi.keywords = extractKeywords(clearText);
+			try {
+				pi.url = requestURI;
+				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
+				loadPageInformationFromCache(pi);
 				
-				savePageInformation(pi);
+				if(pi.id == null && clearText != null) {
+					pi.contentLength = clearText.length();
+					pi.keywords = extractKeywords(clearText);
+					
+					savePageInformation(pi);
+				}
+			} finally {
+				SqlUtils.close(connection);
+				connection = null;
 			}
 		};
 		
@@ -132,6 +139,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			}
 			
 			PreparedStatement stmt = null;
+			ResultSet rs = null;
 			
 			try {
 				String query = "SELECT id, content_length, keywords FROM pages WHERE url = ?";
@@ -147,7 +155,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 					stmt.setString(2, pi.checksum);
 				}
 		
-				ResultSet rs = stmt.executeQuery();
+				rs = stmt.executeQuery();
 				
 				if(rs.next()) {
 					pi.id = rs.getLong(1);
@@ -157,11 +165,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			} catch(SQLException e) {
 				logger.error("Could not load pageId from cache", e);
 			} finally {
-				if(stmt != null) {
-					try {
-						stmt.close();
-					} catch (SQLException e) {}
-				}
+				SqlUtils.close(rs);
+				SqlUtils.close(stmt);
 			}
 		}
 
@@ -189,6 +194,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			String query = "INSERT INTO pages(url, checksum, content_length, keywords) VALUES(?, ?, ?, ?)";
 			
 			PreparedStatement stmt = null;
+			ResultSet keys = null;
+			
 			try {
 				stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				stmt.setString(1, pi.getUrl());
@@ -198,7 +205,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				
 				stmt.execute();
 				
-				ResultSet keys = stmt.getGeneratedKeys();
+				keys = stmt.getGeneratedKeys();
 				
 				if(keys.next()) {
 					pi.id = keys.getLong(1);
@@ -206,11 +213,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			} catch (SQLException e) {
 				logger.error("Could not save page information", e);
 			} finally {
-				if(stmt != null) {
-					try {
-						stmt.close();
-					} catch (SQLException e) {}
-				}
+				SqlUtils.close(keys);
+				SqlUtils.close(stmt);
 			}
 		}
 		
@@ -230,7 +234,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 	@Override
 	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
 		ServicesHandle handle = response.getServiceHandle();
-		Connection connection = null;
+		DatabaseConnectionProviderService connectionService = null;
 		String clearText = null;
 
 		try {
@@ -240,12 +244,12 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		}
 		
 		try {
-			connection = handle.getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+			connectionService = handle.getService(DatabaseConnectionProviderService.class);
 		} catch (ServiceUnavailableException e) {
 			logger.debug("Database service is unavailable, page information cannot be loaded from cache");
 		}
 		
 		String requestURI = response.getClientRequestHeaders().getRequestURI();
-		providedServices.add(new CachingPageInformationProviderServiceProvider(requestURI, connection, clearText));
+		providedServices.add(new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText));
 	}
 }

@@ -10,6 +10,7 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDriver;
+import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 
@@ -25,6 +26,28 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 public class MySQLDatabaseConnectionProviderService extends RequestAndResponseServicePluginAdapter {
 	
 	private static final Logger logger = Logger.getLogger(MySQLDatabaseConnectionProviderService.class);
+	private static PoolingDriver driver;
+	
+	private class PoolStatus implements Runnable {
+
+		@Override
+		public void run() {
+			while(true) {
+				ObjectPool op;
+				try {
+					op = driver.getConnectionPool("proxyJdbcPool");
+					System.err.println("NumActive: " + op.getNumActive());
+					System.err.println("NumIdle: " + op.getNumIdle());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {}
+			}
+		}
+		
+	}
 	
 	private class MySQLDatabaseConnectionProvider extends RequestAndResponseServiceProviderAdapter 
 	    implements DatabaseConnectionProviderService {
@@ -75,12 +98,11 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		}
 
 		GenericObjectPool connectionPool = new GenericObjectPool(null);
-		ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, username, password);
+		DriverManagerConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, username, password);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, connectionPool, null, null, false, true);
-		PoolingDriver driver = new PoolingDriver();
+		driver = new PoolingDriver();
 		driver.registerPool("proxyJdbcPool", connectionPool);
 		
-
 		return true;
 	}
 }

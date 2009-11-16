@@ -3,7 +3,6 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 
 import org.apache.log4j.Logger;
@@ -14,7 +13,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandle;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
@@ -58,9 +57,10 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			return;
 		}
 		
-		Connection con = ((DatabaseConnectionProviderService) getFromCache("connection")).getDatabaseConnection();
+		Connection con = null;
 
 		try {
+			con = ((DatabaseConnectionProviderService) getFromCache("connection")).getDatabaseConnection();
 			String uid = ((UserIdentificationService) getFromCache("uid")).getClientIdentification();
 			PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
 		
@@ -68,10 +68,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 				log(con, uid, pi.getId());
 			}
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {}
-			
+			SqlUtils.close(con);			
 		}
 	}
 	
@@ -89,11 +86,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		} catch (SQLException e) {
 			logger.error("Could not save access log", e);
 		} finally {
-			try {
-				if(stmt != null) {
-					stmt.close();
-				}
-			} catch (SQLException e) {}
+			SqlUtils.close(stmt);
 		}
 	}
 	
