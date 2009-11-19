@@ -5,8 +5,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.keyextractor.downloader.WebPageAquirer;
-import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
+import sk.fiit.keyextractor.exceptions.TextFilteringException;
+import sk.fiit.keyextractor.filters.io.StringSource;
+import sk.fiit.keyextractor.filters.parser.ReadabilityParser;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
@@ -37,11 +38,15 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 		@Override
 		public String getCleartext() {
 			
+			
+			
 			if(clearText == null) {
-				try {
-					clearText = WebPageAquirer.getPageContent(content);
-				} catch (JKeyExtractorException e) {
-					logger.error("clearTextExtraction failed", e);
+				
+				try{
+					clearText = new ReadabilityParser(new StringSource(content)).process();
+				} catch(TextFilteringException e) {
+					logger.debug("Readability parser FAILED", e);
+					clearText = content;
 				}
 			}
 			

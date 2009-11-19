@@ -1,6 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,10 +30,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnection
 public class CachingPageInformationProviderService extends ResponseServicePluginAdapter {
 	
 	private static final Logger logger = Logger.getLogger(CachingPageInformationProviderService.class);
-	
-	static {
-		System.out.println(Logger.getRootLogger());
-	}
 	
 	private class CachingPageInformationProviderServiceProvider extends ResponseServiceProviderAdapter 
 		implements PageInformationProviderService {
@@ -113,7 +110,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		}
 		
 		private void extractPageInformation(PageInformation pi) {
-			Connection connection = connectionService.getDatabaseConnection();
+			connection = connectionService.getDatabaseConnection();
 			
 			try {
 				pi.url = requestURI;
@@ -122,7 +119,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
-					pi.keywords = extractKeywords(clearText);
+					pi.keywords = extractKeywords(requestURI, clearText);
 					
 					savePageInformation(pi);
 				}
@@ -171,7 +168,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		}
 
 		
-		private String extractKeywords(String clearText) {
+		private String extractKeywords(String url, String clearText) {
 			
 			if(clearText == null || clearText.trim() == "") {
 				return "";
@@ -180,9 +177,20 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			JKeyExtractor ke = new JKeyExtractor();
 			ke.addAlgorithm(new TagTheNetKeyExtractor());
 			
-			List<String> l = ke.getAllKeysForText(clearText);
-			String kws = Arrays.toString(l.toArray());
-			return kws;
+			Set<String> l = null;
+			try {
+				l = ke.getAllKeys(url, clearText);
+			} catch (MalformedURLException e) {
+				return "";
+			}
+			
+			String kws = "";
+			
+			for (String kw : l) {
+				kws += kw + ',';
+			}
+			
+			return kws.substring(0, kws.length() - 1);
 		}
 		
 		private void savePageInformation(PageInformation pi) {
