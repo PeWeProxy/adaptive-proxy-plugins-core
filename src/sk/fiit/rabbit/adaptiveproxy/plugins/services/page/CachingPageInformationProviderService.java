@@ -52,67 +52,25 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			return PageInformationProviderService.class;
 		}
 
-		volatile PageInformation pi;
-		volatile boolean extracted = false;
+		PageInformation pi;
 		
 		@Override
 		public PageInformation getPageInformation() {
 			
-			if(extracted) {
+			if(pi != null) {
 				return pi;
 			}
 			
 			pi = new PageInformation();
-			
-			final Object lock = new Object();
-			
-			try {
-				Thread t = new Thread() {
-					@Override
-					public void run() {
-						try {
-							extractPageInformation(pi);
-							
-							synchronized (lock) {
-								extracted = true;
-							}
-						} finally {
-							synchronized (lock) {
-								lock.notifyAll();
-							}
-						}
-					}
-				};
-				
-				t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-					@Override
-					public void uncaughtException(Thread t, Throwable e) {
-						logger.warn("Uncaught exception, releasing the lock, closing connection");
-						
-						synchronized (lock) {
-							lock.notifyAll();
-						}
-					}
-				});
-				
-				t.start();
-				
-				synchronized (lock) {
-					if(!extracted) {
-						lock.wait();
-					} else {
-					}
-				}
-			} catch (InterruptedException e) {
-			}
+			extractPageInformation(pi);
 			
 			return pi;
 		}
 		
 		private void extractPageInformation(PageInformation pi) {
-			connection = connectionService.getDatabaseConnection();
-			
 			try {
+				connection = connectionService.getDatabaseConnection();
+				
 				pi.url = requestURI;
 				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
 				loadPageInformationFromCache(pi);
