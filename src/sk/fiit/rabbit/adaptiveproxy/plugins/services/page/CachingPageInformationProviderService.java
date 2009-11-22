@@ -148,7 +148,12 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				kws += kw + ',';
 			}
 			
-			return kws.substring(0, kws.length() - 1);
+			if(kws.length() > 0) {
+				return kws.substring(0, kws.length() - 1);
+			} else {
+				return "";
+			}
+			
 		}
 		
 		private void savePageInformation(PageInformation pi) {
