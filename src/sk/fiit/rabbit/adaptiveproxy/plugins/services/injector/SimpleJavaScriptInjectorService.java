@@ -103,7 +103,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 			
 			String html = sb.toString();
 
-			int bodyEndIDx = html.indexOf("</body>");
+			int bodyEndIDx = html.toLowerCase().indexOf("</body>");
 			if(bodyEndIDx < 0) {
 				logger.debug("No </body> : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
