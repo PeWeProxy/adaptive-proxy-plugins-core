@@ -42,7 +42,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			addToCache("uid", uid);
 			addToCache("pageInformation", pi);
 		} catch(ServiceUnavailableException e) {
-			logger.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e.getCause().getMessage());
+			logger.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e);
 			return false;
 		}
 
