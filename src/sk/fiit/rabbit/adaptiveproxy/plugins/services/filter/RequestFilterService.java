@@ -47,11 +47,13 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 				if(line.charAt(0) == '|') {
 					line = line.substring(1, line.length());
 					startFilters.add(line);
+					continue;
 				}
 				
 				if(line.charAt(line.length() - 1) == '|') {
 					line = line.substring(0, line.length() - 1);
 					endFilters.add(line);
+					continue;
 				}
 				
 				if(line.contains("*"))  {
