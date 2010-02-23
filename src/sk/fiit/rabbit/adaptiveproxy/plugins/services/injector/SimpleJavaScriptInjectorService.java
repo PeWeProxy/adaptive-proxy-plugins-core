@@ -109,7 +109,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 				return ResponseProcessingActions.PROCEED;
 			}
 			
-			String scripts = "<div id='_ap_messagebox' style='position:absolute;top:0;left:0;z-index:10;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right;cursor:pointer;'>Loading</div>" +
+			String scripts = "<div id='_ap_messagebox' style='position:absolute;top:0;left:0;z-index:1000;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right;cursor:pointer;'>Loading</div>" +
                              "<script type='text/javascript'>" +
                                "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                               "</script>" +
@@ -143,6 +143,8 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	@Override
 	public Set<Class<? extends ProxyService>> getDependencies() {
 		Set<Class<? extends ProxyService>> services = new HashSet<Class<? extends ProxyService>>();
+		services.add(ClearTextExtractionService.class);
+		services.add(ModifiableStringService.class);
 		return services;
 	}
 
