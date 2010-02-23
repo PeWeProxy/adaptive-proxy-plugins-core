@@ -3,5 +3,7 @@
 # Each line is considered to be one plugin's. Lines texts are trimmed !
  
 [request]
+RequestFilterService
  
 [response]
+RequestFilterService

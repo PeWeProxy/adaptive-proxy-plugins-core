@@ -12,20 +12,26 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
+import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
+import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
+import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.processing.ResponseProcessingPlugin.ResponseProcessingActions;
 
-public class RequestFilterService extends ResponseProcessingPluginAdapter {
+public class RequestFilterService extends RequestAndResponseProcessingPluginAdapter {
 	
 	private Set<String> startFilters = new HashSet<String>();
 	private Set<String> endFilters = new HashSet<String>();
 	private Set<String> matchFilters = new HashSet<String>();
 	private Set<String> simpleFilters = new HashSet<String>();
 	
-	Logger logger = Logger.getLogger(ResponseProcessingPluginAdapter.class);
+	Logger logger = Logger.getLogger(RequestFilterService.class);
 	
 	@Override
 	public boolean setup(PluginProperties props) {
@@ -71,39 +77,56 @@ public class RequestFilterService extends ResponseProcessingPluginAdapter {
 	}
 	
 	@Override
+	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
+		String url = request.getProxyRequestHeaders().getRequestURI();
+		if(canProceed(url)) {
+			return RequestProcessingActions.PROCEED;
+		} else {
+			return RequestProcessingActions.FINAL_REQUEST;
+		}
+	}
+	
+	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		String url = response.getProxyRequestHeaders().getRequestURI();
-		
+		if(canProceed(url)) {
+			return ResponseProcessingActions.PROCEED;
+		} else {
+			return ResponseProcessingActions.FINAL_RESPONSE;
+		}
+	}
+	
+	private boolean canProceed(String url) {
 		for (String filter : simpleFilters) {
 			if(url.contains(filter)) {
 				logger.debug("Blocked: " + url);
-				return ResponseProcessingActions.FINAL_RESPONSE;
+				return false;
 			}
 		}
 		
 		for (String filter : endFilters) {
 			if(url.endsWith(filter)) {
 				logger.debug("Blocked: " + url);
-				return ResponseProcessingActions.FINAL_RESPONSE;
+				return false;
 			}
 		}
 		
 		for (String filter : startFilters) {
 			if(url.startsWith(filter)) {
 				logger.debug("Blocked: " + url);
-				return ResponseProcessingActions.FINAL_RESPONSE;
+				return false;
 			}
 		}
 		
 		for (String filter : matchFilters) {
 			if(wildCardMatch(url, filter)) {
 				logger.debug("Blocked: " + url);
-				return ResponseProcessingActions.FINAL_RESPONSE;
+				return false;
 			}
 		}
 		
 		logger.debug("Passed: " + url);
-		return ResponseProcessingActions.PROCEED;
+		return true;
 	}
 	
 	private boolean wildCardMatch(String text, String pattern) {
@@ -121,15 +144,4 @@ public class RequestFilterService extends ResponseProcessingPluginAdapter {
 
 		return true;
 	}
-	
-	@Override
-	public boolean wantResponseContent(ResponseHeaders webRPHeaders) {
-		return true;
-	}
-	
-	@Override
-	public HttpResponse getNewResponse(ModifiableHttpResponse response,	HttpMessageFactory messageFactory) {
-		return response;
-	}
-
 }

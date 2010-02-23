@@ -5,6 +5,7 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.filter.RequestFilterService</className>
 	<types>
+	    <type>RequestProcessingPlugin</type>
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
