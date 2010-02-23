@@ -17,11 +17,11 @@ public class RequestAndResponseProcessingPluginAdapter implements
 	@Override
 	public HttpRequest getNewRequest(ModifiableHttpRequest proxyRequest,
 			HttpMessageFactory messageFactory) {
-		return null;
+		return proxyRequest;
 	}
 
 	@Override
-	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
+	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse,
 			HttpMessageFactory messageFactory) {
 		return null;
 	}
@@ -57,7 +57,7 @@ public class RequestAndResponseProcessingPluginAdapter implements
 	@Override
 	public HttpResponse getNewResponse(ModifiableHttpResponse response,
 			HttpMessageFactory messageFactory) {
-		return null;
+		return response;
 	}
 
 	@Override
