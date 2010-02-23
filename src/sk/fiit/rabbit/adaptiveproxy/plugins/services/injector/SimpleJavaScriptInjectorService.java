@@ -44,7 +44,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 
 		@Override
 		public void registerJavascript(JavaScript js) {
-			logger.debug("Registering javascript " + js.script);
+			logger.trace("Registering javascript " + js.script);
 			javaScripts.add(js);
 		}
 		
