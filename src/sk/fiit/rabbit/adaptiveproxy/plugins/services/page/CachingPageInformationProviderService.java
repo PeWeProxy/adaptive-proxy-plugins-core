@@ -14,6 +14,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import sk.fiit.keyextractor.JKeyExtractor;
+import sk.fiit.keyextractor.extractors.OpenCalaisKeyExtractor;
 import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
@@ -134,6 +135,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			
 			JKeyExtractor ke = new JKeyExtractor();
 			ke.addAlgorithm(new TagTheNetKeyExtractor());
+			ke.addAlgorithm(new OpenCalaisKeyExtractor());
 			
 			Set<String> l = null;
 			try {
