@@ -13,7 +13,6 @@ http://i.com.com^*/ads/
 /ad/banner
 /ad2.aspx
 /show_ads_
-nil
 https://softwaresammler.de^
 http://filefront.com/linkto/
 http://www.ebayrtm.com/rtm?*&c=
