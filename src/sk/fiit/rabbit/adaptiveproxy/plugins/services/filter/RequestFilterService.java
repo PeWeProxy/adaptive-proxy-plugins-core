@@ -81,7 +81,7 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String url = request.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url)) {
+		if(canProceed(url, "REQUEST")) {
 			return RequestProcessingActions.PROCEED;
 		} else {
 			return RequestProcessingActions.FINAL_REQUEST;
@@ -91,43 +91,43 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		String url = response.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url)) {
+		if(canProceed(url, "RESPONSE")) {
 			return ResponseProcessingActions.PROCEED;
 		} else {
 			return ResponseProcessingActions.FINAL_RESPONSE;
 		}
 	}
 	
-	private boolean canProceed(String url) {
+	private boolean canProceed(String url, String type) {
 		for (String filter : simpleFilters) {
 			if(url.contains(filter)) {
-				logger.debug("Blocked: " + url);
+				logger.debug("Blocked [" + type + "]: " + url);
 				return false;
 			}
 		}
 		
 		for (String filter : endFilters) {
 			if(url.endsWith(filter)) {
-				logger.debug("Blocked: " + url);
+				logger.debug("Blocked [" + type + "]: " + url);
 				return false;
 			}
 		}
 		
 		for (String filter : startFilters) {
 			if(url.startsWith(filter)) {
-				logger.debug("Blocked: " + url);
+				logger.debug("Blocked [" + type + "]: " + url);
 				return false;
 			}
 		}
 		
 		for (String filter : matchFilters) {
 			if(wildCardMatch(url, filter)) {
-				logger.debug("Blocked: " + url);
+				logger.debug("Blocked [" + type + "]: " + url);
 				return false;
 			}
 		}
 		
-		logger.debug("Passed: " + url);
+		logger.debug("Passed [" + type + "]: " + url);
 		return true;
 	}
 	
