@@ -37,13 +37,12 @@ public class ReadabilityCleartextExtractionService extends ResponseServicePlugin
 
 		@Override
 		public String getCleartext() {
-			
-			
-			
 			if(clearText == null) {
-				
 				try{
 					clearText = new ReadabilityParser(new StringSource(content)).process();
+					if(clearText == null) {
+						clearText = content;
+					}
 				} catch(TextFilteringException e) {
 					logger.debug("Readability parser FAILED", e);
 					clearText = content;
