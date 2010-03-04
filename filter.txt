@@ -1,3 +1,4 @@
+nimbus.fiit.stuba.sk/proxy
 https://www.usnews.com^*/ad-welcome.js
 https://www.i.com.com^*/ads/
 .heise.de.axprod.net/
