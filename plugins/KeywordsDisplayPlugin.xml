@@ -11,5 +11,6 @@
 		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/keywords.js</param>
 		<param name="bypassPattern">keywords/load</param>
 		<param name="bypassTo">http://127.0.0.1:3000/keywords/load</param>
+		<param name="allowOnlyFor">31a3a516283911df85d8c53077dcaf47,dec1857027cf11df85d7c53077dcaf47x</param>
 	</parameters>
 </plugin>

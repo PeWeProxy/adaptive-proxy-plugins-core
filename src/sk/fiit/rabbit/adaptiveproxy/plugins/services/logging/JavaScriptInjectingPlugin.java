@@ -1,5 +1,8 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
@@ -8,6 +11,8 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScript;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentification;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
 public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 
@@ -16,6 +21,7 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 	private String scriptUrl;
 	private String bypassPattern;
 	private String bypassTo;
+	private Set<String> allowOnlyFor = new HashSet<String>();
 
 	public JavaScriptInjectingPlugin() {
 		super();
@@ -24,10 +30,15 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
-			JavaScriptInjectorService injector = response.getServiceHandle().getService(JavaScriptInjectorService.class);
-			injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo));
+			UserIdentificationService userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);
+	
+			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
+				JavaScriptInjectorService injector = response.getServiceHandle().getService(JavaScriptInjectorService.class);
+				logger.debug("Registering javascript " + scriptUrl + " for " + response.getClientRequestHeaders().getRequestURI());
+				injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo));
+			}
 		} catch (ServiceUnavailableException e) {
-			logger.warn("JavaScriptInjector unavailable");
+			logger.warn("Service unavailable", e);
 		}
 	
 		return ResponseProcessingActions.PROCEED;
@@ -38,6 +49,12 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 		scriptUrl = props.getProperty("scriptUrl");
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
+		
+		if(props.getProperty("allowOnlyFor") != null) {
+			for (String uid : props.getProperty("allowOnlyFor").split(",")) {
+				allowOnlyFor.add(uid.trim());
+			}
+		}
 		
 		return true;
 	}
