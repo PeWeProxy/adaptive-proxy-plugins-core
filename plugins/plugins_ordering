@@ -4,6 +4,12 @@
  
 [request]
 RequestFilterService
+UserIdentificationEnforceService
+SimpleJavaScriptInjector
  
 [response]
 RequestFilterService
+SimpleJavaScriptInjector
+DatabaseLoggingService
+KeywordsDisplayPlugin
+ActivityUpdaterPlugin
