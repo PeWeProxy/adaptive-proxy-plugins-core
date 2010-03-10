@@ -7,7 +7,7 @@
 	<types>
 		<type>ResponseProcessingPlugin</type>
 	    <type>RequestProcessingPlugin</type>
-		<type>ResponseServicePlugin</type>
+		<type>RequestServicePlugin</type>
 	</types>
 	<parameters>
 		<param name="javascriptServer">http://127.0.0.1:3000/</param>

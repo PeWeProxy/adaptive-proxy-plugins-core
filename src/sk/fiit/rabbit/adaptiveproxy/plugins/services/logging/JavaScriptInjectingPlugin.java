@@ -6,15 +6,14 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestProcessingPluginAdapter;
+import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScript;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectorService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentification;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
-public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
+public class JavaScriptInjectingPlugin extends RequestProcessingPluginAdapter {
 
 	Logger logger = Logger.getLogger(JavaScriptInjectingPlugin.class);
 	
@@ -29,20 +28,20 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 	}
 
 	@Override
-	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
+	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		try {
-			UserIdentificationService userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);
+			UserIdentificationService userIdentification = request.getServiceHandle().getService(UserIdentificationService.class);
 	
 			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
-				JavaScriptInjectorService injector = response.getServiceHandle().getService(JavaScriptInjectorService.class);
-				logger.debug("Registering javascript " + scriptUrl + " for " + response.getClientRequestHeaders().getRequestURI());
+				JavaScriptInjectorService injector = request.getServiceHandle().getService(JavaScriptInjectorService.class);
+				logger.debug("Registering javascript " + scriptUrl + " for " + request.getClientRequestHeaders().getRequestURI());
 				injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo, additionalHTML));
 			}
 		} catch (ServiceUnavailableException e) {
 			logger.warn("Service unavailable", e);
 		}
 	
-		return ResponseProcessingActions.PROCEED;
+		return RequestProcessingActions.PROCEED;
 	}
 	
 	@Override

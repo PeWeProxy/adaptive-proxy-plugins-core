@@ -5,7 +5,7 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.JavaScriptInjectingPlugin</className>
 	<types>
-		<type>ResponseProcessingPlugin</type>
+		<type>RequestProcessingPlugin</type>
 	</types>
 	<parameters>
 		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/timelog.js</param>

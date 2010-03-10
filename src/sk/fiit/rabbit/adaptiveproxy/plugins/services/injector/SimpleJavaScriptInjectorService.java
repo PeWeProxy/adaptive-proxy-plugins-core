@@ -10,22 +10,21 @@ import org.apache.log4j.Logger;
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
+import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestServiceProviderAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServicePlugin;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServicePlugin;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
 
 public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessingPluginAdapter 
- 	implements ResponseServicePlugin {
+ 	implements RequestServicePlugin {
 	
 	Logger logger = Logger.getLogger(SimpleJavaScriptInjectorService.class);
 	
@@ -35,7 +34,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 
 	private String javascriptServer;
 	
-	private class SimpleJavaScriptInjectorProvider extends ResponseServiceProviderAdapter implements JavaScriptInjectorService {
+	private class SimpleJavaScriptInjectorProvider extends RequestServiceProviderAdapter implements JavaScriptInjectorService {
 
 		@Override
 		public Class<? extends ProxyService> getServiceClass() {
@@ -135,8 +134,8 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	}
 
 	@Override
-	public List<ResponseServiceProvider> provideResponseServices(HttpResponse response) {
-		List<ResponseServiceProvider> services = new LinkedList<ResponseServiceProvider>();
+	public List<RequestServiceProvider> provideRequestServices(HttpRequest response) {
+		List<RequestServiceProvider> services = new LinkedList<RequestServiceProvider>();
 		services.add(new SimpleJavaScriptInjectorProvider());
 		return services;
 	}
