@@ -108,17 +108,20 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 				return ResponseProcessingActions.PROCEED;
 			}
 			
-			String scripts = "<div id='_ap_messagebox' style='position:absolute;top:0;left:0;z-index:1000;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right;cursor:pointer;color:#000;'>Loading</div>" +
+			String scripts = "" +
                              "<script type='text/javascript'>" +
                                "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                               "</script>" +
                               "<script src='" + javascriptServer + "javascripts/jquery-1.3.2.min.js'></script>";
 			
+			String additionalHTML = "";
+			
 			for (JavaScript js : javaScripts) {
+				additionalHTML += js.additionalHTML;
 				scripts += "<script src='" + js.script + "'></script>";
 			}
 			
-			sb.insert(bodyEndIDx, scripts);
+			sb.insert(bodyEndIDx, additionalHTML + scripts);
 		} catch (ServiceUnavailableException e) {
 			logger.trace("ModifiableStringService is unavailable, JavaScriptInjector takes no action");
 		}

@@ -21,6 +21,7 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 	private String scriptUrl;
 	private String bypassPattern;
 	private String bypassTo;
+	private String additionalHTML;
 	private Set<String> allowOnlyFor = new HashSet<String>();
 
 	public JavaScriptInjectingPlugin() {
@@ -35,7 +36,7 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
 				JavaScriptInjectorService injector = response.getServiceHandle().getService(JavaScriptInjectorService.class);
 				logger.debug("Registering javascript " + scriptUrl + " for " + response.getClientRequestHeaders().getRequestURI());
-				injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo));
+				injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo, additionalHTML));
 			}
 		} catch (ServiceUnavailableException e) {
 			logger.warn("Service unavailable", e);
@@ -49,6 +50,10 @@ public class JavaScriptInjectingPlugin extends ResponseProcessingPluginAdapter {
 		scriptUrl = props.getProperty("scriptUrl");
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
+		additionalHTML = props.getProperty("additionalHTML");
+		if(additionalHTML == null) {
+			additionalHTML = "";
+		}
 		
 		if(props.getProperty("allowOnlyFor") != null) {
 			for (String uid : props.getProperty("allowOnlyFor").split(",")) {

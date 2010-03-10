@@ -4,6 +4,7 @@ public class JavaScript {
 	String script;
 	String byassPattern;
 	String bypassTo;
+	String additionalHTML;
 	
 	@Override
 	public int hashCode() {
@@ -30,10 +31,11 @@ public class JavaScript {
 		return true;
 	}
 
-	public JavaScript(String script, String byassPattern, String bypassTo) {
+	public JavaScript(String script, String byassPattern, String bypassTo, String additionalHTML) {
 		super();
 		this.script = script;
 		this.byassPattern = byassPattern;
 		this.bypassTo = bypassTo;
+		this.additionalHTML = additionalHTML;
 	}
 }
