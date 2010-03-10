@@ -60,6 +60,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 			queryParams = "";
 		}
 		
+		logger.debug("current bypass is: " + currentBypass);
 		proxyRequest.getProxyRequestHeaders().setRequestURI(currentBypass + queryParams);
 		return messageFactory.constructHttpRequest(proxyRequest, proxyRequest.getProxyRequestHeaders(), true);
 	}
@@ -68,11 +69,14 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String requestURI = request.getClientRequestHeaders().getRequestURI();
 		logger.debug("processing request: " + request.getClientRequestHeaders().getRequestURI());
-		logger.debug("available javascripts: " + javaScripts.toString());
+		logger.debug("available javascripts: " + javaScripts);
 		for (JavaScript js : javaScripts) {
 			if(requestURI.contains(js.byassPattern)) {
+				logger.debug("bypass MATCHED with " + js);
 				currentBypass = js.bypassTo;
 				return RequestProcessingActions.FINAL_REQUEST;
+			} else {
+				logger.debug("bypass unmatched with " + js);
 			}
 		}
 		

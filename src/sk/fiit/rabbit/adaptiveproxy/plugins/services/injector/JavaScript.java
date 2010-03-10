@@ -38,4 +38,8 @@ public class JavaScript {
 		this.bypassTo = bypassTo;
 		this.additionalHTML = additionalHTML;
 	}
+	
+	public String toString() {
+		return script + " | " + byassPattern + " | " + bypassTo;
+	}
 }
