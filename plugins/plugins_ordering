@@ -5,11 +5,11 @@
 [request]
 RequestFilterService
 UserIdentificationEnforceService
+KeywordsDisplayPlugin
+ActivityUpdaterPlugin
 SimpleJavaScriptInjector
  
 [response]
 RequestFilterService
 SimpleJavaScriptInjector
 DatabaseLoggingService
-KeywordsDisplayPlugin
-ActivityUpdaterPlugin
