@@ -62,7 +62,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 		
 		logger.debug("current bypass is: " + currentBypass);
 		proxyRequest.getProxyRequestHeaders().setRequestURI(currentBypass + queryParams);
-		return messageFactory.constructHttpRequest(proxyRequest, proxyRequest.getProxyRequestHeaders(), true);
+		return proxyRequest;
 	}
 	
 	@Override
