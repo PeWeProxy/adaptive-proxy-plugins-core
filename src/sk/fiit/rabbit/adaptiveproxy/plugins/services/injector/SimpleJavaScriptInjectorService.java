@@ -67,7 +67,8 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String requestURI = request.getClientRequestHeaders().getRequestURI();
-		
+		logger.debug("processing request: " + request.getClientRequestHeaders().getRequestURI());
+		logger.debug("available javascripts: " + javaScripts.toString());
 		for (JavaScript js : javaScripts) {
 			if(requestURI.contains(js.byassPattern)) {
 				currentBypass = js.bypassTo;
