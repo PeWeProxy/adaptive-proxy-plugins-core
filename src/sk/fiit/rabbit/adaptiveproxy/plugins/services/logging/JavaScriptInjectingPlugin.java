@@ -35,7 +35,8 @@ public class JavaScriptInjectingPlugin extends RequestProcessingPluginAdapter {
 			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
 				JavaScriptInjectorService injector = request.getServiceHandle().getService(JavaScriptInjectorService.class);
 				logger.debug("Registering javascript " + scriptUrl + " for " + request.getClientRequestHeaders().getRequestURI());
-				injector.registerJavascript(new JavaScript(scriptUrl, bypassPattern, bypassTo, additionalHTML));
+				System.err.print("Registering javascript " + scriptUrl + " for " + request.getClientRequestHeaders().getRequestURI() + " UID: " + userIdentification.getClientIdentification());
+				injector.registerJavascript(request, new JavaScript(scriptUrl, bypassPattern, bypassTo, additionalHTML));
 			}
 		} catch (ServiceUnavailableException e) {
 			logger.warn("Service unavailable", e);

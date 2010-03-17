@@ -1,8 +1,10 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
+import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestServiceProviderAdapter;
@@ -30,7 +33,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	
 	Logger logger = Logger.getLogger(SimpleJavaScriptInjectorService.class);
 	
-	Set<JavaScript> javaScripts = new HashSet<JavaScript>();
+	Map<RequestHeaders, Set<JavaScript>> javaScripts = new HashMap<RequestHeaders, Set<JavaScript>>();
 	
 	String currentBypass;
 
@@ -44,8 +47,14 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 		}
 
 		@Override
-		public void registerJavascript(JavaScript js) {
-			javaScripts.add(js);
+		public void registerJavascript(HttpRequest request, JavaScript js) {
+			Set<JavaScript> jsSet = javaScripts.get(request.getClientRequestHeaders());
+			if (jsSet == null) {
+				jsSet = new HashSet<JavaScript>();
+				javaScripts.put(request.getClientRequestHeaders(), jsSet);
+			}
+			
+			jsSet.add(js);
 		}
 		
 	}
@@ -84,7 +93,7 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 		String requestURI = request.getClientRequestHeaders().getRequestURI();
 		logger.debug("processing request: " + request.getClientRequestHeaders().getRequestURI());
 		logger.debug("available javascripts: " + javaScripts);
-		for (JavaScript js : javaScripts) {
+		for (JavaScript js : javaScripts.get(request)) {
 			if(requestURI.contains(js.byassPattern)) {
 				logger.debug("bypass MATCHED with " + js);
 				currentBypass = js.bypassTo;
@@ -134,10 +143,12 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 			
 			String additionalHTML = "";
 			
-			for (JavaScript js : javaScripts) {
+			for (JavaScript js : javaScripts.get(response.getClientRequestHeaders())) {
 				additionalHTML += js.additionalHTML;
 				scripts += "<script src='" + js.script + "'></script>";
 			}
+			
+			javaScripts.remove(response.getClientRequestHeaders());
 			
 			sb.insert(bodyEndIDx, additionalHTML + scripts);
 		} catch (ServiceUnavailableException e) {
