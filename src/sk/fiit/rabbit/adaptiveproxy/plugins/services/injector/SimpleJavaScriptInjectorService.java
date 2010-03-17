@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -61,7 +63,19 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 		}
 		
 		logger.debug("current bypass is: " + currentBypass);
+
 		proxyRequest.getProxyRequestHeaders().setRequestURI(currentBypass + queryParams);
+		
+		Pattern pattern = Pattern.compile("https?://(.*?)/?");
+		Matcher matcher = pattern.matcher(currentBypass);
+		
+		String host = null;
+		
+		if(matcher.matches()) {
+			host = matcher.group(1);
+			proxyRequest.getProxyRequestHeaders().addHeader("Host", host);
+		}
+		
 		return proxyRequest;
 	}
 	
