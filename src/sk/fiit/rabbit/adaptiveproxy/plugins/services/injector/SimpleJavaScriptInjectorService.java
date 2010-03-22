@@ -1,5 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -75,14 +77,12 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 
 		proxyRequest.getProxyRequestHeaders().setRequestURI(currentBypass + queryParams);
 		
-		Pattern pattern = Pattern.compile("https?://(.*?)/?");
-		Matcher matcher = pattern.matcher(currentBypass);
-		
-		String host = null;
-		
-		if(matcher.matches()) {
-			host = matcher.group(1);
-			proxyRequest.getProxyRequestHeaders().addHeader("Host", host);
+		try {
+			URL url = new URL(currentBypass);
+			proxyRequest.getProxyRequestHeaders().removeHeader("Host");
+			proxyRequest.getProxyRequestHeaders().addHeader("Host", url.getHost());
+		} catch (MalformedURLException e) {
+			logger.warn("Malformed URL", e);
 		}
 		
 		return proxyRequest;
@@ -91,15 +91,11 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String requestURI = request.getClientRequestHeaders().getRequestURI();
-		logger.debug("processing request: " + request.getClientRequestHeaders().getRequestURI());
-		logger.debug("available javascripts: " + javaScripts);
-		for (JavaScript js : javaScripts.get(request)) {
+		for (JavaScript js : javaScripts.get(request.getClientRequestHeaders())) {
 			if(requestURI.contains(js.byassPattern)) {
 				logger.debug("bypass MATCHED with " + js);
 				currentBypass = js.bypassTo;
 				return RequestProcessingActions.FINAL_REQUEST;
-			} else {
-				logger.debug("bypass unmatched with " + js);
 			}
 		}
 		
