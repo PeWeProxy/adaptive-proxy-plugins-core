@@ -8,6 +8,6 @@
 		<type>RequestProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="redirectTo">http://nimbus.fiit.stuba.sk/proxy</param>
+		<param name="redirectTo">http://peweproxy.fiit.stuba.sk/</param>
 	</parameters>
 </plugin>
