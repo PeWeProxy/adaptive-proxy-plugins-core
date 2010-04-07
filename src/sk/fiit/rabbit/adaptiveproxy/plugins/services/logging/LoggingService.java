@@ -65,7 +65,7 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
 		
 			if(pi.getId() != null) {
-				log(con, uid, pi.getId());
+				log(con, uid, pi.getId(), response.getClientRequestHeaders().getHeader("Referer"));
 			}
 		} finally {
 			SqlUtils.close(con);			
@@ -73,14 +73,15 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	}
 	
 
-	private void log(Connection connection, String userId, Long pageId) {
+	private void log(Connection connection, String userId, Long pageId, String referer) {
 		PreparedStatement stmt = null;
 
 		try {
-			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id) VALUES(?, ?, ?)");
+			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id, referer) VALUES(?, ?, ?, ?)");
 			stmt.setString(1, userId);
 			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(3, pageId);
+			stmt.setString(4, referer);
 			
 			stmt.execute();
 		} catch (SQLException e) {
