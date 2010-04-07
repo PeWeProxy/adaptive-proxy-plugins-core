@@ -39,7 +39,7 @@ logo=http://$proxy/FileSender/public/smallRabbIT4.png
 # What do you want your proxy to identify itself as?
 # Server identy can be seen in HTTP header responses
 # in the Server-value.
-#serverIdentity=..__-My own super proxy-__..
+serverIdentity=AdaptiveProxy Beta 3 (modified RabbIt 4.4)
 
 # Allow single \n to mean end of header
 # This is a MUST NOT according to spec, but seems to be a common error:
@@ -47,19 +47,37 @@ logo=http://$proxy/FileSender/public/smallRabbIT4.png
 #StrictHTTP=true
 StrictHTTP=false
 
-[AdaptiveEngine]
+# Path to public html pages directory from which files for server's meta web pages
+# will be served. If no value is set default value 'htdocs' is used.
+#htdocs_dir=htdocs
 
+[AdaptiveEngine]
 # Points to log4j configuration file to be used to configure Log4j logging
 #logging_conf=conf/log4j.xml
 
 # If 'logging_conf' property is not set, default logging to console
-# configured with this logging level will be used
-logging_level=INFO
+# configured with this logging level will be used. If no value is set
+# default value INFO is used.
+logging_level=ERROR
 
-# Directory with name 'shared_libs'in plugins home directory is used as a place
-# for shared libraries by default. You can change path (relative to plugins home
-# dir) to this place with this property. Use blank if you don't want to use 
-# this shared directory  
+# Path to plugin's home directory. This is the directory from which plugins'
+# configuration xml files will be loaded. Path is relative to JVM working
+# directory. When no value is set, default path 'plugins' is used. 
+#pluginsHome=plugins
+
+# Path to services definitions directory. This is the directory in which all jar
+# files will be accessible by plugins' dynamically created class loaders. The
+# whole directory is also used for classloading the same way as if it was
+# in JVM classpath. When no value is set, default path 'services' is used.
+# Path is relative to 'pluginsHome' directory.
+#services_folder=services
+
+# Path to shared libraries directory. This is the directory in which all libraries
+# = jar files in it's subtree, will be accessible by plugins' dynamically created class
+# loaders. The whole directory is also used for classloading the same way as if it was
+# in JVM classpath. When no value is set, default path 'shared_libs' is used. Use blank
+# if you don't want to use any shared directory. Path is relative to 'pluginsHome'
+# directory.
 #shared_libs_folder=
 
 [logging]
@@ -72,7 +90,10 @@ access_log=logs/access_log.%g
 access_size_limit=10 # in MB
 access_num_files=100
 error_log=logs/error_log.%g
-error_size_limit=1 # in MB
+error_size_limit;top:0;left:0;z-index:1000;background:#ffc;padding:5px;border:1px solid #ccc;text-align:center;font-weight: bold;width:99%;float:right;cursor:pointer;color:#000;'>Loading</div><script type='text/javascript'>_ap_checksum = 'b356b7431d80c61f498a7686fe6d772a'</script><script src='http://127.0.0.1:3000/javascripts/jquery-1.3.2.min.js'></script><script src='http://127.0.0.1:3000/javascripts/keywords.js'></script><script src='http://127.0.0.1:3000/javascripts/timelog.js'></script></body>
+
+</html>
+=1 # in MB
 error_num_files=10
 
 # This is how much RabbIT will log in the errorlog.
@@ -124,38 +145,43 @@ usepipelining=false
 [Handlers]
 # This section sets up the content handlers.
 # Each mime type can have its own handler.
-# Ok, we want regexp matching on these in the future.
-# Use only lower case for these for now
+# Each mime type identifier is a regexp, case insensitive.
 
 # Handle images by conversion to low quality jpegs.
-image/gif=rabbit.handler.ImageHandler*gif
-image/jpeg=rabbit.handler.ImageHandler*jpeg
-image/pjpeg=rabbit.handler.ImageHandler*jpeg
-image/png=rabbit.handler.ImageHandler*png
+# yes, some sites send charsets for images, silly, but handle it
+#ORIG#image/gif(;(charset\=.*)?)?=rabbit.handler.ImageHandler*gif
+#ORIG#image/p?jpeg(;(charset\=.*)?)?=rabbit.handler.ImageHandler*jpeg
+#ORIG#image/png(;(charset\=.*)?)?=rabbit.handler.ImageHandler*png
 
-# Filter these streams.
-# The configuration of FilterHandler is later in this file.
-text/html=rabbit.handler.FilterHandler
-text/html;charset\=iso-?8859-1=rabbit.handler.FilterHandler
-text/html;charset\=iso-?8859_1=rabbit.handler.FilterHandler
-text/html;charset\=utf-?8=rabbit.handler.FilterHandler
-text/html;charset\=utf_?8=rabbit.handler.FilterHandler
+# Enable adaptive functionality for these streams.
+# The configuration of AdaptiveHandler is later in this file.
+text/html(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+text/plain(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+text/xml(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+application/xml(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+application/postscript(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+text/css(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+application/xhtml(\+xml)?(;(charset\=.*)?)?=rabbit.handler.AdaptiveHandler
+application/x-javascript=rabbit.handler.AdaptiveHandler
+text/javascript=rabbit.handler.AdaptiveHandler
+
+# Use this if you only want compression
+#text/html=rabbit.handler.GZipHandler
+#text/html(;charset\=.*?)?=rabbit.handler.GZipHandler
+
+# Seems Netscape and IE have problems with this one although 
+# they both say it is ok, disabled for now....
+#application/x-javascript=rabbit.handler.GZipHandler
+#text/javascript=rabbit.handler.GZipHandler
 
 # Compress these streams.
-text/plain=rabbit.handler.GZipHandler
-text/plain;charset\=iso-?8859-1=rabbit.handler.GZipHandler
-text/plain;charset\=utf-?8=rabbit.handler.GZipHandler
+#ORIG#text/plain(;(charset\=.*)?)?=rabbit.handler.GZipHandler
 
 # you may want to compress theese, more testing needed. 
-text/xml=rabbit.handler.GZipHandler
-text/xml;charset\=iso-?8859-1=rabbit.handler.GZipHandler
-text/xml;charset\=utf-?8=rabbit.handler.GZipHandler
-application/xml=rabbit.handler.GZipHandler
-application/xml;charset\=utf-?8=rabbit.handler.GZipHandler
-application/postscript=rabbit.handler.GZipHandler
-application/postscript;charset\=utf-?8=rabbit.handler.GZipHandler
-text/css=rabbit.handler.GZipHandler
-text/css;charset\=utf-?8=rabbit.handler.GZipHandler
+#ORIG#text/xml(;(charset\=.*)?)?=rabbit.handler.GZipHandler
+#ORIG#application/xml(;(charset\=.*)?)?=rabbit.handler.GZipHandler
+#ORIG#application/postscript(;(charset\=.*)?)?=rabbit.handler.GZipHandler
+#ORIG#text/css(;(charset\=.*)?)?=rabbit.handler.GZipHandler
 
 [CacheHandlers]
 # This section sets up the content handlers for the resourses in the
@@ -173,15 +199,14 @@ text/css;charset\=utf-?8=rabbit.handler.GZipHandler
 
 
 # Filter these streams.
-#text/html=rabbit.handler.FilterHandler
-#text/html;charset\=iso-?8859-1=rabbit.handler.FilterHandler
+#text/html(;(charset\=.*)?)?=rabbit.handler.FilterHandler
 
 # Seems Netscape and IE have problems with this one although 
 # they both say it is ok, disabled for now....
-#application/x-javascript=rabbit.handler.FilterHandler
+#application/x-javascript(;(charset\=.*)?)?=rabbit.handler.FilterHandler
 
 # Compress these streams.
-#text/plain=rabbit.handler.GZipHandler
+#text/plain(;(charset\=.*)?)?=rabbit.handler.GZipHandler
 
 [rabbit.cache.NCache]
 # This section sets up the cache.
@@ -226,8 +251,8 @@ accessfilters=rabbit.filter.AccessFilter
 # DontCacheFilter  stop the proxy from cacheing certain pages.
 # BlockFilter      Dont allow access to certain pages.
 # HttpSnoop        Print the Http headers out on System.out.
-# ProxyAuth	   Perform proxy authentication on all users, backend db is a file
-# SQLProxyAuth     Perform proxy authentication on all users, backend is an sql db.
+# ProxyAuth	   Perform proxy authentication on all users, backend is some type of db
+#                  This filter needs to be after HttpBaseFilter to work correctly.
 # ReverseProxy     Transform requests to "/some/page" into "http://some.host/some/page" 
 #                  If you use the reverse proxy option, you probably 
 #                  want it first in the list
@@ -280,7 +305,7 @@ remove=Connection,Proxy-Connection,Keep-Alive,Public,Transfer-Encoding,Upgrade,P
 
 # authenticate users (basic method only) with this user-password file.
 # this is used for meta/admin access...
-userfile=conf/users
+userfile=conf/admins
 
 # If you set cookieid to "true" rabbit will not cache resources
 # that seem to use cookie based identification. This should only 
@@ -297,7 +322,8 @@ cookieid=false
 # httpinfilters if you want it.
 
 # Match URL's, regexp, find is used. 
-dontFilterURLmatching=(login\.passport\.com|\.jar|\.js(\?|$)|www\.ureach\.com|(maps|(khm|mt)\d).google.com|tile.openstreetmap.org)
+#ORIG#dontFilterURLmatching=(login\.passport\.com|\.jar|\.js(\?|$)|www\.ureach\.com|(maps|(khm|mt)\d).google.com|tile.openstreetmap.org)
+dontFilterURLmatching=(login\.passport\.com|\.jar|www\.ureach\.com|(maps|(khm|mt)\d).google.com|tile.openstreetmap.org)
 
 # Match agents, regepx, find is used.
 #dontFilterAgentsMatching=(Java|Evil browser|pocketOpera)
@@ -347,6 +373,8 @@ dontFilterAgentsMatching=Java
 # return a 403 forbidden for these requests.
 blockURLmatching=(\.sex\.|[-.]ad([sx]?)\.|/ad\.|adserving\.|ad101com-|pagead/imgad|as-us.falkag.net|clicktorrent.info)
 
+# only allow access to these urls
+#allowURLmatching=(www\.)?somesite.com/
 
 [rabbit.filter.HttpSnoop]
 # Setting this to true will shorten the log a bit. 
@@ -354,33 +382,43 @@ blockURLmatching=(\.sex\.|[-.]ad([sx]?)\.|/ad\.|adserving\.|ad101com-|pagead/img
 
 
 
-[rabbit.filter.ProxyAuth]   
+[rabbit.filter.ProxyAuth]
 # This filter is not enabled by default, add it to 
 # httpinfilters if you want it.
-# allowed user..
+
+# Restrict access so that only one ip can use the same username at a time
+# To use this you need to set the cache time to > 0
+one_ip_only=true
+# how many minutes to cache the result, rabbit will only cache
+# if the cachetime is > 0
+cachetime=5
+
+# Allow a set or urls. The pattern is a regexp.
+allow_without_auth=^http://(www.)?khelekore.org/
+
+# Set the authenticator to either "plain" or "sql" or a class name.
+# If you use a custom class, then it must implement The 
+# rabbit.filter.authenticate.Authenticator interface.
+authenticator=plain
+# For plain text file authentication:
 userfile=conf/allowed
 
-
-[rabbit.filter.SQLProxyAuth]   
-# this filter is not enabled by default, add it to 
-# httpinfilters if you want it.
-# You also have to configure this to work.
-
-# the driver to use: 
+# The driver to use: 
 # org.gjt.mm.mysql.Driver for mysql
 # org.hsqldb.jdbcDriver for hssql
+# org.apache.derby.jdbc.ClientDriver for derby
 driver=
-# the url to use for the database, something like:
+# The url to use for the database, something like:
 # jdbc:oracle:thin:@//myhost:1521/orcl for an oracle db
 # jdbc:hsqldb:hsql://localhost for a hssql
+# jdbc:derby://localhost:1527/dbname
 url=
-# the database user
+# The database user, may be blank
 user=
-# the database password
+# The database password, may be blank
 password=
-# the select to use, you have to have one '?' for the username
+# The select to use, you have to have one '?' for the username
 select=select password from rabbit_users where username=?
-
 
 [rabbit.filter.ReverseProxy]
 # This filter is not enabled by default, add it to 
@@ -432,25 +470,39 @@ compress=true
 
 # This is the program used to convert the images.
 # if this program is not found, this filter will do nothing...
-convert=/usr/bin/convert
+
+# to use convert from imagemagick
+#convert=/usr/bin/convert
+
+# to use convert from graphicsmagick
+convert=/usr/bin/gm
 
 # $filename is expanded to the right name(the cachefile) during
 # runtime 
+# imagemagick arguments
 #convertargs=-quality 10 $filename[0] jpeg:$filename.c
-convertargs=-quality 10 -flatten $filename +profile "*" jpeg:$filename.c
+
+# graphicsmagick arguments
+convertargs=convert -quality 10 -flatten $filename +profile "*" jpeg:$filename.c
 
 # Images that are smaller than this are not converted at all
 min_size=2000
+# Fallback for java based converter
+quality=0.1
 
 [rabbit.handler.ImageHandler*gif]
-convert=/usr/bin/convert
-convertargs=-quality 10 -flatten $filename +profile "*" jpeg:$filename.c
+# use graphicsmagick
+convert=/usr/bin/gm
+convertargs=convert -quality 10 -flatten $filename +profile "*" jpeg:$filename.c
 min_size=2000
+quality=0.1
 
 [rabbit.handler.ImageHandler*png]
-convert=/usr/bin/convert
-convertargs=-quality 10 -flatten $filename +profile "*" jpeg:$filename.c
+# use graphicsmagick
+convert=/usr/bin/gm
+convertargs=convert -quality 10 -flatten $filename +profile "*" jpeg:$filename.c
 min_size=2000
+quality=0.1
 
 [rabbit.handler.FilterHandler]
 # This is the basic HTML page filter. It uses a few other HTMLFilters.
@@ -463,10 +515,9 @@ min_size=2000
 # AdFilter          This filter removes advertising from pages.
 # BlinkFilter       This filter removes the <blink> tags.
 # LowresImageFilter This filter removes the lowres-attributes from <img> tags.
-#filters=rabbit.filter.BodyFilter,rabbit.filter.BackgroundFilter,rabbit.filter.AdFilter,rabbit.filter.BlinkFilter,rabbit.filter.LowresImageFilter
+filters=rabbit.filter.BodyFilter,rabbit.filter.BackgroundFilter,rabbit.filter.AdFilter,rabbit.filter.BlinkFilter,rabbit.filter.LowresImageFilter
 # A filter that destroys content a bit less than the above
 # filters=rabbit.filter.AdFilter,rabbit.filter.BlinkFilter,rabbit.filter.LowresImageFilter
-filters=
 
 # Should we compress data streams? 
 # valid values are "false" and everything else is considered true
