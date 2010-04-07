@@ -10,6 +10,6 @@
 		<type>RequestServicePlugin</type>
 	</types>
 	<parameters>
-		<param name="javascriptServer">http://127.0.0.1:3000/</param>
+		<param name="javascriptServer">http://peweproxy.fiit.stuba.sk/</param>
 	</parameters>
 </plugin>
