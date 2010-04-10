@@ -3,9 +3,10 @@
 <plugin>
 	<name>KeywordsDisplayPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.JavaScriptInjectingPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
 	<types>
 		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
 		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/keywords.js</param>

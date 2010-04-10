@@ -7,9 +7,8 @@ RequestFilterService
 UserIdentificationEnforceService
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
-SimpleJavaScriptInjector
  
 [response]
 RequestFilterService
-SimpleJavaScriptInjector
+SetupJavaScriptEnvironmentProcessingPlugin
 DatabaseLoggingService
