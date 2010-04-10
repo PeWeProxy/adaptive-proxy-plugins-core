@@ -112,12 +112,6 @@ public class SimpleJavaScriptInjectorService extends RequestAndResponseProcessin
 			return ResponseProcessingActions.PROCEED;
 		}
 		
-		/*
-		if(response.getClientRequestHeaders().getRequestURI().startsWith(kwServiceRoot)) {
-			return ResponseProcessingActions.PROCEED;
-		}
-		*/
-		
 		try {
 			ModifiableStringService ms = response.getServiceHandle().getService(ModifiableStringService.class);
 			
