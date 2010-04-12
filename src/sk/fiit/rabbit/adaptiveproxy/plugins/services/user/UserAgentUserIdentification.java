@@ -57,10 +57,14 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			if (indexOfIdPart != -1) {
 				indexOfIdPart += idPart.length();
 				
-				int indexOfEnd = uaHeader.indexOf(" ", indexOfIdPart);
+				int indexOfEnd = uaHeader.indexOf(";", indexOfIdPart);
 				
 				if(indexOfEnd < 0) {
-					indexOfEnd = uaHeader.length();
+					indexOfEnd = uaHeader.indexOf(" ", indexOfIdPart);
+					
+					if(indexOfEnd < 0) {
+						indexOfEnd = uaHeader.length();
+					}
 				}
 				
 				String uid = uaHeader.substring(indexOfIdPart,indexOfEnd);
