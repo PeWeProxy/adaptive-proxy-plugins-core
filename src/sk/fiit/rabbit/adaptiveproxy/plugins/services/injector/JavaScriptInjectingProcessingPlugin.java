@@ -14,7 +14,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
 public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
@@ -78,23 +78,12 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
-			ModifiableStringService ms = response.getServiceHandle().getService(ModifiableStringService.class);
-			
-			StringBuilder sb = ms.getModifiableContent();
-			
-			String html = sb.toString();
-
-			int bodyEndIDx = html.toLowerCase().indexOf("</body>");
-			if(bodyEndIDx < 0) {
-				logger.debug("No </body> : " + response.getProxyRequestHeaders().getRequestURI());
-				return ResponseProcessingActions.PROCEED;
-			}
+			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
 			
 			String scripts = "<script src='" + scriptUrl + "'></script>";
-			
-			sb.insert(bodyEndIDx, additionalHTML + scripts);
+			htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.END_OF_BODY);
 		} catch (ServiceUnavailableException e) {
-			logger.trace("ModifiableStringService is unavailable, JavaScriptInjector takes no action");
+			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 		}
 		
 		return ResponseProcessingActions.PROCEED;

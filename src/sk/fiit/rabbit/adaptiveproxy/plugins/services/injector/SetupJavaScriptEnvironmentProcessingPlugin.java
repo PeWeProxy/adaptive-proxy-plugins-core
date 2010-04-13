@@ -8,7 +8,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 
 public class SetupJavaScriptEnvironmentProcessingPlugin extends ResponseProcessingPluginAdapter {
 	
@@ -27,28 +27,17 @@ public class SetupJavaScriptEnvironmentProcessingPlugin extends ResponseProcessi
 		}
 		
 		try {
-			ModifiableStringService ms = response.getServiceHandle().getService(ModifiableStringService.class);
-			
-			StringBuilder sb = ms.getModifiableContent();
-			
-			String html = sb.toString();
-
-			int bodyEndIDx = html.toLowerCase().indexOf("</body>");
-			if(bodyEndIDx < 0) {
-				logger.debug("No </body> : " + response.getProxyRequestHeaders().getRequestURI());
-				return ResponseProcessingActions.PROCEED;
-			}
+			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
 			
 			String scripts = "" +
                              "<script type='text/javascript'>" +
                                "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                               "</script>" +
                               "<script src='" + jQueryPath + "'></script>";
+			htmlInjectionService.inject(scripts, HtmlPosition.END_OF_BODY);
 			
-			
-			sb.insert(bodyEndIDx, scripts);
 		} catch (ServiceUnavailableException e) {
-			logger.trace("ModifiableStringService is unavailable, JavaScriptInjector takes no action");
+			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 		}
 		
 		return ResponseProcessingActions.PROCEED;
