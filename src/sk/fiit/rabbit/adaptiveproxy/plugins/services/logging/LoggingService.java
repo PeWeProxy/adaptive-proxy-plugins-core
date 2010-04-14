@@ -13,6 +13,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandle;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
@@ -65,7 +66,8 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 			PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
 		
 			if(pi.getId() != null) {
-				log(con, uid, pi.getId(), response.getClientRequestHeaders().getHeader("Referer"));
+				log(con, uid, pi.getId(), response.getClientRequestHeaders().getHeader("Referer"), Checksum.md5(response.getClientSocketAddress().getAddress().getHostAddress()));
+				
 			}
 		} finally {
 			SqlUtils.close(con);			
@@ -73,15 +75,16 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	}
 	
 
-	private void log(Connection connection, String userId, Long pageId, String referer) {
+	private void log(Connection connection, String userId, Long pageId, String referer, String ipAddress) {
 		PreparedStatement stmt = null;
 
 		try {
-			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id, referer) VALUES(?, ?, ?, ?)");
+			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id, referer, ip) VALUES(?, ?, ?, ?, ?)");
 			stmt.setString(1, userId);
 			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(3, pageId);
 			stmt.setString(4, referer);
+			stmt.setString(5, ipAddress);
 			
 			stmt.execute();
 		} catch (SQLException e) {
