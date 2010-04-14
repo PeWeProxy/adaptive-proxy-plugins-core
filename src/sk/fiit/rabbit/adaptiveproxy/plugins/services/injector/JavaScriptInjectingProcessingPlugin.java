@@ -30,21 +30,12 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		try {
-			UserIdentificationService userIdentification = request.getServiceHandle().getService(UserIdentificationService.class);
-	
-			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
-				
-				if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern)) {
-					if(generateResponse) {
-						return RequestProcessingActions.NEW_RESPONSE;
-					} else {
-						return RequestProcessingActions.FINAL_REQUEST;
-					}
-				}
+		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern)) {
+			if(generateResponse) {
+				return RequestProcessingActions.NEW_RESPONSE;
+			} else {
+				return RequestProcessingActions.FINAL_REQUEST;
 			}
-		} catch (ServiceUnavailableException e) {
-			logger.warn("Service unavailable", e);
 		}
 		
 		return RequestProcessingActions.PROCEED;
@@ -79,9 +70,12 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
 			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
+			UserIdentificationService userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);
 			
-			String scripts = "<script src='" + scriptUrl + "'></script>";
-			htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.END_OF_BODY);
+			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
+				String scripts = "<script src='" + scriptUrl + "'></script>";
+				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.END_OF_BODY);
+			}
 		} catch (ServiceUnavailableException e) {
 			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 		}
