@@ -15,10 +15,12 @@ public class GoogleResultsFormatter {
 					"<h3 class='r'>" +
 						"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
 					"</h3>" +
+					"<span style='display: inline-block;'><button title='' class='ws'></button></span>" +
 					"<div class='s'>" + 
 						doc.getContent() + 
 						"<br/>" +
-						"<cite>" + doc.getDisplayUrl() + "</cite>" +
+						"<cite>" + doc.getVisibleUrl() + " - </cite>" +
+						"<span class='gl'><a href='" + doc.getCacheUrl() + "'>Cached</a></span>" +
 					"</div>" +
 				"</li>";
 		}
