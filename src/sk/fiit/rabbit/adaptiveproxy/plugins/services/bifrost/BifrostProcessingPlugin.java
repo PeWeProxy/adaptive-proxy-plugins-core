@@ -1,8 +1,12 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.bifrost;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +32,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	private RecommendationStrategy coKeywordsStrategy = new KeywordsCompletionStrategy();
 	private QueryRedefinitionsRecommender queryRedefinitionStrategy = new QueryRedefinitionsRecommender();
 	
-	private static final int MAX_QUERIES = 2;
+	private static final int MAX_RECOMMENDED_DOCUMENTS = 4;
 	private static final int MAX_DOCUMENTS_FROM_QUERY = 2;
 	
 	@Override
@@ -38,20 +42,32 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		Context context = new Context();
 		context.setLastQuery(query);
 		
-		Collection<String> queries = coKeywordsStrategy.recommendQueries("TODO", context); //TODO
+		Collection<String> queries = queryRedefinitionStrategy.recommendQueries("TODO", context); //TODO
 		Collection<Document> resultDocuments = new LinkedList<Document>();
+		Set<String> recommendedDomains = new HashSet<String>();
 		
 		ModifiableHttpResponse response = messageFactory.constructHttpResponse(true);
 		
 		try {
-			int queryCount = 0;
+			int recommendedDocumentCount = 0;
 			for(String q : queries) {
-				if(++queryCount > MAX_QUERIES) break;
+				if(recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
 				try {
 					int documentCount = 0;
 					for(Document doc : searcher.search(q)) {
-						if(++documentCount > MAX_DOCUMENTS_FROM_QUERY) break;
-						resultDocuments.add(doc);
+						if(documentCount >= MAX_DOCUMENTS_FROM_QUERY || recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
+						try {
+							String host = new URL(doc.getUrl()).getHost();
+							if(!recommendedDomains.contains(host)) {
+								recommendedDomains.add(host);
+								resultDocuments.add(doc);
+								documentCount++;
+								recommendedDocumentCount++;
+							}
+						} catch (MalformedURLException e) {
+							logger.warn("Cannot recommend document, the URL is invalid", e);
+							continue;
+						}
 					}
 				} catch (FetchException e) {
 					logger.warn("Could not fetch search results for query: " + q, e);
