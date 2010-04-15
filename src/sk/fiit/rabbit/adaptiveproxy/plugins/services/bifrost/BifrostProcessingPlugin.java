@@ -80,6 +80,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 								recommendedDomains.add(host);
 								Long recommendationId = logRecommendation(connection, userId, query, q, doc.getDisplayUrl(), "querystream");
 								doc.setRecommendationUrl(recommendationUrlBase + recommendationId);
+								doc.setRewrittenQuery(q);
 								resultDocuments.add(doc);
 								documentCount++;
 								recommendedDocumentCount++;
