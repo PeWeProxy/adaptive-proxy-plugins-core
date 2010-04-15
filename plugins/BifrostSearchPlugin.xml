@@ -12,5 +12,6 @@
 		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/bifrost.js</param>
 		<param name="bypassPattern">/bifrost/search</param>
 		<param name="generateResponse">true</param>
+		<param name="recommendationUrlBase">http://127.0.0.1:3000/recommendations/show/</param>
 	</parameters>
 </plugin>

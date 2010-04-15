@@ -3,6 +3,11 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.bifrost;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -18,13 +23,17 @@ import sk.fiit.bifrost.recommendations.Context;
 import sk.fiit.bifrost.recommendations.KeywordsCompletionStrategy;
 import sk.fiit.bifrost.recommendations.QueryRedefinitionsRecommender;
 import sk.fiit.bifrost.recommendations.RecommendationStrategy;
+import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
 public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	
@@ -34,6 +43,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	
 	private static final int MAX_RECOMMENDED_DOCUMENTS = 4;
 	private static final int MAX_DOCUMENTS_FROM_QUERY = 2;
+	
+	private String recommendationUrlBase;
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
@@ -48,7 +59,12 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		
 		ModifiableHttpResponse response = messageFactory.constructHttpResponse(true);
 		
+		Connection connection = null;
+		
 		try {
+			connection = response.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+			String userId = response.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification();
+			
 			int recommendedDocumentCount = 0;
 			for(String q : queries) {
 				if(recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
@@ -57,12 +73,14 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 					for(Document doc : searcher.search(q)) {
 						if(documentCount >= MAX_DOCUMENTS_FROM_QUERY || recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
 						try {
-							String host = new URL(doc.getUrl()).getHost();
+							String host = new URL(doc.getDisplayUrl()).getHost();
 							if(host.startsWith("www.")) {
 								host = host.substring(4);
 							}
 							if(!recommendedDomains.contains(host)) {
 								recommendedDomains.add(host);
+								Long recommendationId = logRecommendation(connection, userId, query, q, doc.getDisplayUrl(), "querystream");
+								doc.setRecommendationUrl(recommendationUrlBase + recommendationId);
 								resultDocuments.add(doc);
 								documentCount++;
 								recommendedDocumentCount++;
@@ -85,9 +103,34 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			
 		} catch (ServiceUnavailableException e) {
 			logger.error("ModifiableStringService is unavailable, cannot generate new response");
+		} catch (SQLException e) {
+			logger.error("Could not save recommended query", e);
+		} finally {
+			SqlUtils.close(connection);
 		}
 		
 		return response;
+	}
+	
+	private Long logRecommendation(Connection con, String userid, String originalQuery, String recommendedQuery, String recommendedUrl, String method) throws SQLException {
+		String insert = "INSERT INTO bf_recommendations(userid, timestamp, original_query, recommended_query, recommended_url, method) " +
+						"VALUES(?, ?, ?, ?, ?, ?)";
+		PreparedStatement stmt = con.prepareStatement(insert, PreparedStatement.RETURN_GENERATED_KEYS);
+		stmt.setString(1, userid);
+		stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+		stmt.setString(3, originalQuery);
+		stmt.setString(4, recommendedQuery);
+		stmt.setString(5, recommendedUrl);
+		stmt.setString(6, method);
+		
+		stmt.execute();
+		
+		ResultSet keys = stmt.getGeneratedKeys();
+		if(keys.next()) {
+			return keys.getLong(1);
+		} else {
+			throw new RuntimeException("Could not load auto generated keys");
+		}
 	}
 	
 	private String extractQueryFromURI(String uri) {
@@ -98,5 +141,16 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	public boolean setup(PluginProperties props) {
+		if(!super.setup(props)) {
+			return false;
+		}
+		
+		recommendationUrlBase = props.getProperty("recommendationUrlBase");
+		
+		return true;
 	}
 }

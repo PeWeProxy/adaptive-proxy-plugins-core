@@ -13,12 +13,12 @@ public class GoogleResultsFormatter {
 			html+= 
 				"<li class='g w0'>" +
 					"<h3 class='r'>" +
-						"<a class='l' href='" + doc.getUrl() +  "'>" + doc.getTitle() + "</a>" +
+						"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
 					"</h3>" +
 					"<div class='s'>" + 
 						doc.getContent() + 
 						"<br/>" +
-						"<cite>" + doc.getUrl() + "</cite>" +
+						"<cite>" + doc.getDisplayUrl() + "</cite>" +
 					"</div>" +
 				"</li>";
 		}
