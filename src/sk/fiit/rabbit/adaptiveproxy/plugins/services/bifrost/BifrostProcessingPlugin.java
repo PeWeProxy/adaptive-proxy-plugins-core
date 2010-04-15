@@ -1,5 +1,6 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.bifrost;
 
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -59,8 +60,10 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 
 			String resultHtml = GoogleResultsFormatter.format(resultDocuments);
 			
-			response.getServiceHandle().getService(ModifiableStringService.class).setContent(resultHtml);
-			response.getProxyResponseHeaders().addHeader("Content-Type", "text/plain; charset=ISO-8859-1");
+			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
+			mss.setCharset(Charset.forName("UTF-8"));
+			mss.setContent(resultHtml);
+			
 		} catch (ServiceUnavailableException e) {
 			logger.error("ModifiableStringService is unavailable, cannot generate new response");
 		}
