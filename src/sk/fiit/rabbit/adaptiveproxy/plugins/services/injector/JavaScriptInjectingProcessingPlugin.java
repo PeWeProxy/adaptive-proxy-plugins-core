@@ -27,6 +27,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	private String additionalHTML;
 	private Set<String> allowOnlyFor = new HashSet<String>();
 	private boolean generateResponse;
+	private String allowedDomain;
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
@@ -69,6 +70,10 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
+			if(!isAllowedDomain(response.getClientRequestHeaders().getRequestURI())) {
+				return ResponseProcessingActions.PROCEED;
+			}
+			
 			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
 			UserIdentificationService userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);
 			
@@ -78,9 +83,19 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 			}
 		} catch (ServiceUnavailableException e) {
 			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
+		} catch (MalformedURLException e) {
+			logger.warn("Cannot provide javascript injector service for invalid URL", e);
 		}
 		
 		return ResponseProcessingActions.PROCEED;
+	}
+	
+	private boolean isAllowedDomain(String urlString) throws MalformedURLException {
+		if(allowedDomain == null) return true;
+		URL url = new URL(urlString);
+		String host = url.getHost();
+		
+		return host.contains(allowedDomain);
 	}
 	
 	@Override
@@ -100,6 +115,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 		}
 		
 		generateResponse = props.getBoolProperty("generateResponse", false);
+		allowedDomain = props.getProperty("allowedDomain");
 		
 		return true;
 	}
