@@ -58,6 +58,9 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 						if(documentCount >= MAX_DOCUMENTS_FROM_QUERY || recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
 						try {
 							String host = new URL(doc.getUrl()).getHost();
+							if(host.startsWith("www.")) {
+								host = host.substring(4);
+							}
 							if(!recommendedDomains.contains(host)) {
 								recommendedDomains.add(host);
 								resultDocuments.add(doc);
