@@ -26,7 +26,7 @@ public class GoogleResultsFormatter {
 		}
 		
 		if(!"".equals(html)) {
-			html = "<div style='border-bottom: 1px solid green; margin-bottom: 10px;'>" + html + "</div>";
+			html = html + "<li><hr color='#c9d7f1' align='left' width='65%' size='1'></li>";
 		}
 		
 		return html;
