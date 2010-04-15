@@ -32,7 +32,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern)) {
 			if(generateResponse) {
-				return RequestProcessingActions.NEW_RESPONSE;
+				return RequestProcessingActions.FINAL_RESPONSE;
 			} else {
 				return RequestProcessingActions.FINAL_REQUEST;
 			}
