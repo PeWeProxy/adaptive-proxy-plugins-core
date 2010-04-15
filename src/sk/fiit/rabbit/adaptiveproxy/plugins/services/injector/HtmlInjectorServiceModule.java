@@ -69,6 +69,23 @@ public class HtmlInjectorServiceModule extends ResponseServicePluginAdapter {
 					}
 				}
 				break;
+			case START_OF_BODY:
+				insertIndex = html.indexOf("<body");
+				if(insertIndex > 0) {
+					insertIndex = html.indexOf(">", insertIndex);
+					if(insertIndex > 0) {
+						insertIndex++;
+					}
+				} else {
+					logger.debug("No <body> found for " + requestURI);
+				}
+				break;
+			case ON_MARK:
+				insertIndex = html.indexOf("<!-- __ap_scripts__ -->");
+				if(insertIndex > 0) {
+					insertIndex += "<!-- __ap_scripts__ -->".length();
+				}
+				break;
 			default:
 				throw new RuntimeException("Uknown position: " + position);
 			}

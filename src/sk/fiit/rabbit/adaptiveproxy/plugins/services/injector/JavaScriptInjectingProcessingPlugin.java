@@ -74,7 +74,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 			
 			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
 				String scripts = "<script src='" + scriptUrl + "'></script>";
-				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.END_OF_BODY);
+				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 			}
 		} catch (ServiceUnavailableException e) {
 			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");

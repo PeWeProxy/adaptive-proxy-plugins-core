@@ -33,8 +33,9 @@ public class SetupJavaScriptEnvironmentProcessingPlugin extends ResponseProcessi
                              "<script type='text/javascript'>" +
                                "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
                               "</script>" +
-                              "<script src='" + jQueryPath + "'></script>";
-			htmlInjectionService.inject(scripts, HtmlPosition.END_OF_BODY);
+                              "<script src='" + jQueryPath + "'></script>" +
+                              "<!-- __ap_scripts__ -->";
+			htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
 			
 		} catch (ServiceUnavailableException e) {
 			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
