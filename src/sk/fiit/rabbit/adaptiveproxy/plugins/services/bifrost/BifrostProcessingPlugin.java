@@ -41,10 +41,9 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	private RecommendationStrategy coKeywordsStrategy = new KeywordsCompletionStrategy();
 	private QueryRedefinitionsRecommender queryRedefinitionStrategy = new QueryRedefinitionsRecommender();
 	
-	private static final int MAX_RECOMMENDED_DOCUMENTS = 4;
-	private static final int MAX_DOCUMENTS_FROM_QUERY = 2;
-	
 	private String recommendationUrlBase;
+	private Integer maxRecommendedDocuments;
+	private Integer maxDocumentsFromQuery;
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
@@ -67,11 +66,11 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			
 			int recommendedDocumentCount = 0;
 			for(String q : queries) {
-				if(recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
+				if(recommendedDocumentCount >= maxRecommendedDocuments) break;
 				try {
 					int documentCount = 0;
 					for(Document doc : searcher.search(q)) {
-						if(documentCount >= MAX_DOCUMENTS_FROM_QUERY || recommendedDocumentCount >= MAX_RECOMMENDED_DOCUMENTS) break;
+						if(documentCount >= maxDocumentsFromQuery || recommendedDocumentCount >= maxRecommendedDocuments) break;
 						try {
 							String host = new URL(doc.getDisplayUrl()).getHost();
 							if(host.startsWith("www.")) {
@@ -150,6 +149,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		}
 		
 		recommendationUrlBase = props.getProperty("recommendationUrlBase");
+		maxRecommendedDocuments = props.getIntProperty("maxRecommendedDocuments", 4);
+		maxDocumentsFromQuery = props.getIntProperty("maxDocumentsFromQuery", 2);
 		
 		return true;
 	}
