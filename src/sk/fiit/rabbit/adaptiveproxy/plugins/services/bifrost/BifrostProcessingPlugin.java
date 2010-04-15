@@ -69,7 +69,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 				if(recommendedDocumentCount >= maxRecommendedDocuments) break;
 				try {
 					int documentCount = 0;
-					for(Document doc : searcher.search(q)) {
+					for(Document doc : searcher.search(q, response.getClientSocketAddress().getAddress().getHostAddress())) {
 						if(documentCount >= maxDocumentsFromQuery || recommendedDocumentCount >= maxRecommendedDocuments) break;
 						try {
 							String host = new URL(doc.getDisplayUrl()).getHost();
