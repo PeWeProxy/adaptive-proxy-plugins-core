@@ -44,6 +44,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	private String recommendationUrlBase;
 	private Integer maxRecommendedDocuments;
 	private Integer maxDocumentsFromQuery;
+	private String recommenderId;
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
@@ -52,7 +53,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		Context context = new Context();
 		context.setLastQuery(query);
 		
-		Collection<String> queries = queryRedefinitionStrategy.recommendQueries("TODO", context); //TODO
+		RecommendationStrategy recommender = selectRecommender();
+		Collection<String> queries = recommender.recommendQueries("TODO", context); //TODO
 		Collection<Document> resultDocuments = new LinkedList<Document>();
 		Set<String> recommendedDomains = new HashSet<String>();
 		
@@ -112,6 +114,16 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		return response;
 	}
 	
+	private RecommendationStrategy selectRecommender() {
+		if ("cokeywords".equals(recommenderId)) {
+			return coKeywordsStrategy;
+		} else if("querystreams".equals(recommenderId)) {
+			return queryRedefinitionStrategy;
+		} else {
+			throw new RuntimeException("Unknown recommender: " + recommenderId);
+		}
+	}
+
 	private Long logRecommendation(Connection con, String userid, String originalQuery, String recommendedQuery, String recommendedUrl, String method) throws SQLException {
 		String insert = "INSERT INTO bf_recommendations(userid, timestamp, original_query, recommended_query, recommended_url, method) " +
 						"VALUES(?, ?, ?, ?, ?, ?)";
@@ -152,6 +164,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		recommendationUrlBase = props.getProperty("recommendationUrlBase");
 		maxRecommendedDocuments = props.getIntProperty("maxRecommendedDocuments", 4);
 		maxDocumentsFromQuery = props.getIntProperty("maxDocumentsFromQuery", 2);
+		
+		recommenderId = props.getProperty("recommender");
 		
 		return true;
 	}
