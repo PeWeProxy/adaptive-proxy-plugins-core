@@ -16,5 +16,7 @@
     <param name="maxActive">20</param>
     <param name="maxIdle">-1</param>
     <param name="maxWait">2000</param>
+    <param name="validationQuery">SELECT 1</param>
+    <param name="testOnBorrow">true</param>
   </parameters>
 </plugin>
