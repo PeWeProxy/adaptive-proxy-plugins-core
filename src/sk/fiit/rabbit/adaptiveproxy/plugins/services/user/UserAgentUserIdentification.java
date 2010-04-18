@@ -20,6 +20,8 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 
 public class UserAgentUserIdentification extends RequestAndResponseServicePluginAdapter {
 	
+	private static final int APUID_LENGTH = 32;
+
 	private static final Logger logger = Logger.getLogger(UserAgentUserIdentification.class);
 	
 	private static final String USER_AGENT = "User-Agent";
@@ -57,22 +59,7 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			if (indexOfIdPart != -1) {
 				indexOfIdPart += idPart.length();
 				
-				int indexOfEnd = uaHeader.indexOf(";", indexOfIdPart);
-				
-				if(indexOfEnd < 0) {
-					indexOfEnd = uaHeader.indexOf(" ", indexOfIdPart);
-					
-					if(indexOfEnd < 0) {
-						indexOfEnd = uaHeader.length();
-					}
-				}
-				
-				String uid = uaHeader.substring(indexOfIdPart,indexOfEnd);
-				
-				if(uid.length() > 32) {
-					logger.warn("UID [" + uid + "] was longer than 32 characters, truncating");
-					uid = uid.substring(0, 32);
-				}
+				String uid = uaHeader.substring(indexOfIdPart, indexOfIdPart + APUID_LENGTH);
 				
 				if (!uid.isEmpty()) {
 					return uid;
