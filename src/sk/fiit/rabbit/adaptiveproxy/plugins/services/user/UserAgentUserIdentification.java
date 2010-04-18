@@ -69,6 +69,11 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 				
 				String uid = uaHeader.substring(indexOfIdPart,indexOfEnd);
 				
+				if(uid.length() > 32) {
+					logger.warn("UID [" + uid + "] was longer than 32 characters, truncating");
+					uid = uid.substring(0, 32);
+				}
+				
 				if (!uid.isEmpty()) {
 					return uid;
 				}
