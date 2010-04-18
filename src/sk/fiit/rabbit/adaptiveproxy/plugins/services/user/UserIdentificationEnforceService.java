@@ -29,7 +29,7 @@ public class UserIdentificationEnforceService implements RequestProcessingPlugin
 	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
 			HttpMessageFactory messageFactory) {
 		
-		ModifiableHttpResponse r = messageFactory.constructHttpResponse(true);
+		ModifiableHttpResponse r = messageFactory.constructHttpResponse("text/html");
 		WritableResponseHeaders headers = r.getProxyResponseHeaders();
 		
 		headers.setStatusLine("HTTP/1.1 302 Found");

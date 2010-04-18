@@ -58,7 +58,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		Collection<Document> resultDocuments = new LinkedList<Document>();
 		Set<String> recommendedDomains = new HashSet<String>();
 		
-		ModifiableHttpResponse response = messageFactory.constructHttpResponse(true);
+		ModifiableHttpResponse response = messageFactory.constructHttpResponse("text/html");
 		
 		Connection connection = null;
 		
@@ -102,7 +102,6 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			mss.setCharset(Charset.forName("UTF-8"));
 			mss.setContent(resultHtml);
-			
 		} catch (ServiceUnavailableException e) {
 			logger.error("ModifiableStringService is unavailable, cannot generate new response");
 		} catch (SQLException e) {
