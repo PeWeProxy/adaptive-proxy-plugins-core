@@ -23,7 +23,7 @@ public class NewsSection {
 	 */
 	public String getNewsSectionCode() {		
 		String htmlCode = "<div class=\"box_nadpis\">\n" 
-			+ "osobné novinky <span>›</span>\n"
+			+ "osobnÃ© novinky <span>â€º</span>\n"
 			+ "</div>\n";
 		
 //		htmlCode = htmlCode  
