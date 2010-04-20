@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import sk.fiit.bifrost.Disambiguator;
 import sk.fiit.bifrost.dunco.Document;
 import sk.fiit.bifrost.dunco.FetchException;
 import sk.fiit.bifrost.dunco.WebSearch;
@@ -37,14 +38,11 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationServ
 
 public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	
-	private WebSearch searcher = new GoogleWebSearch();
-	private RecommendationStrategy coKeywordsStrategy = new KeywordsCompletionStrategy();
-	private QueryRedefinitionsRecommender queryRedefinitionStrategy = new QueryRedefinitionsRecommender();
+	private Disambiguator disambiguator = new Disambiguator();
 	
 	private String recommendationUrlBase;
 	private Integer maxRecommendedDocuments;
 	private Integer maxDocumentsFromQuery;
-	private String recommenderId;
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
@@ -52,51 +50,24 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		
 		Context context = new Context();
 		context.setLastQuery(query);
+		context.setIpAddress(proxyResponse.getClientSocketAddress().getAddress().getHostAddress());
 		
-		RecommendationStrategy recommender = selectRecommender();
-		Collection<String> queries = recommender.recommendQueries("TODO", context); //TODO
 		Collection<Document> resultDocuments = new LinkedList<Document>();
-		Set<String> recommendedDomains = new HashSet<String>();
 		
 		ModifiableHttpResponse response = messageFactory.constructHttpResponse("text/html");
 		
 		Connection connection = null;
-		
+
 		try {
 			connection = response.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 			String userId = response.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification();
 			
-			int recommendedDocumentCount = 0;
-			for(String q : queries) {
-				if(recommendedDocumentCount >= maxRecommendedDocuments) break;
-				try {
-					int documentCount = 0;
-					for(Document doc : searcher.search(q, response.getClientSocketAddress().getAddress().getHostAddress())) {
-						if(documentCount >= maxDocumentsFromQuery || recommendedDocumentCount >= maxRecommendedDocuments) break;
-						try {
-							String host = new URL(doc.getDisplayUrl()).getHost();
-							if(host.startsWith("www.")) {
-								host = host.substring(4);
-							}
-							if(!recommendedDomains.contains(host)) {
-								recommendedDomains.add(host);
-								Long recommendationId = logRecommendation(connection, userId, query, q, doc.getDisplayUrl(), "querystream");
-								doc.setRecommendationUrl(recommendationUrlBase + recommendationId);
-								doc.setRewrittenQuery(q);
-								resultDocuments.add(doc);
-								documentCount++;
-								recommendedDocumentCount++;
-							}
-						} catch (MalformedURLException e) {
-							logger.warn("Cannot recommend document, the URL is invalid", e);
-							continue;
-						}
-					}
-				} catch (FetchException e) {
-					logger.warn("Could not fetch search results for query: " + q, e);
-				}
-			}
+			resultDocuments = disambiguator.search(context, maxRecommendedDocuments, maxDocumentsFromQuery);
 
+			for (Document document : resultDocuments) {
+				Long recommendationId = logRecommendation(connection, userId, query, document.getRewrittenQuery(), document.getDisplayUrl(), document.getRecommenderStrategy());
+				document.setRecommendationUrl(recommendationUrlBase + recommendationId);
+			}
 			String resultHtml = GoogleResultsFormatter.format(resultDocuments);
 			
 			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
@@ -113,16 +84,6 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		return response;
 	}
 	
-	private RecommendationStrategy selectRecommender() {
-		if ("cokeywords".equals(recommenderId)) {
-			return coKeywordsStrategy;
-		} else if("querystreams".equals(recommenderId)) {
-			return queryRedefinitionStrategy;
-		} else {
-			throw new RuntimeException("Unknown recommender: " + recommenderId);
-		}
-	}
-
 	private Long logRecommendation(Connection con, String userid, String originalQuery, String recommendedQuery, String recommendedUrl, String method) throws SQLException {
 		String insert = "INSERT INTO bf_recommendations(userid, timestamp, original_query, recommended_query, recommended_url, method) " +
 						"VALUES(?, ?, ?, ?, ?, ?)";
@@ -163,8 +124,6 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		recommendationUrlBase = props.getProperty("recommendationUrlBase");
 		maxRecommendedDocuments = props.getIntProperty("maxRecommendedDocuments", 4);
 		maxDocumentsFromQuery = props.getIntProperty("maxDocumentsFromQuery", 2);
-		
-		recommenderId = props.getProperty("recommender");
 		
 		return true;
 	}

@@ -14,7 +14,6 @@
 		<param name="generateResponse">true</param>
 		<param name="allowedDomain">google.</param>
 		<param name="recommendationUrlBase">http://peweproxy.fiit.stuba.sk/recommendations/show/</param>
-		<param name="recommender">cokeywords</param>
 		<param name="maxRecommendedDocuments">4</param>
 		<param name="maxDocumentsFromQuery">2</param>
 	</parameters>
