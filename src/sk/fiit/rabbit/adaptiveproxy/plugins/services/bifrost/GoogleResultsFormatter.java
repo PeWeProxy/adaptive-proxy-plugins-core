@@ -43,7 +43,7 @@ public class GoogleResultsFormatter {
 			String headerHtml = 
 				"<li>" +
 					"<p style='margin-top: 0pt;' class='g'>" +
-						"<span class='med'>Results for:&nbsp;" + usedQueries + "</span>" +
+						"<span class='med'>Results provided by peweproxy:&nbsp;" + usedQueries + "</span>" +
 					"</p>" +
 				"</li>";
 			
