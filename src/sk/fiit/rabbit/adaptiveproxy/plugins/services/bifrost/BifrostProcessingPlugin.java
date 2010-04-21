@@ -38,8 +38,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationServ
 
 public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	
-	private Disambiguator disambiguator = new Disambiguator();
-	
 	private String recommendationUrlBase;
 	private Integer maxRecommendedDocuments;
 	private Integer maxDocumentsFromQuery;
@@ -62,6 +60,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			connection = response.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 			String userId = response.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification();
 			
+			Disambiguator disambiguator = new Disambiguator();
 			resultDocuments = disambiguator.search(context, maxRecommendedDocuments, maxDocumentsFromQuery);
 
 			for (Document document : resultDocuments) {

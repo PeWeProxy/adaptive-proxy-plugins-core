@@ -21,7 +21,6 @@ public class GoogleResultsFormatter {
 					"<h3 class='r'>" +
 						"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
 					"</h3>" +
-					"<span style='display: inline-block;'><button title='' class='ws'></button></span>" +
 					"<div class='s'>" + 
 						doc.getContent() + 
 						"<br/>" +
