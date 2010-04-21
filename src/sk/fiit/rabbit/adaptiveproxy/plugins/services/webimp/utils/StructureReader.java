@@ -45,7 +45,7 @@ public class StructureReader {
 			Document document = reader.read(in);
 			readDocument(document, elementName);
 		} catch (FileNotFoundException fnfExc) {
-			
+			log.error("Structure file not found: " + fnfExc.getMessage());
 		} catch (DocumentException docExc) {
 			
 		}
