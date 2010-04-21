@@ -88,6 +88,7 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		String url = props.getProperty("jdbcURL");
 		String username = props.getProperty("userName");
 		String password = props.getProperty("password");
+		String validationQuery = props.getProperty("validationQuery");
 		
 		try {
 			String jdbcDriver = props.getProperty("driver");
@@ -105,6 +106,7 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		
 		DriverManagerConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, username, password);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, connectionPool, null, null, false, true);
+		poolableConnectionFactory.setValidationQuery(validationQuery);
 		driver = new PoolingDriver();
 		driver.registerPool("proxyJdbcPool", connectionPool);
 		
