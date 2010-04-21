@@ -3,7 +3,7 @@
 <plugin>
 	<name>WebImpProcessingPlugin</name>
 	<classLocation>/</classLocation>
-	<className>package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.WebImpProcessingPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.WebImpProcessingPlugin</className>
 	<types>
 		<type>ResponseProcessingPlugin</type>
 	</types>	
