@@ -12,3 +12,4 @@ ActivityUpdaterPlugin
 RequestFilterService
 SetupJavaScriptEnvironmentProcessingPlugin
 DatabaseLoggingService
+WebImpProcessingPlugin
