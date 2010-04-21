@@ -9,6 +9,8 @@
  */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp;
 
+import java.sql.Connection;
+
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,9 +24,12 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar.PersonalizedCalendar;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback.Feedback;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.newssection.NewsSection;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils.StructureReader;
 
 /**
  * Plugin for the adaptive proxy server that processes the response packets.
@@ -76,7 +81,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		
 		uri = response.getClientRequestHeaders().getRequestURI();
-		
+				
 		// modify page only if it is from domain of our interest
 		if (!uri.contains(domainUrl)) {
 			return ResponseProcessingActions.PROCEED;
@@ -97,20 +102,41 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			sb.insert(headerEnd, getCssTag());
 			
 			content = sb.toString();
-			String rightMenu = "<div id=\"content_right\">";
+			StructureReader sr = new StructureReader();
+			sr.readWebStructure("menuRight");
+			String rightMenu = "<" + sr.getTag() + " " + sr.getType() 
+				+ "=\"" + sr.getValue() + "\">";
+			
 			int rightMenuIdx = content.toLowerCase().indexOf(rightMenu);
 			if (rightMenuIdx < 0) {
 				log.debug("No right menu on page : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
 			}
-			sb.insert(rightMenuIdx + rightMenu.length(), getPersonalizedCalendar());
+			
+			UserIdentificationService userIdentification = null;
+			try {
+				userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);				
+			} catch (ServiceUnavailableException sue) {
+				log.error("User identification service unavailable, cannot get user agent ID.");
+			}
+			String uid = userIdentification.getClientIdentification();
+
+			DatabaseConnectionProviderService dbService = null;
+			try {
+				dbService = response.getServiceHandle().getService(DatabaseConnectionProviderService.class);
+			} catch (ServiceUnavailableException seu) {
+				log.error("Database service unavailable, cannot connect to database.");
+			}
+			sb.insert(rightMenuIdx + rightMenu.length(), getPersonalizedCalendar(uid, dbService));
 			
 			Document doc = Jsoup.parse(sb.toString(), uri);
 			Element div = doc.select("div[class=print_button]").first();
 			if (div != null) {
 				div.html(Feedback.getCode(imagesUrl));
-				String printBtnStartCode = "<div class=\"print_button\">";
-				String printBtnEndCode = "</div>";
+				sr.readWebStructure("print");
+				String printBtnStartCode = "<" + sr.getTag() + " " + sr.getType() 
+					+ "=\"" + sr.getValue() + "\">";
+				String printBtnEndCode = "</" + sr.getTag() + ">";
 				content = sb.toString();
 				int iStart = content.indexOf(printBtnStartCode);
 				int iEnd = content.indexOf(printBtnEndCode, iStart);
@@ -169,9 +195,10 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	/**
 	 * @return HTML source code of the personalized calendar
 	 */
-	private String getPersonalizedCalendar() {
+	private String getPersonalizedCalendar(final String userId, 
+			final DatabaseConnectionProviderService dbService) {
 		PersonalizedCalendar cal = new PersonalizedCalendar();
-		return cal.getCalendarCode();
+		return cal.getCalendarCode(userId, dbService);
 	}
 	
 	/**
