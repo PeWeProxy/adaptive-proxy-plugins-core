@@ -14,6 +14,7 @@
 		<param name="generateResponse">true</param>
 		<param name="allowedDomain">google.</param>
 		<param name="recommendationUrlBase">http://peweproxy.fiit.stuba.sk/recommendations/show/</param>
+		<param name="queryUrlBase">http://peweproxy.fiit.stuba.sk/recommendations/group/</param>
 		<param name="maxRecommendedDocuments">4</param>
 		<param name="maxDocumentsFromQuery">2</param>
 	</parameters>

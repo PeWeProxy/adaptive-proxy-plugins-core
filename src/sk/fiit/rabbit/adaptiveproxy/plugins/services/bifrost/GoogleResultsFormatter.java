@@ -3,14 +3,16 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.bifrost;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import sk.fiit.bifrost.dunco.Document;
 
 public class GoogleResultsFormatter {
     
-	public static String format(Collection<Document> documents) {
+	public static String format(Collection<Document> documents, String queryGroupUrl) {
 		String html = "";
 
 		Set<String> queries = new HashSet<String>();
@@ -37,7 +39,7 @@ public class GoogleResultsFormatter {
 			String usedQueries = "";
 			for(String query : queries) {
 				try {
-					usedQueries += "<b><a href='search?q=" + URLEncoder.encode(query, "UTF-8") + "#dontrecommend'>" + query + "</a></b>,&nbsp;";
+					usedQueries += "<b><a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a></b>,&nbsp;";
 				} catch (UnsupportedEncodingException e) {
 					// no-op
 				}

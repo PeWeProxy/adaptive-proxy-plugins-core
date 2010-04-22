@@ -39,6 +39,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationServ
 public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	
 	private String recommendationUrlBase;
+	private String queryUrlBase;
 	private Integer maxRecommendedDocuments;
 	private Integer maxDocumentsFromQuery;
 	
@@ -64,13 +65,15 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			resultDocuments = disambiguator.search(context, maxRecommendedDocuments, maxDocumentsFromQuery);
 
 			Long recommendationGroupId = logRecommendationGroup(connection, userId, query);
+			String recommendationGroupUrl = queryUrlBase + recommendationGroupId; 
+
 			Integer position = 1;
 			for (Document document : resultDocuments) {
 				Long recommendationId = logRecommendation(connection, recommendationGroupId, document.getRewrittenQuery(), document.getDisplayUrl(), document.getRecommenderStrategy(), position);
 				position++;
 				document.setRecommendationUrl(recommendationUrlBase + recommendationId);
 			}
-			String resultHtml = GoogleResultsFormatter.format(resultDocuments);
+			String resultHtml = GoogleResultsFormatter.format(resultDocuments, recommendationGroupUrl);
 			
 			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			mss.setCharset(Charset.forName("UTF-8"));
@@ -141,6 +144,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		}
 		
 		recommendationUrlBase = props.getProperty("recommendationUrlBase");
+		queryUrlBase = props.getProperty("queryUrlBase");
 		maxRecommendedDocuments = props.getIntProperty("maxRecommendedDocuments", 4);
 		maxDocumentsFromQuery = props.getIntProperty("maxDocumentsFromQuery", 2);
 		
