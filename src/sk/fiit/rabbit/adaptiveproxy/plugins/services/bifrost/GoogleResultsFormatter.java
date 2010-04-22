@@ -12,7 +12,8 @@ import sk.fiit.bifrost.dunco.Document;
 
 public class GoogleResultsFormatter {
     
-	public static String format(Collection<Document> documents, String queryGroupUrl) {
+	public static String format(Collection<Document> documents, 
+			String queryGroupUrl, String negativeFeedbackUrl, String assetsUrl) {
 		String html = "";
 
 		Set<String> queries = new HashSet<String>();
@@ -39,7 +40,11 @@ public class GoogleResultsFormatter {
 			String usedQueries = "";
 			for(String query : queries) {
 				try {
-					usedQueries += "<b><a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a></b>,&nbsp;";
+					usedQueries += 
+						"<b>" +
+							"<a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a>" +
+						"</b>" +
+						"<a href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'><img style='border: none;' src='http://127.0.0.1:3000/images/bifrost/delete.png' title='Toto nie je to čo som hľadal'/></a>,&nbsp;";
 				} catch (UnsupportedEncodingException e) {
 					// no-op
 				}

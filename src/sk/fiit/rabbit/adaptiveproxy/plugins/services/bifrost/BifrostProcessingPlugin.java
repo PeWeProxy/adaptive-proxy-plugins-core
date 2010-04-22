@@ -40,6 +40,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	
 	private String recommendationUrlBase;
 	private String queryUrlBase;
+	private String negativeFeedbackUrl;
+	private String assetsBase;
 	private Integer maxRecommendedDocuments;
 	private Integer maxDocumentsFromQuery;
 	
@@ -66,6 +68,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 
 			Long recommendationGroupId = logRecommendationGroup(connection, userId, query);
 			String recommendationGroupUrl = queryUrlBase + recommendationGroupId; 
+			negativeFeedbackUrl = negativeFeedbackUrl + recommendationGroupId;
 
 			Integer position = 1;
 			for (Document document : resultDocuments) {
@@ -73,7 +76,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 				position++;
 				document.setRecommendationUrl(recommendationUrlBase + recommendationId);
 			}
-			String resultHtml = GoogleResultsFormatter.format(resultDocuments, recommendationGroupUrl);
+			String resultHtml = GoogleResultsFormatter.format(resultDocuments, recommendationGroupUrl, negativeFeedbackUrl, assetsBase);
 			
 			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			mss.setCharset(Charset.forName("UTF-8"));
@@ -145,6 +148,8 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		
 		recommendationUrlBase = props.getProperty("recommendationUrlBase");
 		queryUrlBase = props.getProperty("queryUrlBase");
+		negativeFeedbackUrl = props.getProperty("negativeFeedbackUrl");
+		assetsBase = props.getProperty("assetsBase");
 		maxRecommendedDocuments = props.getIntProperty("maxRecommendedDocuments", 4);
 		maxDocumentsFromQuery = props.getIntProperty("maxDocumentsFromQuery", 2);
 		
