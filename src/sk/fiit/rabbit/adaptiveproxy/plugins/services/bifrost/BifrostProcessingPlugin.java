@@ -63,8 +63,11 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 			Disambiguator disambiguator = new Disambiguator();
 			resultDocuments = disambiguator.search(context, maxRecommendedDocuments, maxDocumentsFromQuery);
 
+			Long recommendationGroupId = logRecommendationGroup(connection, userId, query);
+			Integer position = 1;
 			for (Document document : resultDocuments) {
-				Long recommendationId = logRecommendation(connection, userId, query, document.getRewrittenQuery(), document.getDisplayUrl(), document.getRecommenderStrategy());
+				Long recommendationId = logRecommendation(connection, recommendationGroupId, document.getRewrittenQuery(), document.getDisplayUrl(), document.getRecommenderStrategy(), position);
+				position++;
 				document.setRecommendationUrl(recommendationUrlBase + recommendationId);
 			}
 			String resultHtml = GoogleResultsFormatter.format(resultDocuments);
@@ -83,16 +86,33 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		return response;
 	}
 	
-	private Long logRecommendation(Connection con, String userid, String originalQuery, String recommendedQuery, String recommendedUrl, String method) throws SQLException {
-		String insert = "INSERT INTO bf_recommendations(userid, timestamp, original_query, recommended_query, recommended_url, method) " +
-						"VALUES(?, ?, ?, ?, ?, ?)";
+	private Long logRecommendationGroup(Connection con, String userid, String originalQuery) throws SQLException {
+		String insert = "INSERT INTO bf_recommendation_groups(userid, timestamp, original_query) " +
+						"VALUES(?, ?, ?)";
 		PreparedStatement stmt = con.prepareStatement(insert, PreparedStatement.RETURN_GENERATED_KEYS);
 		stmt.setString(1, userid);
 		stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 		stmt.setString(3, originalQuery);
-		stmt.setString(4, recommendedQuery);
-		stmt.setString(5, recommendedUrl);
-		stmt.setString(6, method);
+		
+		stmt.execute();
+		
+		ResultSet keys = stmt.getGeneratedKeys();
+		if(keys.next()) {
+			return keys.getLong(1);
+		} else {
+			throw new RuntimeException("Could not load auto generated keys");
+		}
+	}
+	
+	private Long logRecommendation(Connection con, Long groupId, String recommendedQuery, String recommendedUrl, String method, Integer position) throws SQLException {
+		String insert = "INSERT INTO bf_recommendations(groupid, recommended_query, recommended_url, method, position) " +
+						"VALUES(?, ?, ?, ?, ?)";
+		PreparedStatement stmt = con.prepareStatement(insert, PreparedStatement.RETURN_GENERATED_KEYS);
+		stmt.setLong(1, groupId);
+		stmt.setString(2, recommendedQuery);
+		stmt.setString(3, recommendedUrl);
+		stmt.setString(4, method);
+		stmt.setInt(5, position);
 		
 		stmt.execute();
 		
