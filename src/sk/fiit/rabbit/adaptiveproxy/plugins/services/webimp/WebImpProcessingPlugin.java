@@ -94,10 +94,9 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				log.debug("No </head> on page : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
 			}
-			sb.insert(headerEnd, getTooltipScriptTag());
+			sb.insert(headerEnd, getBaloonConfScriptTag());			
 			sb.insert(headerEnd, getBoxScriptTag());
-			sb.insert(headerEnd, getYahooScriptTag());
-			sb.insert(headerEnd, getBaloonConfScriptTag());
+			sb.insert(headerEnd, getYahooScriptTag());			
 			sb.insert(headerEnd, getBaloonScriptTag());
 			sb.insert(headerEnd, getFeedbackScriptTag());	// JavaScript for sending feedback	
 			sb.insert(headerEnd, getCssTag());				// CSS for calendar
@@ -185,10 +184,6 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	public boolean supportsReconfigure() {
 		// TODO Auto-generated method stub
 		return true;
-	}
-	
-	private String getTooltipScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_event_tooltip.js'></script>";
 	}
 	
 	private String getBoxScriptTag() {
