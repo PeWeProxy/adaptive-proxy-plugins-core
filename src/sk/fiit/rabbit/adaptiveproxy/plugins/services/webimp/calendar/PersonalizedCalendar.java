@@ -33,14 +33,13 @@ public class PersonalizedCalendar {
 	}
 	
 	/**
-	 * Creates HTML code of personalized calendar for a given web page source.
-	 * The code is modified Google Calendar code.
-	 * Source: calendar.google.com
+	 * Loads personalized calendar code from database.
 	 * 
-	 * @param page web page to which we want to add calendar
-	 * @return HTML code of a calendar
+	 * @param userId value of user agent ID for current user
+	 * @param dbService service for working with database
+	 * @return HTML code of a calendar for user with given userId
 	 */
-	public String getCalendarCode(final String userid, 
+	public String getCalendarCode(final String userId, 
 			final DatabaseConnectionProviderService dbService) {		
 		String calendarCode = null;
 		
@@ -48,11 +47,11 @@ public class PersonalizedCalendar {
 			Connection con = dbService.getDatabaseConnection();
 			String query = "SELECT code FROM wi_calendar c WHERE userid = ?";
 			PreparedStatement ps = con.prepareStatement(query);
-			ps.setString(1, userid);
+			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				calendarCode = rs.getString(1);
-				log.debug("No calendar found for user " + userid);
+				log.debug("No calendar found for user " + userId);
 			}
 			else {
 				Statement stmt = con.createStatement();

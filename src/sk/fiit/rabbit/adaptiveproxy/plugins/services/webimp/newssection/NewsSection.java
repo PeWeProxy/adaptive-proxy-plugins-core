@@ -9,6 +9,8 @@
  */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.newssection;
 
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
+
 
 /**
  * Class that creates news section personalized to specific user. 
@@ -21,7 +23,8 @@ public class NewsSection {
 	 * @param page web page to which we want to add news section
 	 * @return HTML code of a news section
 	 */
-	public String getNewsSectionCode() {		
+	public String getNewsSectionCode(final String userId, 
+			final DatabaseConnectionProviderService dbService) {		
 		String htmlCode = "<div class=\"box_nadpis\">\n" 
 			+ "osobné novinky <span>›</span>\n"
 			+ "</div>\n";

@@ -8,7 +8,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>	
 	<parameters>
-		<param name="feedbackScriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/wi_feedback.js</param>
+		<param name="scriptsUrl">http://peweproxy.fiit.stuba.sk/javascripts</param>
 		<param name="imagesUrl">http://peweproxy.fiit.stuba.sk/images/webimp</param>
 		<param name="stylesheetsUrl">http://peweproxy.fiit.stuba.sk/stylesheets</param>
 		<param name="domainUrl">www.fiit.stuba.sk</param>		

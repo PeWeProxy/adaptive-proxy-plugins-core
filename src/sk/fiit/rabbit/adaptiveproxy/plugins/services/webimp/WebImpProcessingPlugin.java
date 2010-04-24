@@ -9,8 +9,6 @@
  */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp;
 
-import java.sql.Connection;
-
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -54,7 +52,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	 * URL of the script that sends explicit feedback from user to the server. 
 	 * This script is added to the header of the web page.
 	 */
-	private String feedbackScriptUrl;
+	private String scriptsUrl;
 	
 	private String imagesUrl;
 	private String stylesheetsUrl;
@@ -73,9 +71,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	
 	/**
 	 * Modifies the response packets by adding personalized content to the
-	 * source code of the web page. At first it adds JavaScripts that
-	 * monitor user behavior. Then it inserts personalized calendar to the
-	 * web page.
+	 * source code of the web page. 
 	 */
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
@@ -98,8 +94,13 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				log.debug("No </head> on page : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
 			}
-			sb.insert(headerEnd, getFeedbackScriptTag());	
-			sb.insert(headerEnd, getCssTag());
+			sb.insert(headerEnd, getTooltipScriptTag());
+			sb.insert(headerEnd, getBoxScriptTag());
+			sb.insert(headerEnd, getYahooScriptTag());
+			sb.insert(headerEnd, getBaloonConfScriptTag());
+			sb.insert(headerEnd, getBaloonScriptTag());
+			sb.insert(headerEnd, getFeedbackScriptTag());	// JavaScript for sending feedback	
+			sb.insert(headerEnd, getCssTag());				// CSS for calendar
 			
 			content = sb.toString();
 			StructureReader sr = new StructureReader();
@@ -127,7 +128,9 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			} catch (ServiceUnavailableException seu) {
 				log.error("Database service unavailable, cannot connect to database.");
 			}
-			sb.insert(rightMenuIdx + rightMenu.length(), getPersonalizedCalendar(uid, dbService));
+			sb.insert(rightMenuIdx + rightMenu.length(), 
+					getPersonalizedCalendar(uid, dbService)
+					+ getPersonalizedNews(uid, dbService));
 			
 			Document doc = Jsoup.parse(sb.toString(), uri);
 			Element div = doc.select("div[class=print_button]").first();
@@ -158,7 +161,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	
 	@Override
 	public boolean setup(PluginProperties props) {
-		feedbackScriptUrl = props.getProperty("feedbackScriptUrl");
+		scriptsUrl = props.getProperty("scriptsUrl");
 		domainUrl = props.getProperty("domainUrl");
 		imagesUrl = props.getProperty("imagesUrl");
 		stylesheetsUrl = props.getProperty("stylesheetsUrl");
@@ -184,16 +187,38 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return true;
 	}
 	
-	private String getCssTag() {
-		return "<link rel='stylesheet' type='text/css' href='" + stylesheetsUrl + "/wi_calendar_style.css'" + "/>";
+	private String getTooltipScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_event_tooltip.js'></script>";
+	}
+	
+	private String getBoxScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_box.js'></script>";
+	}
+	
+	private String getYahooScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_yahoo-dom-event.js'></script>";
+	}
+	
+	private String getBaloonConfScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon-config.js'></script>";
+	}
+	
+	private String getBaloonScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon.js'></script>";
 	}
 	
 	private String getFeedbackScriptTag() {
-		return "<script type='text/javascript' src='" + feedbackScriptUrl + "'></script>";
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
 	}
 	
+	private String getCssTag() {
+		return "<link rel='stylesheet' type='text/css' href='" + stylesheetsUrl + "/wi_calendar_style.css'" + "/>";
+	}	
+	
 	/**
-	 * @return HTML source code of the personalized calendar
+	 * @param userId value of user agent ID for current user
+	 * @param dbService service for working with database 
+	 * @return HTML source code of the personalized calendar for given user
 	 */
 	private String getPersonalizedCalendar(final String userId, 
 			final DatabaseConnectionProviderService dbService) {
@@ -202,10 +227,13 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	}
 	
 	/**
-	 * @return HTML source code of the news section
+	 * @param userId value of user agent ID for current user
+	 * @param dbService service for working with database
+	 * @return HTML source code of the news section for given user
 	 */
-	private String getPersonalizedNews() {
+	private String getPersonalizedNews(final String userId,
+			final DatabaseConnectionProviderService dbService) {
 		NewsSection news = new NewsSection();
-		return news.getNewsSectionCode(); 
+		return news.getNewsSectionCode(userId, dbService); 
 	}
 }
