@@ -6,13 +6,10 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDriver;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServicePluginAdapter;
@@ -25,29 +22,9 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 
 public class MySQLDatabaseConnectionProviderService extends RequestAndResponseServicePluginAdapter {
 	
-	private static final Logger logger = Logger.getLogger(MySQLDatabaseConnectionProviderService.class);
-	private static PoolingDriver driver;
+	private BoneCP connectionPool;
 	
-	private class PoolStatus implements Runnable {
-
-		@Override
-		public void run() {
-			while(true) {
-				ObjectPool op;
-				try {
-					op = driver.getConnectionPool("proxyJdbcPool");
-					System.err.println("NumActive: " + op.getNumActive());
-					System.err.println("NumIdle: " + op.getNumIdle());
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {}
-			}
-		}
-		
-	}
+	private static final Logger logger = Logger.getLogger(MySQLDatabaseConnectionProviderService.class);
 	
 	private class MySQLDatabaseConnectionProvider extends RequestAndResponseServiceProviderAdapter 
 	    implements DatabaseConnectionProviderService {
@@ -55,7 +32,7 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		@Override
 		public Connection getDatabaseConnection() {
 			try {
-				return DriverManager.getConnection("jdbc:apache:commons:dbcp:proxyJdbcPool");
+				return connectionPool.getConnection();
 			} catch (SQLException e) {
 				logger.error("Could not get connection from a pool", e);
 				return null;
@@ -98,17 +75,18 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 			return false;
 		}
 
-		GenericObjectPool connectionPool = new GenericObjectPool(null);
+		BoneCPConfig config = new BoneCPConfig();
+		config.setJdbcUrl(url);
+		config.setUsername(username);
+		config.setPassword(password);
+		config.setConnectionTestStatement(validationQuery);
 		
-		connectionPool.setMaxActive(Integer.parseInt(props.getProperty("maxActive", "20")));
-		connectionPool.setMaxIdle(Integer.parseInt(props.getProperty("maxIdle", "-1")));
-		connectionPool.setMaxWait(Integer.parseInt(props.getProperty("maxWait", "2000")));
-		
-		DriverManagerConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, username, password);
-		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, connectionPool, null, null, false, true);
-		poolableConnectionFactory.setValidationQuery(validationQuery);
-		driver = new PoolingDriver();
-		driver.registerPool("proxyJdbcPool", connectionPool);
+		try {
+			connectionPool = new BoneCP(config);
+		} catch (SQLException e) {
+			logger.error("Could not initialize connection pool", e);
+			return false;
+		}
 		
 		return true;
 	}
