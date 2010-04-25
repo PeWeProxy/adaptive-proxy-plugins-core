@@ -57,6 +57,8 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	private String imagesUrl;
 	private String stylesheetsUrl;
 	
+	private String portalStructureFile;
+	
 	static Logger log = Logger.getLogger(WebImpProcessingPlugin.class);
 	
 	public WebImpProcessingPlugin() {
@@ -93,17 +95,22 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			if(headerEnd < 0) {
 				log.debug("No </head> on page : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
-			}
-			sb.insert(headerEnd, getBaloonConfScriptTag());			
+			}						
 			sb.insert(headerEnd, getBoxScriptTag());
-			sb.insert(headerEnd, getYahooScriptTag());			
+			sb.insert(headerEnd, getYahooScriptTag());
+			sb.insert(headerEnd, getBaloonConfScriptTag());
 			sb.insert(headerEnd, getBaloonScriptTag());
 			sb.insert(headerEnd, getFeedbackScriptTag());	// JavaScript for sending feedback	
 			sb.insert(headerEnd, getCssTag());				// CSS for calendar
 			
 			content = sb.toString();
-			StructureReader sr = new StructureReader();
-			sr.readWebStructure("menuRight");
+			StructureReader sr = new StructureReader(portalStructureFile);
+			try {
+				sr.readWebStructure("menuRight");
+			} catch (Exception e) {
+				log.error("Unable to modify the web page content.");
+				return ResponseProcessingActions.PROCEED;
+			}
 			String rightMenu = "<" + sr.getTag() + " " + sr.getType() 
 				+ "=\"" + sr.getValue() + "\">";
 			
@@ -135,7 +142,12 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			Element div = doc.select("div[class=print_button]").first();
 			if (div != null) {
 				div.html(Feedback.getCode(imagesUrl));
-				sr.readWebStructure("print");
+				try {
+					sr.readWebStructure("print");
+				} catch (Exception e) {
+					log.fatal("Unable to add buttons for feedback.");
+					return ResponseProcessingActions.PROCEED;
+				}
 				String printBtnStartCode = "<" + sr.getTag() + " " + sr.getType() 
 					+ "=\"" + sr.getValue() + "\">";
 				String printBtnEndCode = "</" + sr.getTag() + ">";
@@ -164,6 +176,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		domainUrl = props.getProperty("domainUrl");
 		imagesUrl = props.getProperty("imagesUrl");
 		stylesheetsUrl = props.getProperty("stylesheetsUrl");
+		portalStructureFile = props.getProperty("portalStructureFile");
 		
 		return true;
 	}

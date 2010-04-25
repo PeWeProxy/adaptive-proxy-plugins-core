@@ -14,8 +14,10 @@ import org.dom4j.io.SAXReader;
 public class StructureReader {
 	static Logger log = Logger.getLogger(StructureReader.class);
 	private String tag, type, value;
+	private String portalStructureFile;
 	
-	public StructureReader() {
+	public StructureReader(final String portalStructureFile) {
+		this.portalStructureFile = portalStructureFile;
 	}
 	
 	public String getTag() {
@@ -38,16 +40,18 @@ public class StructureReader {
 		value = rightMenu.element("value").getText();
 	}
 	
-	public void readWebStructure(final String elementName) {
+	public void readWebStructure(final String elementName) throws FileNotFoundException,
+		DocumentException {
 		try {
 			SAXReader reader = new SAXReader();
-			InputStream in = new FileInputStream(Configuration.getInstance().getStructureFile());
+			InputStream in = new FileInputStream(portalStructureFile);
 			Document document = reader.read(in);
 			readDocument(document, elementName);
 		} catch (FileNotFoundException fnfExc) {
 			log.error("Structure file not found: " + fnfExc.getMessage());
+			throw fnfExc;
 		} catch (DocumentException docExc) {
-			
+			throw docExc;
 		}
 	}
 }
