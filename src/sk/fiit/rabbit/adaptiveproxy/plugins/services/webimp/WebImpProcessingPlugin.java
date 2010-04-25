@@ -98,7 +98,6 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			}						
 			sb.insert(headerEnd, getBoxScriptTag());
 			sb.insert(headerEnd, getYahooScriptTag());
-			sb.insert(headerEnd, getBaloonConfScriptTag());
 			sb.insert(headerEnd, getBaloonScriptTag());
 			sb.insert(headerEnd, getFeedbackScriptTag());	// JavaScript for sending feedback	
 			sb.insert(headerEnd, getCssTag());				// CSS for calendar
@@ -205,10 +204,6 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	
 	private String getYahooScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_yahoo-dom-event.js'></script>";
-	}
-	
-	private String getBaloonConfScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon-config.js'></script>";
 	}
 	
 	private String getBaloonScriptTag() {
