@@ -23,6 +23,8 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar.PersonalizedCalendar;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback.Feedback;
@@ -87,6 +89,18 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		
 		ModifiableStringService mss = null;
 		try {
+			// insert JavaScripts
+			try {
+				HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);				
+				htmlInjectionService.inject(
+						getYahooScriptTag()
+						+ getBalloonScriptTag()
+						+ getBalloonConfScriptTag()
+						+ getFeedbackScriptTag(), HtmlPosition.ON_MARK);
+			} catch (ServiceUnavailableException e) {
+				log.warn("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
+			}
+						
 			mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			StringBuilder sb = mss.getModifiableContent();
 			String content = sb.toString();
@@ -95,12 +109,8 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			if(headerEnd < 0) {
 				log.debug("No </head> on page : " + response.getProxyRequestHeaders().getRequestURI());
 				return ResponseProcessingActions.PROCEED;
-			}						
-			sb.insert(headerEnd, getBoxScriptTag());
-			sb.insert(headerEnd, getYahooScriptTag());
-			sb.insert(headerEnd, getBaloonScriptTag());
-			sb.insert(headerEnd, getFeedbackScriptTag());	// JavaScript for sending feedback	
-			sb.insert(headerEnd, getCssTag());				// CSS for calendar
+			}
+			sb.insert(headerEnd, getCssTag());	// CSS for calendar
 			
 			content = sb.toString();
 			StructureReader sr = new StructureReader(portalStructureFile);
@@ -198,16 +208,16 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return true;
 	}
 	
-	private String getBoxScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_box.js'></script>";
-	}
-	
 	private String getYahooScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_yahoo-dom-event.js'></script>";
 	}
 	
-	private String getBaloonScriptTag() {
+	private String getBalloonScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon.js'></script>";
+	}
+	
+	private String getBalloonConfScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon-config.js'></script>";
 	}
 	
 	private String getFeedbackScriptTag() {
