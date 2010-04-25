@@ -3,6 +3,7 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +22,24 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 
 public class MySQLDatabaseConnectionProviderService extends RequestAndResponseServicePluginAdapter {
+	
+	private class ConnectionPoolMonitor implements Runnable {
+		@Override
+		public void run() {
+			while(true) {
+				System.out.println(new Date());
+				System.out.println("Total created connections: " + connectionPool.getTotalCreatedConnections());
+				System.out.println("Total FREE connections: " + connectionPool.getTotalFree());
+				System.out.println("Total LEASED connections: " + connectionPool.getTotalLeased());
+				
+				try {
+					Thread.sleep(1000 * 60);
+				} catch (InterruptedException e) {
+					System.out.println("ConnectionPoolMonitor interrupted");
+				}
+			}
+		}
+	}
 	
 	private BoneCP connectionPool;
 	
@@ -66,6 +85,7 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		String username = props.getProperty("userName");
 		String password = props.getProperty("password");
 		String validationQuery = props.getProperty("validationQuery");
+		Integer idleTestPeriod = props.getIntProperty("idleTestPeriod", 100);
 		
 		try {
 			String jdbcDriver = props.getProperty("driver");
@@ -80,6 +100,8 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		config.setUsername(username);
 		config.setPassword(password);
 		config.setConnectionTestStatement(validationQuery);
+		config.setIdleConnectionTestPeriod(idleTestPeriod);
+		//config.setCloseConnectionWatch(true);
 		
 		try {
 			connectionPool = new BoneCP(config);
@@ -87,6 +109,8 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 			logger.error("Could not initialize connection pool", e);
 			return false;
 		}
+		
+		//new Thread(new ConnectionPoolMonitor()).start();
 		
 		return true;
 	}

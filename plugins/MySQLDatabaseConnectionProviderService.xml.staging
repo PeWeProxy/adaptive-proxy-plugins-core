@@ -13,10 +13,7 @@
     <param name="driver">com.mysql.jdbc.Driver</param>
     <param name="userName">RoR</param>
     <param name="password">RoRatAleF</param>
-    <param name="maxActive">50</param>
-    <param name="maxIdle">-1</param>
-    <param name="maxWait">2000</param>
     <param name="validationQuery">SELECT 1</param>
-    <param name="testOnBorrow">true</param>
+    <param name="idleTestPeriod">1</param>
   </parameters>
 </plugin>
