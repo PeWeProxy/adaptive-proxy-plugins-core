@@ -1,6 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.bifrost;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,18 +22,22 @@ public class GoogleResultsFormatter {
 		for(Document doc : documents) {
 			queries.add(doc.getRewrittenQuery());
 			
-			html+= 
-				"<li class='g w0'>" +
-					"<h3 class='r'>" +
-						"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
-					"</h3>" +
-					"<div class='s'>" + 
-						doc.getContent() + 
-						"<br/>" +
-						"<cite>" + doc.getVisibleUrl() + " - </cite>" +
-						"<span class='gl'><a href='" + doc.getCacheUrl() + "'>Cached</a></span>" +
-					"</div>" +
-				"</li>";
+			try {
+				html+= 
+					"<li class='g w0'>" +
+						"<h3 class='r'>" +
+							"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
+						"</h3>" +
+						"<div class='s'>" + 
+							doc.getContent() + 
+							"<br/>" +
+							"<cite>" + URLDecoder.decode(doc.getDisplayUrl(), "UTF-8") + " - </cite>" +
+							"<span class='gl'><a href='" + doc.getCacheUrl() + "'>Cached</a></span>" +
+						"</div>" +
+					"</li>";
+			} catch (UnsupportedEncodingException e) {
+				// no-op
+			}
 		}
 		
 		if(!"".equals(html)) {
