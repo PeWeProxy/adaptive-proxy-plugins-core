@@ -12,7 +12,7 @@ import sk.fiit.bifrost.dunco.Document;
 
 public class GoogleResultsFormatter {
     
-	public static String format(Collection<Document> documents, 
+	public static String format(Collection<Document> documents, String originalQuery,
 			String queryGroupUrl, String negativeFeedbackUrl, String assetsUrl) {
 		String html = "";
 
@@ -60,6 +60,7 @@ public class GoogleResultsFormatter {
 				"</li>";
 			
 			html = headerHtml + html + "<li><hr color='#c9d7f1' align='left' width='65%' size='1'></li>";
+			html += "<li><p style='margin-top: 0pt;' class='g'><span class='med'>Results for:&nbsp;<b>" + originalQuery + "</b></span></p></li>";
 		}
 		
 		return html;
