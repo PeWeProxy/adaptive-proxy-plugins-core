@@ -15,5 +15,8 @@
     <param name="password">rabbit</param>
     <param name="validationQuery">SELECT 1</param>
     <param name="idleTestPeriod">1</param>
+    <param name="partitionCount">1</param>
+    <param name="maxConnectionsPerPartition">5</param>
+    <param name="minConnectionsPerPartition">2</param>
   </parameters>
 </plugin>

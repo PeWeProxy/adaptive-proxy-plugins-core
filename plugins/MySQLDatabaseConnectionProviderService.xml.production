@@ -15,5 +15,8 @@
     <param name="password">RoRatAleF</param>
     <param name="validationQuery">SELECT 1</param>
     <param name="idleTestPeriod">200</param>
+    <param name="partitionCount">4</param>
+    <param name="maxConnectionsPerPartition">10</param>
+    <param name="minConnectionsPerPartition">5</param>
   </parameters>
 </plugin>

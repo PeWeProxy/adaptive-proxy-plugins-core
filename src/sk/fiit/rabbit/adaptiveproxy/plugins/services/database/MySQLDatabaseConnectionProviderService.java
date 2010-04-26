@@ -86,6 +86,9 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		String password = props.getProperty("password");
 		String validationQuery = props.getProperty("validationQuery");
 		Integer idleTestPeriod = props.getIntProperty("idleTestPeriod", 100);
+		Integer partitionCount = props.getIntProperty("partitionCount", 4);
+		Integer maxConnectionsPerPartition = props.getIntProperty("maxConnectionsPerPartition", 10);
+		Integer minConnectionsPerPartition = props.getIntProperty("minConnectionsPerPartition", 5);
 		
 		try {
 			String jdbcDriver = props.getProperty("driver");
@@ -99,9 +102,13 @@ public class MySQLDatabaseConnectionProviderService extends RequestAndResponseSe
 		config.setJdbcUrl(url);
 		config.setUsername(username);
 		config.setPassword(password);
+		
 		config.setConnectionTestStatement(validationQuery);
 		config.setIdleConnectionTestPeriod(idleTestPeriod);
-		//config.setCloseConnectionWatch(true);
+		
+		config.setPartitionCount(partitionCount);
+		config.setMinConnectionsPerPartition(minConnectionsPerPartition);
+		config.setMaxConnectionsPerPartition(maxConnectionsPerPartition);
 		
 		try {
 			connectionPool = new BoneCP(config);
