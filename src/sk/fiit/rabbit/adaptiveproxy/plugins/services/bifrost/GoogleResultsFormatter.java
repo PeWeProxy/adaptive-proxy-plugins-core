@@ -44,7 +44,7 @@ public class GoogleResultsFormatter {
 						"<b>" +
 							"<a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a>" +
 						"</b>" +
-						"<a href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title='Toto nie je to čo som hľadal'/></a>,&nbsp;";
+						"<a href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title='This is not what I've been looking for'/></a>,&nbsp;";
 				} catch (UnsupportedEncodingException e) {
 					// no-op
 				}
