@@ -1,3 +1,12 @@
+/*
+ * Website Navigation Adaptation Based on Behavior of Users
+ * Master Thesis
+ * Bc. Michal Holub
+ * 
+ * Faculty of Informatics and Information Technologies
+ * Slovak University of Technology
+ * Bratislava, 2008 - 2010  
+ */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils;
 
 import java.io.FileInputStream;
@@ -10,7 +19,10 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-
+/**
+ * This class reads the XML file describing the structure of web portal being
+ * personalized. 
+ */
 public class StructureReader {
 	static Logger log = Logger.getLogger(StructureReader.class);
 	private String tag, type, value;

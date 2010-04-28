@@ -220,8 +220,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";		
 	}
 	
-	private String getFeedbackScriptTag() {
-		//return "<script type='text/javascript' src='http://miho.mine.nu/WebImp/wi_feedback.js'></script>";
+	private String getFeedbackScriptTag() {		
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
 	}
 	
