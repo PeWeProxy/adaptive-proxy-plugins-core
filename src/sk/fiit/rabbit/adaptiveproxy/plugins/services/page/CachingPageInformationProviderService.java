@@ -14,8 +14,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import sk.fiit.keyextractor.JKeyExtractor;
+import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
 import sk.fiit.keyextractor.extractors.OpenCalaisKeyExtractor;
 import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
+import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
@@ -32,6 +34,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 	
 	private static final Logger logger = Logger.getLogger(CachingPageInformationProviderService.class);
 	
+	private JKeyExtractor jKeyExtractor;
+	
 	private class CachingPageInformationProviderServiceProvider extends ResponseServiceProviderAdapter 
 		implements PageInformationProviderService {
 		
@@ -40,7 +44,7 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		String requestURI;
 		
 		Connection connection;
-
+		
 		public CachingPageInformationProviderServiceProvider(String requestURI,
 				DatabaseConnectionProviderService connectionService, String clearText) {
 			this.connectionService = connectionService;
@@ -133,13 +137,12 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				return "";
 			}
 			
-			JKeyExtractor ke = new JKeyExtractor();
-			ke.addAlgorithm(new TagTheNetKeyExtractor());
-			ke.addAlgorithm(new OpenCalaisKeyExtractor());
+			jKeyExtractor.addAlgorithm(new TagTheNetKeyExtractor());
+			jKeyExtractor.addAlgorithm(new OpenCalaisKeyExtractor());
 			
 			Set<String> l = null;
 			try {
-				l = ke.getAllKeys(url, clearText);
+				l = jKeyExtractor.getAllKeys(url, clearText);
 			} catch (MalformedURLException e) {
 				return "";
 			}
@@ -224,5 +227,17 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		
 		String requestURI = response.getClientRequestHeaders().getRequestURI();
 		providedServices.add(new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText));
+	}
+	
+	@Override
+	public boolean setup(PluginProperties props) {
+		try {
+			jKeyExtractor = new JKeyExtractor();
+		} catch (JKeyExtractorException e) {
+			logger.warn("Cannot initialize CachingPageInformationProviderService", e);
+			return false;
+		}
+		
+		return true;
 	}
 }
