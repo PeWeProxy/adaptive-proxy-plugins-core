@@ -1,12 +1,3 @@
-﻿/*
- * Website Navigation Adaptation Based on Behavior of Users
- * Master Thesis
- * Bc. Michal Holub
- * 
- * Faculty of Informatics and Information Technologies
- * Slovak University of Technology
- * Bratislava, 2008 - 2010  
- */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar;
 
 import java.sql.Connection;
