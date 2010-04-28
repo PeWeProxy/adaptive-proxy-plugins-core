@@ -2,27 +2,9 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback;
 
 public class Feedback {
 	public static String getCode(final String directory) {
-		String code = "";
-		/*
-		String code = "<img style=\"cursor:pointer\" src=\"" + directory + "/like.png\" onClick=\"webimp.wiSendFeedback(1);\" alt=\"Stránka ma zaujala\" width=\"30\" height=\"30\"/>";
-		code += "<img style=\"cursor:pointer\" src=\"" + directory + "/dislike.png\" onClick=\"webimp.wiSendFeedback(-1);\" alt=\"Stránka ma nezaujala\" width=\"30\" height=\"30\"/>";
-		/*
-		String code = "<a href=\"www.fiit.sk\">";
-		code += "<img src='" + directory + "/star-bad.png' alt='Úplne nezaujala' width='15' height='15'/>";
-		code += "</a>";
+		String code = "<div id=\"wiFeedback\"><img id=\"wiLike\" style=\"cursor:pointer\" src=\"" + directory + "/like.png\" title=\"Zaujala\" alt=\"Stránka ma zaujala\" width=\"32\" height=\"32\"/>";
+		code += "<img id=\"wiDislike\" style=\"cursor:pointer\" src=\"" + directory + "/dislike.png\" title=\"Nezaujala\" alt=\"Stránka ma nezaujala\" width=\"32\" height=\"32\"/></div>";
 		
-		code += "<a href=\"www.fiit.sk\">";
-		code += "<img src='" + directory + "/star-bad.png' alt='Skôr nezaujala' width='15' height='15'/>";
-		code += "</a>";
-		
-		code += "<a href=\"www.fiit.sk\">";
-		code += "<img src='" + directory + "/star-good.png' alt='Skôr zaujala' width='15' height='15'/>";
-		code += "</a>";
-		
-		code += "<a href=\"www.fiit.sk\">";
-		code += "<img src='" + directory + "/star-good.png' alt='Veľmi zaujala' width='15' height='15'/>";
-		code += "</a>";		
-		*/
 		return code;
 	}
 }

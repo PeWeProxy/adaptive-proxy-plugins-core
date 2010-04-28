@@ -96,7 +96,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 						getYahooScriptTag()
 						+ getBalloonScriptTag()
 						+ getBalloonConfScriptTag()
-						/*+ getFeedbackScriptTag()*/, HtmlPosition.ON_MARK);
+						+ getFeedbackScriptTag(), HtmlPosition.ON_MARK);
 			} catch (ServiceUnavailableException e) {
 				log.warn("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 			}
@@ -148,7 +148,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 					+ getPersonalizedNews(uid, dbService));
 			
 			Document doc = Jsoup.parse(sb.toString(), uri);
-			Element div = doc.select("div[class=print_button]").first();
+			Element div = doc.select("div[class=print_button]").first();			
 			if (div != null) {
 				div.html(Feedback.getCode(imagesUrl));
 				try {
@@ -164,7 +164,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				int iStart = content.indexOf(printBtnStartCode);
 				int iEnd = content.indexOf(printBtnEndCode, iStart);
 				sb.replace(iStart, iEnd + printBtnEndCode.length(), div.outerHtml());
-			}
+			}			
 			mss.setContent(sb.toString());
 		} catch (ServiceUnavailableException e) {
 			log.warn("ModifiableStringService is unavailable. Plugin cannot modify the page content.");
@@ -217,11 +217,12 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	}
 	
 	private String getBalloonConfScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";		
 	}
 	
 	private String getFeedbackScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
+		return "<script type='text/javascript' src='http://miho.mine.nu/WebImp/wi_feedback.js'></script>";
+		//return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
 	}
 	
 	private String getCssTag() {
