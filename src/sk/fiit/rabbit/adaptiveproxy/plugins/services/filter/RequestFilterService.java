@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
+import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ReadableHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
@@ -81,7 +82,7 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String url = request.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url, "REQUEST")) {
+		if(canProceed(url, request.getProxyRequestHeaders(), "REQUEST")) {
 			return RequestProcessingActions.PROCEED;
 		} else {
 			return RequestProcessingActions.FINAL_REQUEST;
@@ -91,14 +92,20 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		String url = response.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url, "RESPONSE")) {
+		if(canProceed(url, response.getProxyResponseHeaders(), "RESPONSE")) {
 			return ResponseProcessingActions.PROCEED;
 		} else {
 			return ResponseProcessingActions.FINAL_RESPONSE;
 		}
 	}
 	
-	private boolean canProceed(String url, String type) {
+	private boolean canProceed(String url, ReadableHeaders headers, String type) {
+		String location = headers.getHeader("Location");
+		if(location != null) {
+			logger.debug("Blocked redirect from: " + url + " to: " + location);
+			return false;
+		}
+			
 		for (String filter : simpleFilters) {
 			if(url.contains(filter)) {
 				logger.debug("Blocked [" + type + "]: " + url);
