@@ -7,6 +7,7 @@ RequestFilterService
 UserIdentificationEnforceService
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
+WebImpFeedbackPlugin
  
 [response]
 RequestFilterService

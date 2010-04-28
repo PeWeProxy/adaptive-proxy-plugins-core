@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>WebImpFeedbackPlugin</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
+	<types>
+		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/wi_feedback.js</param>
+		<param name="bypassPattern">webimp/feedback</param>
+		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/webimp/feedback</param>
+	</parameters>
+</plugin>
