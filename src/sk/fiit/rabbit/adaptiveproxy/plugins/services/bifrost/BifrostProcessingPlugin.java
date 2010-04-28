@@ -76,7 +76,7 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 				position++;
 				document.setRecommendationUrl(recommendationUrlBase + recommendationId);
 			}
-			String resultHtml = GoogleResultsFormatter.format(resultDocuments, query, recommendationGroupUrl, negativeFeedbackUrl, assetsBase);
+			String resultHtml = GoogleResultsFormatter.format(resultDocuments, query, recommendationGroupUrl, negativeFeedbackUrl, recommendationGroupId.toString(), assetsBase);
 			
 			ModifiableStringService mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			mss.setCharset(Charset.forName("UTF-8"));

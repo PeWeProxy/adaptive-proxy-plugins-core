@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>BifrostBypassService</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
+	<types>
+		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="scriptUrl"></param>
+		<param name="bypassPattern">bifrost/negativefeedback</param>
+		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/recommendations/negative</param>
+	</parameters>
+</plugin>
