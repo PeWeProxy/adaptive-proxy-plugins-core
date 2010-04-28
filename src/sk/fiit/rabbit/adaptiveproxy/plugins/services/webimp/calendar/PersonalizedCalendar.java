@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Website Navigation Adaptation Based on Behavior of Users
  * Master Thesis
  * Bc. Michal Holub
@@ -45,7 +45,7 @@ public class PersonalizedCalendar {
 		
 		try {
 			Connection con = dbService.getDatabaseConnection();
-			String query = "SELECT code FROM wi_calendar c WHERE userid = ?";
+			String query = "SELECT code FROM wi_calendars c WHERE userid = ?";
 			PreparedStatement ps = con.prepareStatement(query);
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
@@ -55,7 +55,7 @@ public class PersonalizedCalendar {
 			}
 			else {
 				Statement stmt = con.createStatement();
-				ResultSet defCal = stmt.executeQuery("SELECT code FROM wi_calendar c WHERE userid = 'defaultcalendar'");
+				ResultSet defCal = stmt.executeQuery("SELECT code FROM wi_calendars c WHERE userid = 'defaultcalendar'");
 				if (defCal.next()) {
 					calendarCode = defCal.getString(1);
 				}
