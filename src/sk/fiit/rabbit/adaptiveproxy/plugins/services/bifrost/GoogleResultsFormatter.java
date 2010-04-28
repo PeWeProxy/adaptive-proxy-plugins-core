@@ -5,29 +5,34 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import sk.fiit.bifrost.dunco.Document;
 
 public class GoogleResultsFormatter {
     
 	public static String format(Collection<Document> documents, String originalQuery,
-			String queryGroupUrl, String negativeFeedbackUrl, String assetsUrl) {
+			String queryGroupUrl, String negativeFeedbackUrl, String groupId, String assetsUrl) {
 		String html = "";
 
-		Set<String> queries = new HashSet<String>();
+		Map<String, Integer> queries = new HashMap<String, Integer>();
+		int queryGroupId = 1;
 		
+		int documentId = 0;
 		for(Document doc : documents) {
-			queries.add(doc.getRewrittenQuery());
+			if(queries.get(doc.getRewrittenQuery()) == null) {
+				queries.put(doc.getRewrittenQuery(), queryGroupId++);
+			}
+			
+			//queries.add(doc.getRewrittenQuery());
+			documentId++;
 			
 			try {
 				html+= 
-					"<li class='g w0'>" +
+					"<li class='g w0 recommendation-" + documentId + " recommendation-group-" + queries.get(doc.getRewrittenQuery()) + "'>" +
 						"<h3 class='r'>" +
 							"<a class='l' href='" + doc.getRecommendationUrl() +  "'>" + doc.getTitle() + "</a>" +
-							"&nbsp;<a href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(doc.getRewrittenQuery(), "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title=\"This is not what I've been looking for\"/></a>" +
+							"&nbsp;<a onClick=\"bifrost.negativeFeedback(" + documentId + ", '" + groupId + "', '" + URLEncoder.encode(doc.getRewrittenQuery(), "UTF-8") + "'); return false;\" href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(doc.getRewrittenQuery(), "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title=\"This is not what I've been looking for\"/></a>" +
 						"</h3>" +
 						"<div class='s'>" + 
 							doc.getContent() + 
@@ -44,19 +49,21 @@ public class GoogleResultsFormatter {
 		if(!"".equals(html)) {
 			
 			String usedQueries = "";
-			for(String query : queries) {
+			for(String query : queries.keySet()) {
 				try {
 					usedQueries += 
-						"<b>" +
-							"<a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a>" +
-						"</b>" +
-						"<a href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title=\"This is not what I've been looking for\"/></a>,&nbsp;";
+						"<span class='recommendation-group-title-" + queries.get(query) + "'>" +
+							"<b>" +
+								"<a href='" + queryGroupUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'>" + query + "</a>" +
+							"</b>" +
+							"<a onClick=\"bifrost.negativeGroupFeedback('" + queries.get(query) + "', '" + groupId +"', '" + URLEncoder.encode(query, "UTF-8") + "'); return false;\" href='" + negativeFeedbackUrl + "?q=" + URLEncoder.encode(query, "UTF-8") + "'><img style='border: none;' src='" + assetsUrl + "delete.png' title=\"This is not what I've been looking for\"/></a>,&nbsp;" +
+						"</span>";
 				} catch (UnsupportedEncodingException e) {
 					// no-op
 				}
 			}
 			
-			usedQueries = usedQueries.substring(0, usedQueries.length() - 8);
+			usedQueries = usedQueries.substring(0, usedQueries.length() - 15) + "</span>";
 			
 			String headerHtml = 
 				"<li>" +
