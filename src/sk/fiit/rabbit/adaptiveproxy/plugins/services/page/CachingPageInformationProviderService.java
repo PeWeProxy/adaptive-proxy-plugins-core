@@ -34,8 +34,6 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 	
 	private static final Logger logger = Logger.getLogger(CachingPageInformationProviderService.class);
 	
-	private JKeyExtractor jKeyExtractor;
-	
 	private class CachingPageInformationProviderServiceProvider extends ResponseServiceProviderAdapter 
 		implements PageInformationProviderService {
 		
@@ -137,6 +135,8 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				return "";
 			}
 			
+			JKeyExtractor jKeyExtractor = new JKeyExtractor();
+			
 			jKeyExtractor.addAlgorithm(new TagTheNetKeyExtractor());
 			jKeyExtractor.addAlgorithm(new OpenCalaisKeyExtractor());
 			
@@ -227,17 +227,5 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 		
 		String requestURI = response.getClientRequestHeaders().getRequestURI();
 		providedServices.add(new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText));
-	}
-	
-	@Override
-	public boolean setup(PluginProperties props) {
-		try {
-			jKeyExtractor = new JKeyExtractor();
-		} catch (JKeyExtractorException e) {
-			logger.warn("Cannot initialize CachingPageInformationProviderService", e);
-			return false;
-		}
-		
-		return true;
 	}
 }
