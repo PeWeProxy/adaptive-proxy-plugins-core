@@ -25,46 +25,48 @@ import org.dom4j.io.SAXReader;
  * personalized. 
  */
 public class StructureReader {
-	static Logger log = Logger.getLogger(StructureReader.class);
-	private String tag, type, value;
+	static Logger log = Logger.getLogger(StructureReader.class);	
 	private String portalStructureFile;
+	private Structure rightMenu;
+	private Structure print;
 	
-	public StructureReader(final String portalStructureFile) {
+	public StructureReader(final String portalStructureFile) 
+		throws FileNotFoundException, DocumentException {
+		
 		this.portalStructureFile = portalStructureFile;
+		this.readWebStructure();
 	}
 	
-	public String getTag() {
-		return tag;
+	public Structure getRightMenu() {
+		return rightMenu;
 	}
 	
-	public String getType() {
-		return type;
+	public Structure getPrint() {
+		return print;
 	}
-	
-	public String getValue() {
-		return value;
-	}
-	
-	private void readDocument(final Document document, final String elementName) {
-		Element root = document.getRootElement();
-		Element rightMenu = root.element(elementName);
-		tag = rightMenu.element("tag").getText();
-		type = rightMenu.element("type").getText();
-		value = rightMenu.element("value").getText();
-	}
-	
-	public void readWebStructure(final String elementName) throws FileNotFoundException,
+
+	private void readWebStructure() throws FileNotFoundException,
 		DocumentException {
 		try {
 			SAXReader reader = new SAXReader();
 			InputStream in = new FileInputStream(portalStructureFile);
 			Document document = reader.read(in);
-			readDocument(document, elementName);
+			rightMenu = readDocument(document, "menuRight");
+			print = readDocument(document, "print");
 		} catch (FileNotFoundException fnfExc) {
 			log.error("Structure file not found: " + fnfExc.getMessage());
 			throw fnfExc;
 		} catch (DocumentException docExc) {
 			throw docExc;
 		}
+	}
+	
+	private Structure readDocument(final Document document, final String elementName) {
+		Element root = document.getRootElement();
+		Element rightMenu = root.element(elementName);
+		String tag = rightMenu.element("tag").getText();
+		String type = rightMenu.element("type").getText();
+		String value = rightMenu.element("value").getText();
+		return new Structure(tag, type, value);
 	}
 }

@@ -10,7 +10,10 @@
  */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp;
 
+import java.io.FileNotFoundException;
+
 import org.apache.log4j.Logger;
+import org.dom4j.DocumentException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -28,6 +31,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorServic
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar.PersonalizedCalendar;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.exceptions.PageContentException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback.Feedback;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.newssection.NewsSection;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils.StructureReader;
@@ -40,9 +44,14 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils.StructureReade
 public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	
 	/**
+	 * HTML tag that is used to determine the end of head section of the page.
+	 */
+	private final String HEADER_END_TAG = "</head>";
+	
+	/**
 	 * URI of current HTTP response item.
 	 */
-	private String uri;
+	private String actualUri;
 	
 	/**
 	 * URL of the domain in which the processing plugin works. We adapt only content
@@ -58,9 +67,13 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	private String scriptsUrl;
 	
 	private String imagesUrl;
-	private String stylesheetsUrl;
-	
+	private String stylesheetsUrl;	
 	private String portalStructureFile;
+	
+	/**
+	 * Reader for the XML file describing the structure of the web portal.
+	 */
+	private StructureReader structRead;
 	
 	static Logger log = Logger.getLogger(WebImpProcessingPlugin.class);
 	
@@ -80,17 +93,17 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	 */
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		
-		uri = response.getClientRequestHeaders().getRequestURI();
+		// save URI of current web page
+		actualUri = response.getClientRequestHeaders().getRequestURI();
 				
 		// modify page only if it is from domain of our interest
-		if (!uri.contains(domainUrl)) {
+		if (!actualUri.contains(domainUrl)) {
 			return ResponseProcessingActions.PROCEED;
 		}
 		
 		ModifiableStringService mss = null;
 		try {
-			// insert JavaScripts
+			// insert JavaScripts (balloon tooltips, explicit feedback)
 			try {
 				HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);				
 				htmlInjectionService.inject(
@@ -104,32 +117,20 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 						
 			mss = response.getServiceHandle().getService(ModifiableStringService.class);
 			StringBuilder sb = mss.getModifiableContent();
-			String content = sb.toString();
 			
-			int headerEnd = content.toLowerCase().indexOf("</head>");
-			if(headerEnd < 0) {
-				log.debug("No </head> on page : " + response.getProxyRequestHeaders().getRequestURI());
-				return ResponseProcessingActions.PROCEED;
-			}
-			sb.insert(headerEnd, getCssTag());	// CSS for calendar
-			
-			content = sb.toString();
-			StructureReader sr = new StructureReader(portalStructureFile);
+			// insert CSS for calendar
 			try {
-				sr.readWebStructure("menuRight");
-			} catch (Exception e) {
-				log.error("Unable to modify the web page content.");
-				return ResponseProcessingActions.PROCEED;
-			}
-			String rightMenu = "<" + sr.getTag() + " " + sr.getType() 
-				+ "=\"" + sr.getValue() + "\">";
-			
-			int rightMenuIdx = content.toLowerCase().indexOf(rightMenu);
-			if (rightMenuIdx < 0) {
-				log.debug("No right menu on page : " + response.getProxyRequestHeaders().getRequestURI());
+				sb.insert(getHtmlElementIndex(sb.toString(), HEADER_END_TAG), getCssTag());
+			} catch (PageContentException e) {
+				log.warn(e.getMessage());
 				return ResponseProcessingActions.PROCEED;
 			}
 			
+			String rightMenu = "<" + structRead.getRightMenu().getTag() + " " 
+				+ structRead.getRightMenu().getType() + "=\"" 
+				+ structRead.getRightMenu().getValue() + "\">";
+			
+			// initialize services - user ID, database access
 			UserIdentificationService userIdentification = null;
 			try {
 				userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);				
@@ -144,32 +145,37 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			} catch (ServiceUnavailableException seu) {
 				log.error("Database service unavailable, cannot connect to database.");
 			}
-			sb.insert(rightMenuIdx + rightMenu.length(), 
-					getPersonalizedCalendar(uid, dbService)
-					+ getPersonalizedNews(uid, dbService));
 			
-			Document doc = Jsoup.parse(sb.toString(), uri);
-			Element div = doc.select("div[class=print_button]").first();			
+			// add personalized calendar and news to right menu
+			try {
+				sb.insert(getHtmlElementIndex(sb.toString(), rightMenu) 
+						+ rightMenu.length(), 
+						getPersonalizedCalendar(uid, dbService)
+						+ getPersonalizedNews(uid, dbService));			
+			} catch (PageContentException e) {
+				log.warn(e.getMessage());
+				return ResponseProcessingActions.PROCEED;
+			}
+			
+			// replace print section with buttons for sending explicit feedback
+			Document doc = Jsoup.parse(sb.toString(), actualUri);
+			Element div = doc.select(structRead.getPrint().getTag()
+					+ "[" + structRead.getPrint().getType() + "="
+					+ structRead.getPrint().getValue() + "]").first();			
 			if (div != null) {
 				div.html(Feedback.getCode(imagesUrl));
-				try {
-					sr.readWebStructure("print");
-				} catch (Exception e) {
-					log.fatal("Unable to add buttons for feedback.");
-					return ResponseProcessingActions.PROCEED;
-				}
-				String printBtnStartCode = "<" + sr.getTag() + " " + sr.getType() 
-					+ "=\"" + sr.getValue() + "\">";
-				String printBtnEndCode = "</" + sr.getTag() + ">";
-				content = sb.toString();
-				int iStart = content.indexOf(printBtnStartCode);
-				int iEnd = content.indexOf(printBtnEndCode, iStart);
+				String printBtnStartCode = "<" + structRead.getPrint().getTag() + " " 
+					+ structRead.getPrint().getType() + "=\"" + structRead.getPrint().getValue() + "\">";
+				String printBtnEndCode = "</" + structRead.getPrint().getTag() + ">";				
+				int iStart = sb.toString().indexOf(printBtnStartCode);
+				int iEnd = sb.toString().indexOf(printBtnEndCode, iStart);
 				sb.replace(iStart, iEnd + printBtnEndCode.length(), div.outerHtml());
 			}			
 			mss.setContent(sb.toString());
+			
 		} catch (ServiceUnavailableException e) {
 			log.warn("ModifiableStringService is unavailable. Plugin cannot modify the page content.");
-		}
+		} 
 		
 		return ResponseProcessingActions.PROCEED;
 	}
@@ -187,6 +193,19 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		imagesUrl = props.getProperty("imagesUrl");
 		stylesheetsUrl = props.getProperty("stylesheetsUrl");
 		portalStructureFile = props.getProperty("portalStructureFile");
+		
+		// create reader of the XML file describing portal's structure
+		try {
+			structRead = new StructureReader(portalStructureFile);
+		} catch (FileNotFoundException fnfExc) {
+			log.error("Structure file not found: " + portalStructureFile);
+			log.error(fnfExc.getMessage());
+			return false;
+		} catch (DocumentException docExc) {
+			log.error("Unable to parse document: " + portalStructureFile);
+			log.error(docExc.getMessage());
+			return false;
+		}
 		
 		return true;
 	}
@@ -223,6 +242,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	
 	private String getFeedbackScriptTag() {		
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
+		//return "<script type='text/javascript' src='http://miho.mine.nu/WebImp/wi_feedback.js'></script>";
 	}
 	
 	private String getCssTag() {
@@ -249,5 +269,22 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			final DatabaseConnectionProviderService dbService) {
 		NewsSection news = new NewsSection();
 		return news.getNewsSectionCode(userId, dbService); 
+	}
+	
+	/**
+	 * @param content source code of HTML page
+	 * @return index of HTML element within the source code of the page
+	 * @throws PageContentException in case the element was not found 
+	 * 		   in the source code of the page
+	 */
+	private int getHtmlElementIndex(final String content, final String element) 
+		throws PageContentException {
+		
+		int iHtmlElement = content.toLowerCase().indexOf(element);
+		if(iHtmlElement < 0) {
+			throw new PageContentException(
+					"No " + element + " on page: " + actualUri);
+		}
+		return iHtmlElement;
 	}
 }
