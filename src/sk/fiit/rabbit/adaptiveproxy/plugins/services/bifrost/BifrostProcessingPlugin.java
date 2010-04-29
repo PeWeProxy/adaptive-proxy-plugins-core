@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import sk.fiit.bifrost.Disambiguator;
+import sk.fiit.bifrost.communities.Community;
 import sk.fiit.bifrost.dunco.Document;
 import sk.fiit.bifrost.dunco.FetchException;
 import sk.fiit.bifrost.dunco.WebSearch;
@@ -47,15 +48,16 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
+		ModifiableHttpResponse response = messageFactory.constructHttpResponse("text/html");
+
 		String query = extractQueryFromURI(proxyResponse.getClientRequestHeaders().getRequestURI());
 		
 		Context context = new Context();
 		context.setLastQuery(query);
 		context.setIpAddress(proxyResponse.getClientSocketAddress().getAddress().getHostAddress());
+		context.setCommunity(loadCommunity(proxyResponse));
 		
 		Collection<Document> resultDocuments = new LinkedList<Document>();
-		
-		ModifiableHttpResponse response = messageFactory.constructHttpResponse("text/html");
 		
 		Connection connection = null;
 
@@ -90,6 +92,39 @@ public class BifrostProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 		}
 		
 		return response;
+	}
+	
+	private Community loadCommunity(ModifiableHttpRequest proxyResponse) {
+		Connection connection = null;
+		try {
+			String uid = proxyResponse.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification();
+			connection = proxyResponse.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+			
+			try {
+				PreparedStatement stmt = connection.prepareStatement("SELECT friends FROM bf_communities WHERE owner = ?");
+				stmt.setString(1, uid);
+				
+				ResultSet rs = stmt.executeQuery();
+				
+				while(rs.next()) {
+					String friends = rs.getString("friends");
+					
+					Set<String> friendSet = new HashSet<String>();
+					for(String friend : friends.split(",")) {
+						friendSet.add(friend.trim());
+					}
+					
+					return new Community(uid, friendSet);
+				}
+			} catch (SQLException e) {
+				logger.warn("Could not load communities", e);
+			}
+		} catch (ServiceUnavailableException e) {
+		} finally {
+			SqlUtils.close(connection);
+		}
+		
+		return null;
 	}
 	
 	private Long logRecommendationGroup(Connection con, String userid, String originalQuery) throws SQLException {
