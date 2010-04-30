@@ -1,6 +1,6 @@
 /*
  * Website Navigation Adaptation Based on Behavior of Users
-
+ * 
  * Master Thesis
  * Bc. Michal Holub
  * 

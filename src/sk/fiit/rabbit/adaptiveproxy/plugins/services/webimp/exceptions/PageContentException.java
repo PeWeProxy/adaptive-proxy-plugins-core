@@ -1,3 +1,13 @@
+/*
+ * Website Navigation Adaptation Based on Behavior of Users
+ * 
+ * Master Thesis
+ * Bc. Michal Holub
+ * 
+ * Faculty of Informatics and Information Technologies
+ * Slovak University of Technology
+ * Bratislava, 2008 - 2010  
+ */
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.exceptions;
 
 /**
@@ -7,6 +17,11 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.exceptions;
  */
 public class PageContentException extends Exception {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1241424900561552653L;
+
 	public PageContentException(final String message) {
 		super(message);
 	}
