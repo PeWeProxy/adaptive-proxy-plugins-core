@@ -179,6 +179,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			}	
 			
 			// remove sections from right menu (najnovsie, anketa)
+			/*
 			doc = Jsoup.parse(sb.toString(), actualUri);			
 			Elements boxNadpis = doc.select("div[class=box_nadpis]");
 			int i = 1;
@@ -207,7 +208,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				int end = sb.indexOf(DIV_END_TAG, middle + DIV_END_TAG.length());
 				sb.delete(start, end + DIV_END_TAG.length());
 			}
-			
+			*/
 			// set modified content back to HTTP response
 			mss.setContent(sb.toString());
 			
