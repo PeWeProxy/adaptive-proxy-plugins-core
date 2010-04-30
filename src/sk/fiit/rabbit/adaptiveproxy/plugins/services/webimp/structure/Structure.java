@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils;
+package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.structure;
 
 public class Structure {
 	private String tag;

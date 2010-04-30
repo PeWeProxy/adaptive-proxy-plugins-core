@@ -17,6 +17,7 @@ import org.dom4j.DocumentException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
@@ -34,7 +35,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar.Personalize
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.exceptions.PageContentException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback.Feedback;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.newssection.NewsSection;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils.StructureReader;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.structure.StructureReader;
 
 /**
  * Plugin for the adaptive proxy server that processes the response packets.
@@ -47,6 +48,11 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	 * HTML tag that is used to determine the end of head section of the page.
 	 */
 	private final String HEADER_END_TAG = "</head>";
+	
+	/**
+	 * HTML tag that is used to determine the end of div element.
+	 */
+	private final String DIV_END_TAG = "</div>";
 	
 	/**
 	 * URI of current HTTP response item.
@@ -170,7 +176,39 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				int iStart = sb.toString().indexOf(printBtnStartCode);
 				int iEnd = sb.toString().indexOf(printBtnEndCode, iStart);
 				sb.replace(iStart, iEnd + printBtnEndCode.length(), div.outerHtml());
+			}	
+			
+			// remove sections from right menu (najnovsie, anketa)
+			doc = Jsoup.parse(sb.toString(), actualUri);			
+			Elements boxNadpis = doc.select("div[class=box_nadpis]");
+			int i = 1;
+			String najnovsie = "";
+			String anketa = "";
+			for (Element e : boxNadpis) {
+				e = e.attr("id", "_wi_" + String.valueOf(i++));
+				if (e.text().toLowerCase().contains("najnovšie")) {				
+					najnovsie = "<" + e.tagName() + e.attributes().toString() + ">";					
+				}
+				else if (e.text().toLowerCase().contains("anketa")) {
+					anketa = "<" + e.tagName() + e.attributes().toString() + ">";
+				}
+			}
+			sb.replace(0, sb.length(), doc.outerHtml());
+			
+			if (najnovsie.length() > 0) {
+				int start = sb.indexOf(najnovsie);
+				int middle = sb.indexOf(DIV_END_TAG, start);
+				int end = sb.indexOf(DIV_END_TAG, middle + DIV_END_TAG.length());
+				sb.delete(start, end + DIV_END_TAG.length());
 			}			
+			if (anketa.length() > 0) {
+				int start = sb.indexOf(anketa);
+				int middle = sb.indexOf(DIV_END_TAG, start);
+				int end = sb.indexOf(DIV_END_TAG, middle + DIV_END_TAG.length());
+				sb.delete(start, end + DIV_END_TAG.length());
+			}
+			
+			// set modified content back to HTTP response
 			mss.setContent(sb.toString());
 			
 		} catch (ServiceUnavailableException e) {

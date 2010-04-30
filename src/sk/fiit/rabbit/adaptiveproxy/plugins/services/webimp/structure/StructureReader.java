@@ -8,7 +8,7 @@
  * Slovak University of Technology
  * Bratislava, 2008 - 2010  
  */
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.utils;
+package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.structure;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
