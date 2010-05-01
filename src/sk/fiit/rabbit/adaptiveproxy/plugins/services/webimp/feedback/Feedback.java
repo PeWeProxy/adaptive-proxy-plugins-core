@@ -2,6 +2,8 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback;
 
 public class Feedback {
 	public static String getCode(final String directory) {
+		String code = "";
+		/*
 		String code = "<img style=\"cursor:pointer\" src=\"" + directory + "/like.png\" onClick=\"webimp.wiSendFeedback(1);\" alt=\"Stránka ma zaujala\" width=\"30\" height=\"30\"/>";
 		code += "<img style=\"cursor:pointer\" src=\"" + directory + "/dislike.png\" onClick=\"webimp.wiSendFeedback(-1);\" alt=\"Stránka ma nezaujala\" width=\"30\" height=\"30\"/>";
 		/*

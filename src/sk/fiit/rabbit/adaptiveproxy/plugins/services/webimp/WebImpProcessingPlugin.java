@@ -96,7 +96,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 						getYahooScriptTag()
 						+ getBalloonScriptTag()
 						+ getBalloonConfScriptTag()
-						+ getFeedbackScriptTag(), HtmlPosition.ON_MARK);
+						/*+ getFeedbackScriptTag()*/, HtmlPosition.ON_MARK);
 			} catch (ServiceUnavailableException e) {
 				log.warn("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 			}
@@ -213,11 +213,11 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	}
 	
 	private String getBalloonScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon.js'></script>";
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon.js'></script>";
 	}
 	
 	private String getBalloonConfScriptTag() {
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_baloon-config.js'></script>";
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";
 	}
 	
 	private String getFeedbackScriptTag() {
