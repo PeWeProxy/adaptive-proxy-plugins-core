@@ -36,7 +36,7 @@ public class PersonalizedCalendar {
 	 * 
 	 * @param userId value of user agent ID for current user
 	 * @param dbService service for working with database
-	 * @return HTML code of a calendar for user with given userId
+	 * @return HTML code of the calendar for user with given userId
 	 */
 	public String getCalendarCode(final String userId, 
 			final DatabaseConnectionProviderService dbService) {		
@@ -49,10 +49,10 @@ public class PersonalizedCalendar {
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				calendarCode = rs.getString(1);
-				log.debug("No calendar found for user " + userId);
+				calendarCode = rs.getString(1);				
 			}
 			else {
+				log.debug("No calendar found for user " + userId);
 				Statement stmt = con.createStatement();
 				ResultSet defCal = stmt.executeQuery("SELECT code FROM wi_calendars c WHERE userid = 'defaultcalendar'");
 				if (defCal.next()) {

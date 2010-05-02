@@ -33,6 +33,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationServ
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.calendar.PersonalizedCalendar;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.exceptions.PageContentException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.feedback.Feedback;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.links.PersonalizedLinks;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.newssection.NewsSection;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp.structure.StructureReader;
 
@@ -151,6 +152,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				sb.insert(getHtmlElementIndex(sb.toString(), rightMenu) 
 						+ rightMenu.length(), 
 						getPersonalizedCalendar(uid, dbService)
+						+ getPersonalizedLinks(uid, dbService)
 						+ getPersonalizedNews(uid, dbService));			
 			} catch (PageContentException e) {
 				log.warn(e.getMessage());
@@ -259,6 +261,12 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			final DatabaseConnectionProviderService dbService) {
 		PersonalizedCalendar cal = new PersonalizedCalendar();
 		return cal.getCalendarCode(userId, dbService);
+	}
+	
+	private String getPersonalizedLinks(final String userId,
+			final DatabaseConnectionProviderService dbService) {
+		PersonalizedLinks links = new PersonalizedLinks();
+		return links.getLinksCode(userId, dbService);
 	}
 	
 	/**
