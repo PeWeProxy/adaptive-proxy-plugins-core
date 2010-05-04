@@ -111,7 +111,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 						getYahooScriptTag()
 						+ getBalloonScriptTag()
 						+ getBalloonConfScriptTag()
-						+ getFeedbackScriptTag(), HtmlPosition.ON_MARK);
+						+ getCalendarScriptTag(), HtmlPosition.ON_MARK);
 			} catch (ServiceUnavailableException e) {
 				log.warn("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 			}
@@ -243,9 +243,8 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";		
 	}
 	
-	private String getFeedbackScriptTag() {		
-		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_feedback.js'></script>";
-		//return "<script type='text/javascript' src='http://miho.mine.nu/WebImp/wi_feedback.js'></script>";
+	private String getCalendarScriptTag() {
+		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_calendar.js'></script>";
 	}
 	
 	private String getCssTag() {
