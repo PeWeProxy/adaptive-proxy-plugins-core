@@ -12,6 +12,11 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.webimp;
 
 import java.io.FileNotFoundException;
 
+import net.htmlparser.jericho.MasonTagTypes;
+import net.htmlparser.jericho.MicrosoftTagTypes;
+import net.htmlparser.jericho.PHPTagTypes;
+import net.htmlparser.jericho.Source;
+
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.jsoup.Jsoup;
@@ -48,6 +53,11 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	 * HTML tag that is used to determine the end of head section of the page.
 	 */
 	private final String HEADER_END_TAG = "</head>";
+	
+	/**
+	 * HTML tag that is used to determine the end of div section.
+	 */
+	private final String DIV_END_TAG = "</div>";
 	
 	/**
 	 * URI of current HTTP response item.
@@ -174,6 +184,40 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				sb.replace(iStart, iEnd + printBtnEndCode.length(), div.outerHtml());
 			}	
 			
+			// domain specific
+			// remove some sections from right menu of FIIT website
+			Source source = new Source(sb.toString());
+			source.fullSequentialParse();
+			String najnovsie = null;
+			String anketa = null;
+			for (net.htmlparser.jericho.Element e : source.getAllElements("div")) {
+				String val = e.getAttributeValue("class");
+				if (val != null) {
+					if (val.equals("box_nadpis")) {
+						String s = e.getContent().toString().toLowerCase();
+						if (s.contains("najnovšie")) {
+							najnovsie = e.toString();
+						}
+						else if (s.contains("anketa")) {
+							anketa = e.toString();
+						}
+					}
+				}
+			}
+			if (najnovsie != null) {
+				int iNajStart = sb.indexOf(najnovsie);
+				int iEnd = sb.indexOf(DIV_END_TAG, iNajStart + najnovsie.length()) 
+					+ DIV_END_TAG.length();
+				sb.delete(sb.indexOf(najnovsie), iEnd);
+			}
+			if (anketa != null) {
+				int iAnketaStart = sb.indexOf(anketa);
+				int iEnd = sb.indexOf(DIV_END_TAG, iAnketaStart + anketa.length()) 
+					+ DIV_END_TAG.length();
+				sb.delete(sb.indexOf(anketa), iEnd);
+			}
+			
+			// replace content in response with modified content 
 			mss.setContent(sb.toString());
 			
 		} catch (ServiceUnavailableException e) {
@@ -210,9 +254,22 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			return false;
 		}
 		
+		setupJerichoParser();
+		
 		return true;
 	}
 	
+	/**
+	 * Sets up the Jericho HTML Parser by registering special
+	 * tag types.
+	 */
+	private void setupJerichoParser() {
+		MicrosoftTagTypes.register();
+		PHPTagTypes.register();
+		PHPTagTypes.PHP_SHORT.deregister(); // remove PHP short tags for this example otherwise they override processing instructions
+		MasonTagTypes.register();
+	}
+
 	@Override
 	public void start() {
 		// TODO Auto-generated method stub
@@ -248,7 +305,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	}
 	
 	private String getCssTag() {
-		return "<link rel='stylesheet' type='text/css' href='" + stylesheetsUrl + "/wi_calendar_style.css'" + "/>";
+		return "<link rel='stylesheet' type='text/css' href='" + stylesheetsUrl + "/wi_calendar_style.css'" + "/>";		
 	}	
 	
 	/**
