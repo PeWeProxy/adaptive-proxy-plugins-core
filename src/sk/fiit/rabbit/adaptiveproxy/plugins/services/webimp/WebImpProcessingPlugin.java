@@ -157,7 +157,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				log.error("Database service unavailable, cannot connect to database.");
 			}
 			
-			// add personalized calendar and news to right menu
+			// add personalized calendar and news to the right menu
 			try {
 				sb.insert(getHtmlElementIndex(sb.toString(), rightMenu) 
 						+ rightMenu.length(), 
@@ -190,6 +190,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 			source.fullSequentialParse();
 			String najnovsie = null;
 			String anketa = null;
+			String podujatia = null;
 			for (net.htmlparser.jericho.Element e : source.getAllElements("div")) {
 				String val = e.getAttributeValue("class");
 				if (val != null) {
@@ -200,6 +201,9 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 						}
 						else if (s.contains("anketa")) {
 							anketa = e.toString();
+						}
+						else if (s.contains("podujatia pre")) {
+							podujatia = e.toString();
 						}
 					}
 				}
@@ -215,6 +219,12 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 				int iEnd = sb.indexOf(DIV_END_TAG, iAnketaStart + anketa.length()) 
 					+ DIV_END_TAG.length();
 				sb.delete(sb.indexOf(anketa), iEnd);
+			}
+			if (podujatia != null) {
+				int iPodujatiaStart = sb.indexOf(podujatia);
+				int iEnd = sb.indexOf(DIV_END_TAG, iPodujatiaStart + podujatia.length())
+					+ DIV_END_TAG.length();
+				sb.delete(sb.indexOf(podujatia), iEnd);
 			}
 			
 			// replace content in response with modified content 

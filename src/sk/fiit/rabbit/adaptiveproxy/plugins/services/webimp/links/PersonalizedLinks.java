@@ -32,7 +32,7 @@ public class PersonalizedLinks {
 		
 		try {
 			Connection con = dbService.getDatabaseConnection();			
-			String query = "SELECT code FROM wi_recommendations r WHERE userid = ?";
+			String query = "SELECT r.code FROM wi_recommendations r WHERE r.userid = ?";
 			PreparedStatement ps = con.prepareStatement(query);
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
@@ -42,7 +42,7 @@ public class PersonalizedLinks {
 			else {
 				log.debug("No recommended links found for user " + userId);
 				Statement stmt = con.createStatement();
-				ResultSet defLinks = stmt.executeQuery("SELECT code FROM wi_recommendations r WHERE userid = 'defaultlinks'");
+				ResultSet defLinks = stmt.executeQuery("SELECT r.code FROM wi_recommendations r WHERE r.userid = 'defaultlinks'");
 				if (defLinks.next()) {
 					linksCode = defLinks.getString(1);
 				}
