@@ -14,5 +14,10 @@
     <tag>div</tag>
     <type>class</type>
     <value>content_text</value>
-  </content>  
+  </content> 
+  <news>
+  	<tag>div</tag>
+  	<type>class</type>
+  	<value>news_annotation</value>
+  </news>
 </website>
