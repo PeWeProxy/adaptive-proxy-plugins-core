@@ -77,8 +77,21 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	 */
 	private String scriptsUrl;
 	
+	/**
+	 * URL of the images folder on the server, from which images for this plugin
+	 * are loaded.
+	 */
 	private String imagesUrl;
-	private String stylesheetsUrl;	
+	
+	/**
+	 * URL of the stylesheets folder on the server, which contains CSS for
+	 * personalized calendar.
+	 */
+	private String stylesheetsUrl;
+	
+	/**
+	 * Name of the XML file describing the structure of the web portal.
+	 */
 	private String portalStructureFile;
 	
 	/**
@@ -233,6 +246,10 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return true;	// we want to access the content of response to modify it
 	}
 	
+	/**
+	 * Sets up the plugin. Reads configuration from plugin configuration file.
+	 * Tries to read the web portal's structure file.
+	 */
 	@Override
 	public boolean setup(PluginProperties props) {
 		scriptsUrl = props.getProperty("scriptsUrl");
@@ -288,22 +305,37 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return true;
 	}
 	
+	/**
+	 * @return URL of the JavaScript used with balloon tooltips.
+	 */
 	private String getYahooScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_yahoo-dom-event.js'></script>";
 	}
 	
+	/**
+	 * @return URL of the balloon JavaScript
+	 */
 	private String getBalloonScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon.js'></script>";
 	}
 	
+	/**
+	 * @return URL of the JavaScript containing the configuration of balloons.
+	 */
 	private String getBalloonConfScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_balloon-config.js'></script>";		
 	}
 	
+	/**
+	 * @return URL of the JavaScript for controlling the calendar.
+	 */
 	private String getCalendarScriptTag() {
 		return "<script type='text/javascript' src='" + scriptsUrl + "/wi_calendar.js'></script>";
 	}
 	
+	/**
+	 * @return URL of the stylesheet file containing the design of calendar.
+	 */
 	private String getCssTag() {
 		return "<link rel='stylesheet' type='text/css' href='" + stylesheetsUrl + "/wi_calendar_style.css'" + "/>";		
 	}	
@@ -319,6 +351,11 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 		return cal.getCalendarCode(userId, dbService);
 	}
 	
+	/**
+	 * @param userId value of user agent ID of current user
+	 * @param dbService service for working with database
+	 * @return HTML source code of the recommended links section for given user
+	 */
 	private String getPersonalizedLinks(final String userId,
 			final DatabaseConnectionProviderService dbService) {
 		PersonalizedLinks links = new PersonalizedLinks();
@@ -326,7 +363,7 @@ public class WebImpProcessingPlugin implements ResponseProcessingPlugin {
 	}
 	
 	/**
-	 * @param userId value of user agent ID for current user
+	 * @param userId value of user agent ID of current user
 	 * @param dbService service for working with database
 	 * @return HTML source code of the news section for given user
 	 */
