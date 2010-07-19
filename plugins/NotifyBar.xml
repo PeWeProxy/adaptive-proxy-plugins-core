@@ -8,6 +8,41 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/notifybar.js</param>
+		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk:3000/javascripts/notifybar.js</param>
+		<param name="additionalHTML"><![CDATA[<style type="text/css">
+.notify-bar {
+	width:100%;
+	position:fixed;
+	top:0;
+	left:0;
+	z-index:32768;
+	background-color:#ffffcc;
+	font-size:14px;
+	color:#000;
+	text-align: center;
+	font-family: Arial, Verdana, sans-serif;
+	padding:3px 0px;
+	border-bottom:1px solid #ccc;
+}
+
+.notify-bar-inner {
+	float: left;
+	width: 90%;
+	padding-left: 2em;
+}
+
+.notify-bar-close {
+	background-color:#ffff99;
+	color:black;
+	border:2px solid #735005;
+	cursor:pointer;
+	display:block;
+	float:right;
+	margin-right:20px;
+	padding-left:4px;
+	padding-right:4px;
+	text-decoration:none;
+}
+</style>]]></param>
 	</parameters>
 </plugin>

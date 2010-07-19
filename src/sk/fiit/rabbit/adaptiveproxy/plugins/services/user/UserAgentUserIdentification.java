@@ -74,10 +74,8 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			HttpRequest request) {
 		List<RequestServiceProvider> retVal = null;
 		String uidString = getUIDForMessage(request.getClientRequestHeaders());
-		if (uidString != null) {
 		retVal = new ArrayList<RequestServiceProvider>(1);
 		retVal.add(new UserServiceProvider(uidString));
-		}
 		return retVal;
 	}
 	
@@ -97,10 +95,8 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 			HttpResponse response) {
 		List<ResponseServiceProvider> retVal = null;
 		String uidString = getUIDForMessage(response.getClientRequestHeaders());
-		if (uidString != null) {
-			retVal = new ArrayList<ResponseServiceProvider>(1);
-			retVal.add(new UserServiceProvider(uidString));
-		}
+		retVal = new ArrayList<ResponseServiceProvider>(1);
+		retVal.add(new UserServiceProvider(uidString));
 		return retVal;
 	}
 

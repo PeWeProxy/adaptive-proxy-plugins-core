@@ -5,9 +5,24 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationEnforceService</className>
 	<types>
-		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="redirectTo">http://peweproxy.fiit.stuba.sk/</param>
+		<param name="notificationScript">
+			<![CDATA[
+				<script type='text/javascript'>
+				  noapuidnotif = function($) {
+				      $(document).ready(function() {
+						  $.notifyBar({
+						  	html: 'Please finish your proxy registration. <a href="http://peweproxy.fiit.stuba.sk/info/user_agent">Setup your User-Agent identifier</a>',
+						  	delay: '20000',
+						  	animationSpeed: 'normal',
+						  	close: true
+						  });
+					  });
+				  }(adaptiveProxyJQuery);
+				</script>
+			]]>
+		</param>
 	</parameters>
 </plugin>

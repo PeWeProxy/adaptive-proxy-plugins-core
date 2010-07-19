@@ -3,79 +3,55 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 import org.apache.log4j.Logger;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.WritableResponseHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
+import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
+import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseProcessingPluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.processing.RequestProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 
-public class UserIdentificationEnforceService implements RequestProcessingPlugin {
+public class UserIdentificationEnforceService extends ResponseProcessingPluginAdapter {
 	
 	private static final Logger logger = Logger.getLogger(UserIdentificationEnforceService.class);
+
+	private String notificationScript;
 	
-	private String redirectTo;
-
 	@Override
-	public HttpRequest getNewRequest(ModifiableHttpRequest proxyRequest,
-			HttpMessageFactory messageFactory) {
-		return null;
-	}
-
-	@Override
-	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
-			HttpMessageFactory messageFactory) {
-		
-		ModifiableHttpResponse r = messageFactory.constructHttpResponse("text/html");
-		WritableResponseHeaders headers = r.getProxyResponseHeaders();
-		
-		headers.setStatusLine("HTTP/1.1 302 Found");
-		headers.setHeader("Location", redirectTo);
-		
-		return r;
-	}
-
-	@Override
-	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		String requestUri = request.getClientRequestHeaders().getRequestURI();
-
-		if(requestUri.startsWith(redirectTo)) {
-			return RequestProcessingActions.PROCEED;
-		}
+	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
+		boolean noApuidNotificaton = false;
 		
 		try {
-			UserIdentificationService userIdentificationService = request.getServiceHandle().getService(UserIdentificationService.class);
+			UserIdentificationService userIdentificationService = response.getServiceHandle().getService(UserIdentificationService.class);
 			if(userIdentificationService.getClientIdentification() == null) {
-				logger.debug("Unidentified user detected");
-				return RequestProcessingActions.NEW_RESPONSE;
-			} else {
-				return RequestProcessingActions.PROCEED;
+				noApuidNotificaton = true;
 			}
 		} catch (ServiceUnavailableException e) {
-			return RequestProcessingActions.NEW_RESPONSE;
+			noApuidNotificaton = true;
 		}
+		
+		if(noApuidNotificaton) {
+			logger.debug("Unidentified user detected");
+
+			try {
+				HtmlInjectorService htmlInjector = response.getServiceHandle().getService(HtmlInjectorService.class);
+				htmlInjector.inject(notificationScript, HtmlPosition.ON_MARK);
+			} catch (ServiceUnavailableException e) {
+				logger.debug("ServiceUnavailableException: HtmlInjectorService", e);
+			}
+		}
+		
+		return ResponseProcessingActions.PROCEED;
 	}
 
 	@Override
-	public boolean wantRequestContent(RequestHeaders clientRQHeaders) {
+	public boolean wantResponseContent(ResponseHeaders clientRPHeaders) {
 		return false;
 	}
-
+	
 	@Override
 	public boolean setup(PluginProperties props) {
-		redirectTo = props.getProperty("redirectTo", null);
+		this.notificationScript = props.getProperty("notificationScript");
 		return true;
-	}
-
-	@Override
-	public void start() {
-	}
-
-	@Override
-	public void stop() {
 	}
 
 	@Override

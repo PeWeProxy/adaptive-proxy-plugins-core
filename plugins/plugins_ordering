@@ -4,7 +4,6 @@
  
 [request]
 RequestFilterService
-UserIdentificationEnforceService
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
 WebImpFeedbackPlugin
@@ -12,5 +11,8 @@ WebImpFeedbackPlugin
 [response]
 RequestFilterService
 SetupJavaScriptEnvironmentProcessingPlugin
+NotifyBar
+KeywordsDisplayPlugin
+ActivityUpdaterPlugin
 DatabaseLoggingService
 WebImpProcessingPlugin

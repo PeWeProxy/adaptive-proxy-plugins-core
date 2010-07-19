@@ -75,9 +75,8 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 			}
 			
 			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
-			UserIdentificationService userIdentification = response.getServiceHandle().getService(UserIdentificationService.class);
 			
-			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userIdentification.getClientIdentification())) {
+			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 				String scripts = "<script src='" + scriptUrl + "'></script>";
 				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 			}
