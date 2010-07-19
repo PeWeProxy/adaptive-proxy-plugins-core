@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>NotifyBar</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
+	<types>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="scriptUrl">http://127.0.0.1:3000/javascripts/notifybar.js</param>
+	</parameters>
+</plugin>
