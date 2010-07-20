@@ -9,14 +9,14 @@
 	</types>
 	<classLocation/>
 	<parameters>
-		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/bifrost.js</param>
+		<param name="scriptUrl">${baseurl}/javascripts/bifrost.js</param>
 		<param name="bypassPattern">/bifrost/search</param>
 		<param name="generateResponse">true</param>
 		<param name="allowedDomain">google.</param>
-		<param name="recommendationUrlBase">http://peweproxy.fiit.stuba.sk/recommendations/show/</param>
-		<param name="queryUrlBase">http://peweproxy.fiit.stuba.sk/recommendations/group/</param>
-		<param name="negativeFeedbackUrl">http://peweproxy.fiit.stuba.sk/recommendations/negative/</param>
-		<param name="assetsBase">http://peweproxy.fiit.stuba.sk/images/bifrost/</param>
+		<param name="recommendationUrlBase">${baseurl}/recommendations/show/</param>
+		<param name="queryUrlBase">${baseurl}/recommendations/group/</param>
+		<param name="negativeFeedbackUrl">${baseurl}/recommendations/negative/</param>
+		<param name="assetsBase">${baseurl}/images/bifrost/</param>
 		<param name="maxRecommendedDocuments">4</param>
 		<param name="maxDocumentsFromQuery">2</param>
 	</parameters>

@@ -11,6 +11,6 @@
 	<parameters>
 		<param name="scriptUrl"></param>
 		<param name="bypassPattern">bifrost/negativefeedback</param>
-		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/recommendations/negative</param>
+		<param name="bypassTo">${baseurl}/recommendations/negative</param>
 	</parameters>
 </plugin>

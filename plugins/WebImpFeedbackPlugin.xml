@@ -9,8 +9,8 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/wi_feedback.js</param>
+		<param name="scriptUrl">${baseurl}/javascripts/wi_feedback.js</param>
 		<param name="bypassPattern">webimp/feedback</param>
-		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/webimp/feedback</param>
+		<param name="bypassTo">${baseurl}/webimp/feedback</param>
 	</parameters>
 </plugin>

@@ -9,8 +9,8 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/timelog.js</param>
+		<param name="scriptUrl">${baseurl}/javascripts/timelog.js</param>
 		<param name="bypassPattern">activity/update</param>
-		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/activity/update</param>
+		<param name="bypassTo">${baseurl}/activity/update</param>
 	</parameters>
 </plugin>

@@ -9,9 +9,9 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">http://peweproxy.fiit.stuba.sk/javascripts/keywords.js</param>
+		<param name="scriptUrl">${baseurl}/javascripts/keywords.js</param>
 		<param name="bypassPattern">keywords/load</param>
-		<param name="bypassTo">http://peweproxy.fiit.stuba.sk/keywords/load</param>
+		<param name="bypassTo">${baseurl}/keywords/load</param>
 		<param name="allowOnlyFor">31a3a516283911df85d8c53077dcaf47,dec1857027cf11df85d7c53077dcaf47,9d0dfaec354311df91a6d97c090686ca</param>
 	</parameters>
 </plugin>

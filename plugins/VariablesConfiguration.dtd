@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!ELEMENT variables (variable*)>
+
+<!--
+	Variables configuration. Subelements are in format
+		&lt;variable name="KEY"&gt;VALUE&lt;/variable&gt;
+-->
+<!ELEMENT variable (#PCDATA)>
+<!ATTLIST variable
+  name		CDATA	#REQUIRED
+>
