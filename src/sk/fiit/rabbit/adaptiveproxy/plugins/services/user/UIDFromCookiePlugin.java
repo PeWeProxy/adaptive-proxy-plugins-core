@@ -1,7 +1,5 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,29 +20,20 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
 			HttpMessageFactory messageFactory) {
 		ModifiableHttpResponse httpResponse = messageFactory.constructHttpResponse("text/html");
-		URL url = null;
-		try {
-			url = new URL(proxyRequest.getClientRequestHeaders().getRequestURI());
-		} catch (MalformedURLException e) {
-			logger.warn("MalformedURLException: " + url, e);
-		}
-		//TODO: http? https?, port!
-		System.err.println("CookieDomain: " + cookieDomain + ", url: " + url.getHost());
-		if (cookieDomain.equals("http://"+url.getHost())) {
-			return httpResponse;
-		}
 		try {
 			ModifiableStringService stringService = httpResponse.getServiceHandle().getService(ModifiableStringService.class);
 			String cookies = proxyRequest.getClientRequestHeaders().getHeader("Cookie");
-			Pattern pattern = Pattern.compile("^.*uid=(.*?)(:?;|$)");
+			Pattern pattern = Pattern.compile("^.*__peweproxy_uid=(.*?)(:?;|$)");
 			Matcher matcher = pattern.matcher(cookies);
 			String uid = "";
-			String content;
+			String content = ""; 
 			if (matcher.matches()) {
 				uid = matcher.group(1);
 				content = "var __peweproxy_uid = '" + uid + "'";
 			} else {
-				content = "location.href='" + cookieDomain + "?back=" + proxyRequest.getClientRequestHeaders().getRequestURI() + "';";
+				content = "if (window.location.protocol+'//'+window.location.host!='" + cookieDomain + "') {" +
+						"window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location; }";
+				System.err.println(content);
 			}
 			stringService.setContent(content);
 		} catch (ServiceUnavailableException e) {

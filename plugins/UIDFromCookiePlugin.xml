@@ -9,8 +9,8 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${baseurl}/javascripts/cookie.js</param>
-		<param name="bypassPattern">${baseurl}/javascripts/cookie.js</param>
+		<param name="scriptUrl">${baseurl}/set_cookie/cookie.js</param>
+		<param name="bypassPattern">${baseurl}/set_cookie/cookie.js</param>
 		<param name="generateResponse">true</param>
 		<param name="cookieDomain">${baseurl}</param>
 	</parameters>
