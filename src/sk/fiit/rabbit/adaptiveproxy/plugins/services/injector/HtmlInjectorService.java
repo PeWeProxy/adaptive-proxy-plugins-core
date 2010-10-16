@@ -1,6 +1,6 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
+import sk.fiit.peweproxy.services.ProxyService;
 
 public interface HtmlInjectorService extends ProxyService {
 	

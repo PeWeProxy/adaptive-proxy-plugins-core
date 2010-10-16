@@ -1,53 +1,65 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
-import org.apache.log4j.Logger;
+import java.util.Set;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
+import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 
-public class SetupJavaScriptEnvironmentProcessingPlugin extends ResponseProcessingPluginAdapter {
-	
-	private static final Logger logger = Logger.getLogger(SetupJavaScriptEnvironmentProcessingPlugin.class);
+public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProcessingPlugin {
 	
 	private String jQueryPath;
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		ClearTextExtractionService clearTextService;
-		try {
-			clearTextService = response.getServiceHandle().getService(ClearTextExtractionService.class);
-		} catch (ServiceUnavailableException e) {
-			logger.trace("ClearTextService unavailable, SetupJavaScriptEnvironmentProcessingPlugin takes no action");
-			return ResponseProcessingActions.PROCEED;
-		}
+		ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
+		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
-		try {
-			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
+		String scripts = "" +
+                         "<script type='text/javascript'>" +
+                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
+                          "</script>" +
+                          "<script src='" + jQueryPath + "'></script>" +
+                          "<!-- __ap_scripts__ -->";
+		htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
 			
-			String scripts = "" +
-                             "<script type='text/javascript'>" +
-                               "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
-                              "</script>" +
-                              "<script src='" + jQueryPath + "'></script>" +
-                              "<!-- __ap_scripts__ -->";
-			htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
-			
-		} catch (ServiceUnavailableException e) {
-			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
-		}
-		
 		return ResponseProcessingActions.PROCEED;
 	}
 	
 	@Override
-	public boolean setup(PluginProperties props) {
+	public boolean start(PluginProperties props) {
 		jQueryPath = props.getProperty("jQueryPath");
 		return true;
+	}
+
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		desiredServices.add(ClearTextExtractionService.class);
+		desiredServices.add(HtmlInjectorService.class);
+	}
+
+	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
+
+	@Override
+	public void stop() {
+	}
+
+	@Override
+	public HttpResponse getNewResponse(ModifiableHttpResponse response,
+			HttpMessageFactory messageFactory) {
+		return null;
 	}
 
 }

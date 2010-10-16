@@ -5,7 +5,7 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorServiceModule</className>
 	<types>
-		<type>ResponseServicePlugin</type>
+		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
 		<param name="endOfBodyExceptions">http://(?:www\.)?google\..*</param>

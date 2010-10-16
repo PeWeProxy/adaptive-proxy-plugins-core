@@ -3,9 +3,9 @@
 <plugin>
 	<name>ReadabilityCleartextExtractionService</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionService</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionServiceModule</className>
 	<types>
-		<type>ResponseServicePlugin</type>
+		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
 	</parameters>

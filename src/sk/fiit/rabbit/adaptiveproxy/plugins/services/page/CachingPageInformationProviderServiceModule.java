@@ -1,41 +1,38 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import sk.fiit.keyextractor.JKeyExtractor;
-import sk.fiit.keyextractor.exceptions.JKeyExtractorException;
 import sk.fiit.keyextractor.extractors.OpenCalaisKeyExtractor;
 import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandle;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
+import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
+import sk.fiit.peweproxy.services.ProxyService;
+import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 
-public class CachingPageInformationProviderService extends ResponseServicePluginAdapter {
+public class CachingPageInformationProviderServiceModule implements ResponseServiceModule {
 	
-	private static final Logger logger = Logger.getLogger(CachingPageInformationProviderService.class);
+	private static final Logger logger = Logger.getLogger(CachingPageInformationProviderServiceModule.class);
 	
-	private class CachingPageInformationProviderServiceProvider extends ResponseServiceProviderAdapter 
-		implements PageInformationProviderService {
+	private class CachingPageInformationProviderServiceProvider 
+		implements PageInformationProviderService,
+		ResponseServiceProvider<PageInformationProviderService> {
 		
 		DatabaseConnectionProviderService connectionService;
 		String clearText;
@@ -48,11 +45,6 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
-		}
-
-		@Override
-		public Class<? extends ProxyService> getServiceClass() {
-			return PageInformationProviderService.class;
 		}
 
 		PageInformation pi;
@@ -193,39 +185,70 @@ public class CachingPageInformationProviderService extends ResponseServicePlugin
 				SqlUtils.close(stmt);
 			}
 		}
+
+		@Override
+		public String getServiceIdentification() {
+			return this.getClass().getName();
+		}
+
+		@Override
+		public PageInformationProviderService getService() {
+			return this;
+		}
+
+		@Override
+		public boolean initChangedModel() {
+			return false;
+		}
+
+		@Override
+		public void doChanges(ModifiableHttpResponse response) {
+			// this service makes no modifications
+		}
 		
 	}
-	
+
 	@Override
-	protected void addDependencies(Set<Class<? extends ProxyService>> dependencies) {
-		dependencies.add(ClearTextExtractionService.class);
-		dependencies.add(DatabaseConnectionProviderService.class);
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
 	}
-	
+
 	@Override
-	protected void addProvidedServices(Set<Class<? extends ProxyService>> providedServices) {
+	public boolean start(PluginProperties props) {
+		return true;
+	}
+
+	@Override
+	public void stop() {
+	}
+
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		desiredServices.add(ClearTextExtractionService.class);
+		desiredServices.add(DatabaseConnectionProviderService.class);
+	}
+
+	@Override
+	public void getProvidedResponseServices(
+			Set<Class<? extends ProxyService>> providedServices) {
 		providedServices.add(PageInformationProviderService.class);
 	}
-	
-	@Override
-	protected void addProvidedResponseServices(List<ResponseServiceProvider> providedServices, HttpResponse response) {
-		ServicesHandle handle = response.getServiceHandle();
-		DatabaseConnectionProviderService connectionService = null;
-		String clearText = null;
 
-		try {
-			clearText = handle.getService(ClearTextExtractionService.class).getCleartext();
-		} catch (ServiceUnavailableException e) {
-			logger.debug("ClearText service is unavailable, no keywords will be extracted");
+	@Override
+	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
+			HttpResponse response, Class<Service> serviceClass)
+			throws ServiceUnavailableException {
+		
+		if(serviceClass.equals(PageInformationProviderService.class)) {
+			String requestURI = response.getRequest().getClientRequestHeader().getRequestURI();
+			DatabaseConnectionProviderService connectionService = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
+			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
+			
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText);
 		}
 		
-		try {
-			connectionService = handle.getService(DatabaseConnectionProviderService.class);
-		} catch (ServiceUnavailableException e) {
-			logger.debug("Database service is unavailable, page information cannot be loaded from cache");
-		}
-		
-		String requestURI = response.getClientRequestHeaders().getRequestURI();
-		providedServices.add(new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText));
+		return null;
 	}
 }

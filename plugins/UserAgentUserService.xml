@@ -5,8 +5,8 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentification</className>
 	<types>
-		<type>RequestServicePlugin</type>
-		<type>ResponseServicePlugin</type>
+		<type>RequestServiceModule</type>
+		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
 		<param name="idPart">APUID=</param>

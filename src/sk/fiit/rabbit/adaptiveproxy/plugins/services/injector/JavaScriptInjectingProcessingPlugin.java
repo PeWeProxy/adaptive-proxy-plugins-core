@@ -7,17 +7,21 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
+import sk.fiit.peweproxy.headers.RequestHeader;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.processing.RequestProcessingPlugin;
+import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
+import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
-public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
+public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
 	
 	protected Logger logger = Logger.getLogger(JavaScriptInjectingProcessingPlugin.class);
 	
@@ -31,7 +35,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern)) {
+		if(request.getClientRequestHeader().getRequestURI().contains(bypassPattern)) {
 			if(generateResponse) {
 				return RequestProcessingActions.FINAL_RESPONSE;
 			} else {
@@ -46,20 +50,20 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	public HttpRequest getNewRequest(ModifiableHttpRequest proxyRequest, HttpMessageFactory messageFactory) {
 		String queryParams;
 		
-		int queryParamsIdx = proxyRequest.getClientRequestHeaders().getRequestURI().indexOf("?");
+		int queryParamsIdx = proxyRequest.getClientRequestHeader().getRequestURI().indexOf("?");
 		
 		if(queryParamsIdx > -1) {
-			queryParams = proxyRequest.getClientRequestHeaders().getRequestURI().substring(queryParamsIdx);
+			queryParams = proxyRequest.getClientRequestHeader().getRequestURI().substring(queryParamsIdx);
 		} else {
 			queryParams = "";
 		}
 		
-		proxyRequest.getProxyRequestHeaders().setRequestURI(bypassTo + queryParams);
+		proxyRequest.getProxyRequestHeader().setRequestURI(bypassTo + queryParams);
 		
 		try {
 			URL url = new URL(bypassTo);
-			proxyRequest.getProxyRequestHeaders().removeHeader("Host");
-			proxyRequest.getProxyRequestHeaders().addHeader("Host", url.getHost());
+			proxyRequest.getProxyRequestHeader().removeField("Host");
+			proxyRequest.getProxyRequestHeader().addField("Host", url.getHost());
 		} catch (MalformedURLException e) {
 			logger.warn("Malformed URL", e);
 		}
@@ -70,18 +74,16 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
-			if(!isAllowedDomain(response.getClientRequestHeaders().getRequestURI())) {
+			if(!isAllowedDomain(response.getRequest().getClientRequestHeader().getRequestURI())) {
 				return ResponseProcessingActions.PROCEED;
 			}
 			
-			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
 			
-			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServiceHandle().getService(UserIdentificationService.class).getClientIdentification())) {
+			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
+				HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 				String scripts = "<script src='" + scriptUrl + "'></script>";
 				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 			}
-		} catch (ServiceUnavailableException e) {
-			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
 		} catch (MalformedURLException e) {
 			logger.warn("Cannot provide javascript injector service for invalid URL", e);
 		}
@@ -98,7 +100,7 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 	}
 	
 	@Override
-	public boolean setup(PluginProperties props) {
+	public boolean start(PluginProperties props) {
 		scriptUrl = props.getProperty("scriptUrl");
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
@@ -117,5 +119,41 @@ public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProce
 		allowedDomain = props.getProperty("allowedDomain");
 		
 		return true;
+	}
+
+	@Override
+	public void desiredRequestServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			RequestHeader clientRQHeader) {
+		//no-dependencies
+	}
+
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		desiredServices.add(UserIdentificationService.class);
+		desiredServices.add(HtmlInjectorService.class);
+	}
+
+	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
+
+	@Override
+	public void stop() {
+	}
+
+	@Override
+	public HttpResponse getNewResponse(ModifiableHttpResponse response,
+			HttpMessageFactory messageFactory) {
+		return null;
+	}
+
+	@Override
+	public HttpResponse getResponse(ModifiableHttpRequest request,
+			HttpMessageFactory messageFactory) {
+		return null;
 	}
 }

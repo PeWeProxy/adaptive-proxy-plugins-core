@@ -5,8 +5,8 @@
   <classLocation/>
   <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.MySQLDatabaseConnectionProviderService</className>
   <types>
-    <type>RequestServicePlugin</type>
-    <type>ResponseServicePlugin</type>
+    <type>RequestServiceModule</type>
+    <type>ResponseServiceModule</type>
   </types>
   <parameters>
     <param name="jdbcURL">jdbc:mysql://localhost:3306/proxy?characterEncoding=UTF-8</param>

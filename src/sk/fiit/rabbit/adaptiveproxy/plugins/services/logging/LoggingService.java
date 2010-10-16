@@ -4,15 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.AsynchronousResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServicesHandle;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
+import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
@@ -20,39 +23,22 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
-public class LoggingService extends AsynchronousResponseProcessingPluginAdapter {
+public class LoggingService implements ResponseProcessingPlugin {
 	
 	private static final Logger logger = Logger.getLogger(LoggingService.class);
 	
 	private String nologgingParamName;
+	private ExecutorService threadPool;
 
 	@Override
-	public boolean setup(PluginProperties props) {
+	public boolean start(PluginProperties props) {
 		nologgingParamName = props.getProperty("nologgingParamName", "nologging");
+		threadPool = props.getThreadPool();
 		return true;
 	}
 	
-	@Override
-	protected boolean prepareServices(ServicesHandle handle) {
-		try {
-			ProxyService con = handle.getService(DatabaseConnectionProviderService.class);
-			ProxyService uid = handle.getService(UserIdentificationService.class);
-			ProxyService pi = handle.getService(PageInformationProviderService.class);
-			
-			addToCache("connection", con);
-			addToCache("uid", uid);
-			addToCache("pageInformation", pi);
-		} catch(ServiceUnavailableException e) {
-			logger.error("prepare service " + e.getServiceClass().getName() + " failed, due to: " + e);
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
 	public void processResponseAsynchronously(ModifiableHttpResponse response) {
-		String requestURI = response.getClientRequestHeaders().getRequestURI();
+		String requestURI = response.getRequest().getClientRequestHeader().getRequestURI();
 
 		if (!shouldLog(requestURI)) {
 			return;
@@ -61,12 +47,12 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 		Connection con = null;
 
 		try {
-			con = ((DatabaseConnectionProviderService) getFromCache("connection")).getDatabaseConnection();
-			String uid = ((UserIdentificationService) getFromCache("uid")).getClientIdentification();
-			PageInformation pi = ((PageInformationProviderService) getFromCache("pageInformation")).getPageInformation();
+			con = response.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+			String uid = response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
+			PageInformation pi = response.getServicesHandle().getService(PageInformationProviderService.class).getPageInformation();
 		
 			if(pi.getId() != null) {
-				log(con, uid, pi.getId(), response.getClientRequestHeaders().getHeader("Referer"), Checksum.md5(response.getClientSocketAddress().getAddress().getHostAddress()));
+				log(con, uid, pi.getId(), response.getRequest().getClientRequestHeader().getField("Referer"), Checksum.md5(response.getRequest().getClientSocketAddress().getAddress().getHostAddress()));
 				
 			}
 		} finally {
@@ -96,6 +82,45 @@ public class LoggingService extends AsynchronousResponseProcessingPluginAdapter 
 	
 	private boolean shouldLog(String requestURL) {
 		return !requestURL.contains(nologgingParamName);
+	}
+
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		desiredServices.add(UserIdentificationService.class);
+		desiredServices.add(PageInformationProviderService.class);
+		desiredServices.add(DatabaseConnectionProviderService.class);
+	}
+
+	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
+
+	@Override
+	public void stop() {
+	}
+
+	@Override
+	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
+		
+		final ModifiableHttpResponse responseClone = response.clone();
+		
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run() {
+				processResponseAsynchronously(responseClone);
+			}
+		});
+		
+		return ResponseProcessingActions.PROCEED;
+	}
+
+	@Override
+	public HttpResponse getNewResponse(ModifiableHttpResponse response,
+			HttpMessageFactory messageFactory) {
+		return null;
 	}
 
 }

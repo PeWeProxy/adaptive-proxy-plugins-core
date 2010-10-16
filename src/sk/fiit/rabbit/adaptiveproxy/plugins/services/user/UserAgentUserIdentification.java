@@ -1,24 +1,25 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ReadableHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServicePluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServiceProviderAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServiceProvider;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
+import sk.fiit.peweproxy.headers.ReadableHeader;
+import sk.fiit.peweproxy.headers.RequestHeader;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpRequest;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.services.RequestServiceModule;
+import sk.fiit.peweproxy.plugins.services.RequestServiceProvider;
+import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
+import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
+import sk.fiit.peweproxy.services.ProxyService;
+import sk.fiit.peweproxy.services.ServiceUnavailableException;
 
-public class UserAgentUserIdentification extends RequestAndResponseServicePluginAdapter {
+public class UserAgentUserIdentification implements RequestServiceModule, ResponseServiceModule {
 	
 	private static final int APUID_LENGTH = 32;
 
@@ -27,31 +28,50 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 	private static final String USER_AGENT = "User-Agent";
 
 	String idPart = null;
-	
-	private class UserServiceProvider extends RequestAndResponseServiceProviderAdapter implements UserIdentificationService{
+
+	private class UserServiceProvider implements UserIdentificationService,
+			RequestServiceProvider<UserIdentificationService>,
+			ResponseServiceProvider<UserIdentificationService> {
+		
 		private final String userId;
 		
 		public UserServiceProvider(String userIDString) {
-			if(userIDString == null) {
-				this.userId = null;
-			} else {
-				this.userId = userIDString;
-			}
+			this.userId = userIDString;
 		}
 		
-		@Override
-		public Class<? extends ProxyService> getServiceClass() {
-			return UserIdentificationService.class;
-		}
-
 		@Override
 		public String getClientIdentification() {
 			return userId;
 		}
+
+		@Override
+		public String getServiceIdentification() {
+			return this.getClass().getName();
+		}
+
+		@Override
+		public UserIdentificationService getService() {
+			return this;
+		}
+
+		@Override
+		public boolean initChangedModel() {
+			return false;
+		}
+
+		@Override
+		public void doChanges(ModifiableHttpResponse response) {
+			// this service makes no modifications
+		}
+
+		@Override
+		public void doChanges(ModifiableHttpRequest request) {
+			// this service makes no modifications
+		}
 	}
 	
-	private String getUIDForMessage(ReadableHeaders headers) {
-		String uaHeader =  headers.getHeader(USER_AGENT);
+	private String getUIDForMessage(ReadableHeader headers) {
+		String uaHeader =  headers.getField(USER_AGENT);
 		
 		if (uaHeader != null) {
 			int indexOfIdPart = uaHeader.indexOf(idPart);
@@ -69,35 +89,79 @@ public class UserAgentUserIdentification extends RequestAndResponseServicePlugin
 		return null;
 	}
 	
-	@Override
-	public List<RequestServiceProvider> provideRequestServices(
-			HttpRequest request) {
-		List<RequestServiceProvider> retVal = null;
-		String uidString = getUIDForMessage(request.getClientRequestHeaders());
-		retVal = new ArrayList<RequestServiceProvider>(1);
-		retVal.add(new UserServiceProvider(uidString));
-		return retVal;
-	}
-	
-	@Override
-	protected void addProvidedServices(Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(UserIdentificationService.class);
-	}
 
 	@Override
-	public boolean setup(PluginProperties props) {
+	public boolean start(PluginProperties props) {
 		idPart = props.getProperty("idPart");
 		return true;
 	}
 
+
 	@Override
-	public List<ResponseServiceProvider> provideResponseServices(
-			HttpResponse response) {
-		List<ResponseServiceProvider> retVal = null;
-		String uidString = getUIDForMessage(response.getClientRequestHeaders());
-		retVal = new ArrayList<ResponseServiceProvider>(1);
-		retVal.add(new UserServiceProvider(uidString));
-		return retVal;
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
+
+
+	@Override
+	public void stop() {
+	}
+
+
+	@Override
+	public void desiredRequestServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			RequestHeader clientRQHeader) {
+		// no-dependencies
+	}
+
+
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		// no-dependencies
+	}
+
+
+	@Override
+	public void getProvidedResponseServices(
+			Set<Class<? extends ProxyService>> providedServices) {
+		providedServices.add(UserIdentificationService.class);
+	}
+
+
+	@Override
+	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
+			HttpResponse response, Class<Service> serviceClass)
+			throws ServiceUnavailableException {
+		if(serviceClass.equals(UserIdentificationService.class)) {
+			String userIDString = getUIDForMessage(response.getRequest().getClientRequestHeader());
+			return (ResponseServiceProvider<Service>) new UserServiceProvider(userIDString);
+		}
+		
+		return null;
+	}
+
+
+	@Override
+	public void getProvidedRequestServices(
+			Set<Class<? extends ProxyService>> providedServices) {
+		providedServices.add(UserIdentificationService.class);
+	}
+
+
+	@Override
+	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(
+			HttpRequest request, Class<Service> serviceClass)
+			throws ServiceUnavailableException {
+		
+		if(serviceClass.equals(UserIdentificationService.class)) {
+			String userIDString = getUIDForMessage(request.getClientRequestHeader());
+			return (RequestServiceProvider<Service>) new UserServiceProvider(userIDString);
+		}
+		
+		return null;
 	}
 
 }

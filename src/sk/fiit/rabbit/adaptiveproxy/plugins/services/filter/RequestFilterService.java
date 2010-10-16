@@ -11,21 +11,20 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ReadableHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.processing.ResponseProcessingPlugin.ResponseProcessingActions;
+import sk.fiit.peweproxy.headers.ReadableHeader;
+import sk.fiit.peweproxy.headers.RequestHeader;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.processing.RequestProcessingPlugin;
+import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
+import sk.fiit.peweproxy.services.ProxyService;
 
-public class RequestFilterService extends RequestAndResponseProcessingPluginAdapter {
+public class RequestFilterService implements RequestProcessingPlugin, ResponseProcessingPlugin {
 	
 	private Set<String> startFilters = new HashSet<String>();
 	private Set<String> endFilters = new HashSet<String>();
@@ -35,7 +34,7 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	Logger logger = Logger.getLogger(RequestFilterService.class);
 	
 	@Override
-	public boolean setup(PluginProperties props) {
+	public boolean start(PluginProperties props) {
 		try {
 			String line;
 			
@@ -80,9 +79,24 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	}
 	
 	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
+	
+	@Override
+	public void stop() {
+	}
+	
+	@Override
+	public void desiredRequestServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			RequestHeader clientRQHeader) {
+	}
+	
+	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		String url = request.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url, request.getProxyRequestHeaders(), "REQUEST")) {
+		String url = request.getProxyRequestHeader().getRequestURI();
+		if(canProceed(url, request.getProxyRequestHeader(), "REQUEST")) {
 			return RequestProcessingActions.PROCEED;
 		} else {
 			return RequestProcessingActions.FINAL_REQUEST;
@@ -90,17 +104,46 @@ public class RequestFilterService extends RequestAndResponseProcessingPluginAdap
 	}
 	
 	@Override
+	public HttpRequest getNewRequest(ModifiableHttpRequest request,
+			HttpMessageFactory messageFactory) {
+		return null;
+	}
+	
+	@Override
+	public HttpResponse getResponse(ModifiableHttpRequest request,
+			HttpMessageFactory messageFactory) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public HttpResponse getNewResponse(ModifiableHttpResponse response,
+			HttpMessageFactory messageFactory) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		String url = response.getProxyRequestHeaders().getRequestURI();
-		if(canProceed(url, response.getProxyResponseHeaders(), "RESPONSE")) {
+		String url = response.getRequest().getClientRequestHeader().getRequestURI();
+		if(canProceed(url, response.getProxyResponseHeader(), "RESPONSE")) {
 			return ResponseProcessingActions.PROCEED;
 		} else {
 			return ResponseProcessingActions.FINAL_RESPONSE;
 		}
 	}
 	
-	private boolean canProceed(String url, ReadableHeaders headers, String type) {
-		String location = headers.getHeader("Location");
+	private boolean canProceed(String url, ReadableHeader headers, String type) {
+		String location = headers.getField("Location");
+		
 		if(location != null) {
 			logger.debug("Blocked redirect from: " + url + " to: " + location);
 			return false;

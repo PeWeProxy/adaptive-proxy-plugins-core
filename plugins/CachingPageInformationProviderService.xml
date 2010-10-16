@@ -3,9 +3,9 @@
 <plugin>
 	<name>CachingPageInformationProviderService</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.CachingPageInformationProviderService</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.CachingPageInformationProviderServiceModule</className>
 	<types>
-		<type>ResponseServicePlugin</type>
+		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
 	</parameters>
