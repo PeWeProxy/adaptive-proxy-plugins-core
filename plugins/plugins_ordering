@@ -17,3 +17,5 @@ KeywordsDisplayPlugin
 ActivityUpdaterPlugin
 DatabaseLoggingService
 WebImpProcessingPlugin
+UserRecognitionPlugin
+UIDFromCookiePlugin
