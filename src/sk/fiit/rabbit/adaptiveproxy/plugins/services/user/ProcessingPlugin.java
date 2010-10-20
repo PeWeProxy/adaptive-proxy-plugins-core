@@ -27,8 +27,10 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnection
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
 
-public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAdapter {
+public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
 	
 	protected Logger logger = Logger.getLogger(JavaScriptInjectingProcessingPlugin.class);
 	
@@ -45,7 +47,6 @@ public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAda
 	{
 		Map<String, String> postData;
 		
-		
 		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern))
 		{
 			try {
@@ -60,9 +61,7 @@ public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAda
 					try {
 						con = request.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 						
-						//createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), postData.get("__ap_url"), request.getClientSocketAddress().getAddress().toString());
-						createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), postData.get("__ap_url"), "ip");
-						
+						createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), postData.get("__ap_url"), "ip");						
 					} finally {
 						SqlUtils.close(con);
 					}
@@ -82,8 +81,8 @@ public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAda
 	
 	private boolean createDatabaseLog(Connection connection, String uid, String checksum, String url, String ip)
 	{		
-		PreparedStatement stmt = null;
-		PreparedStatement stmt_2 = null;
+		PreparedStatement page_stmt = null;
+		PreparedStatement log_stmt = null;
 		
 		String pid = "";
 		java.util.Date today = new java.util.Date();
@@ -96,68 +95,50 @@ public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAda
 		url = url.replace("%26", "&");
 		url = url.replace("%3D", "=");
 		
-		
 		try {
-			stmt = connection.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
-			stmt.setString(1, url);
-			stmt.setString(2, checksum);
+			page_stmt = connection.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
+			page_stmt.setString(1, url);
+			page_stmt.setString(2, checksum);
 			
-			
-			stmt.execute();
-			ResultSet rs = stmt.getResultSet();
+			page_stmt.execute();
+			ResultSet rs = page_stmt.getResultSet();
 			
 			while (rs.next()) {
 				pid = rs.getString(1);
 			}
 			
-			try {
-				stmt_2 = connection.prepareStatement("INSERT INTO `proxy`.`access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
-
-
-				stmt_2.setString(1, uid);
-				stmt_2.setString(3, pid);
-				stmt_2.setString(4, url);
-				stmt_2.setString(5, Checksum.md5(ip.substring(1)));
-								
-				stmt_2.setString(2, formatedTimeStamp);
-				
-				
-				stmt_2.execute();
-			} catch (SQLException e) {
-				logger.error("Could not set users uid for access log", e);
-			} finally {
-				SqlUtils.close(stmt_2);
+			if (!"".equals(uid))
+			{
+				try {
+					log_stmt = connection.prepareStatement("INSERT INTO `proxy`.`access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
+	
+					log_stmt.setString(1, uid);
+					log_stmt.setString(2, formatedTimeStamp);
+					log_stmt.setString(3, pid);
+					log_stmt.setString(4, url);
+					log_stmt.setString(5, Checksum.md5(ip));
+					
+					log_stmt.execute();
+				} catch (SQLException e) {
+					logger.error("Could not insert access_log ", e);
+				} finally {
+					SqlUtils.close(log_stmt);
+				}
+			}
+			else
+			{
+				SqlUtils.close(log_stmt);
 			}
 			
 		} catch (SQLException e) {
-			logger.error("Could not set users uid for access log", e);
+			logger.error("Could not get page id for access log", e);
 		} finally {
-			SqlUtils.close(stmt);
+			SqlUtils.close(page_stmt);
 		}
 		
 		return true;
 	}
 	
-	
-	
-	private void log(Connection connection, String userId, Long pageId, String referer, String ipAddress) {
-		PreparedStatement stmt = null;
-
-		try {
-			stmt = connection.prepareStatement("INSERT INTO access_logs(userid, timestamp, page_id, referer, ip) VALUES(?, ?, ?, ?, ?)");
-			stmt.setString(1, userId);
-			stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-			stmt.setLong(3, pageId);
-			stmt.setString(4, referer);
-			stmt.setString(5, ipAddress);
-			
-			stmt.execute();
-		} catch (SQLException e) {
-			logger.error("Could not save access log", e);
-		} finally {
-			SqlUtils.close(stmt);
-		}
-	}
 	
 	
 	private Map<String, String> getPostDataFromRequest(String requestContent)
@@ -188,6 +169,13 @@ public class UserRecognitionPlugin extends RequestAndResponseProcessingPluginAda
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
+		try {
+			PageInformation pi = response.getServiceHandle().getService(PageInformationProviderService.class).getPageInformation();
+		} catch (ServiceUnavailableException e) {
+			logger.error("PageInformationProviderService is unavailable", e);
+		}
+
+		
 		try {
 			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
 			
