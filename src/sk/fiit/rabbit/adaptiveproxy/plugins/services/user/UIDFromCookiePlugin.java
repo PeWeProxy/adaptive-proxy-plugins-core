@@ -16,6 +16,11 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 	
 	private String cookieDomain; 
 	
+	private String redirectContent(){
+		return "if (window.location.protocol+'//'+window.location.host!='" + cookieDomain + "') {" +
+		"window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location; }";
+	}
+	
 	@Override	
 	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
 			HttpMessageFactory messageFactory) {
@@ -23,17 +28,24 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 		try {
 			ModifiableStringService stringService = httpResponse.getServiceHandle().getService(ModifiableStringService.class);
 			String cookies = proxyRequest.getClientRequestHeaders().getHeader("Cookie");
-			Pattern pattern = Pattern.compile("^.*__peweproxy_uid=(.*?)(:?;|$)");
-			Matcher matcher = pattern.matcher(cookies);
-			String uid = "";
 			String content = ""; 
-			if (matcher.matches()) {
-				uid = matcher.group(1);
-				content = "var __peweproxy_uid = '" + uid + "'";
+			if (cookies != null) {
+				Pattern pattern = Pattern.compile("^.*__peweproxy_uid=(.*?)(:?;|$)");
+				Matcher matcher = pattern.matcher(cookies);
+				String uid = "";
+				if (matcher.matches()) {
+					uid = matcher.group(1);
+					content = "var __peweproxy_uid = '" + uid + "'";
+					if ("".equals(uid)) {
+						content = redirectContent();
+					}
+				} else {
+					//int random = Math.random()*
+					content = redirectContent();
+					System.err.println(content);
+				}
 			} else {
-				content = "if (window.location.protocol+'//'+window.location.host!='" + cookieDomain + "') {" +
-						"window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location; }";
-				System.err.println(content);
+				content = redirectContent();
 			}
 			stringService.setContent(content);
 		} catch (ServiceUnavailableException e) {
