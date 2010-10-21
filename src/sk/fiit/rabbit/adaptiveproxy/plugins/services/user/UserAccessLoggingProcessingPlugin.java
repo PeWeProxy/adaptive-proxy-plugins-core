@@ -1,5 +1,9 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +34,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectin
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
 
-public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
+public class UserAccessLoggingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
 	
 	protected Logger logger = Logger.getLogger(JavaScriptInjectingProcessingPlugin.class);
 	
@@ -50,7 +54,7 @@ public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter 
 		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern))
 		{
 			try {
-				StringContentService stringContentService = request.getServiceHandle().getService(ModifiableStringService.class);
+				StringContentService stringContentService = request.getServiceHandle().getService(StringContentService.class);
 				
 				postData = getPostDataFromRequest(stringContentService.getContent());				
 	
@@ -67,7 +71,7 @@ public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter 
 					}
 				}
 			} catch (ServiceUnavailableException e) {
-				logger.trace("ModifiableStringService is unavailable");
+				logger.trace("StringContentService is unavailable");
 			}
 			
 			return RequestProcessingActions.FINAL_RESPONSE;
@@ -89,11 +93,17 @@ public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter 
 		String timestamp = new Timestamp(today.getTime()).toString();
 		String formatedTimeStamp = timestamp.substring(0, timestamp.indexOf("."));
 		
-		url = url.replace("%2F", "/");
-		url = url.replace("%3A", ":");
-		url = url.replace("%3F", "?");
-		url = url.replace("%26", "&");
-		url = url.replace("%3D", "=");
+		try {
+			url = URLDecoder.decode(url, "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			logger.warn(e);
+		}
+		
+//		url = url.replace("%2F", "/");
+//		url = url.replace("%3A", ":");
+//		url = url.replace("%3F", "?");
+//		url = url.replace("%26", "&");
+//		url = url.replace("%3D", "=");
 		
 		try {
 			page_stmt = connection.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
@@ -143,6 +153,11 @@ public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter 
 	
 	private Map<String, String> getPostDataFromRequest(String requestContent)
 	{	
+		try {
+			requestContent = URLDecoder.decode(requestContent,"utf-8");
+		} catch (UnsupportedEncodingException e) {
+			logger.warn(e);
+		}
 		Map<String, String> postData = new HashMap<String, String>();
 		String attributeName;
 		String attributeValue;
@@ -200,7 +215,6 @@ public class ProcessingPlugin extends RequestAndResponseProcessingPluginAdapter 
 	
 	@Override
 	public boolean wantRequestContent(RequestHeaders clientRQHeaders) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 	
