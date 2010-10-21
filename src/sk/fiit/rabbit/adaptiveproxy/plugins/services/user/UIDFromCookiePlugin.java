@@ -34,7 +34,7 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 				Matcher matcher = pattern.matcher(cookies);
 				String uid = "";
 				if (matcher.matches()) {
-					uid = matcher.group(1);
+					uid = matcher.group(1).split(";")[0];
 					content = "var __peweproxy_uid = '" + uid + "'";
 					if ("".equals(uid)) {
 						content = redirectContent();
