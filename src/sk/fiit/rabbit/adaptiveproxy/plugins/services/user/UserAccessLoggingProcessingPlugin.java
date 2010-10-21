@@ -120,7 +120,7 @@ public class UserAccessLoggingProcessingPlugin extends RequestAndResponseProcess
 			if (!"".equals(uid))
 			{
 				try {
-					log_stmt = connection.prepareStatement("INSERT INTO `proxy`.`access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
+					log_stmt = connection.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
 	
 					log_stmt.setString(1, uid);
 					log_stmt.setString(2, formatedTimeStamp);
