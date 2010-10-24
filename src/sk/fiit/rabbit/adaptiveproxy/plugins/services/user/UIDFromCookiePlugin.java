@@ -17,8 +17,13 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 	private String cookieDomain; 
 	
 	private String redirectContent(){
-		return "if (window.location.protocol+'//'+window.location.host!='" + cookieDomain + "') {" +
-		"window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location; }";
+		// funkcia getHostName je z 'http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url'
+		return 	"function getHostName(str) {\n" +
+				"	var re = new RegExp('^(?:f|ht)tp(?:s)?\\://([^/]+)', 'im');\n"+
+				"	return str.match(re)[1].toString();\n"+
+				"}\n"+
+				"if (window.location.host != getHostName('" + cookieDomain + "/')) {\n" +
+				"	window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location;\n}\n";
 	}
 	
 	@Override	
