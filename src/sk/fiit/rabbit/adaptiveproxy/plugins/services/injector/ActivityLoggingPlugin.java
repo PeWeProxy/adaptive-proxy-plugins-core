@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
@@ -24,46 +23,33 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 {
 	protected Logger logger = Logger.getLogger(ActivityLoggingPlugin.class);
 	
-	private String pattern;
-	
-	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory)
-	{
+	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory) {
+		Map<String, String> postData;
+		
+		try {
+			StringContentService stringContentService = proxyResponse.getServiceHandle().getService(StringContentService.class);
+			
+			postData = getPostDataFromRequest(stringContentService.getContent());				
+
+			Connection con = null;
+			
+			if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls")) {
+				try {
+					con = proxyResponse.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+					
+					updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"));						
+				} finally {
+					SqlUtils.close(con);
+				}
+			}
+		} catch (ServiceUnavailableException e) {
+			logger.trace("StringContentService is unavailable");
+		}
+		
 		return messageFactory.constructHttpResponse("text/plain");
 	}
 	
-	public RequestProcessingActions processRequest(ModifiableHttpRequest request) 
-	{
-		Map<String, String> postData;
-		
-		if(request.getClientRequestHeaders().getRequestURI().contains(pattern))
-		{
-			try {
-				StringContentService stringContentService = request.getServiceHandle().getService(StringContentService.class);
-				
-				postData = getPostDataFromRequest(stringContentService.getContent());				
-	
-				Connection con = null;
-				
-				if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls"))	
-				{
-					try {
-						con = request.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
-						
-						updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"));						
-					} finally {
-						SqlUtils.close(con);
-					}
-				}
-			} catch (ServiceUnavailableException e) {
-				logger.trace("StringContentService is unavailable");
-			}
-		}
-		
-		return super.processRequest(request);
-	}
-	
-	private boolean updateDatabaseLog(Connection connection, String uid, String checksum, String period, String copies, String scrolls)
-	{			
+	private boolean updateDatabaseLog(Connection connection, String uid, String checksum, String period, String copies, String scrolls) {			
 		try {
 			Statement stmt = connection.createStatement(
                     ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -101,34 +87,28 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 			rsUpdate.updateInt("copy_count", copy_count);
 			rsUpdate.updateRow();
 			
-		} 
-		catch (SQLException e) 
-		{
+		} catch (SQLException e) {
 			logger.error("Could not get page id for access log", e);
-		} 
-		finally 
-		{
+		} finally {
 			SqlUtils.close(connection);
 		}
 		
 		return true;
 	}
 	
-	private Map<String, String> getPostDataFromRequest(String requestContent)
-	{	
+	private Map<String, String> getPostDataFromRequest(String requestContent) {	
 		try {
 			requestContent = URLDecoder.decode(requestContent,"utf-8");
 		} catch (UnsupportedEncodingException e) {
 			logger.warn(e);
 		}
+		
 		Map<String, String> postData = new HashMap<String, String>();
 		String attributeName;
 		String attributeValue;
 		
-		for (String postPair : requestContent.split("&"))
-		{
-			if (postPair.split("=").length == 2)
-			{
+		for (String postPair : requestContent.split("&")) {
+			if (postPair.split("=").length == 2) {
 				attributeName = postPair.split("=")[0];
 				attributeValue = postPair.split("=")[1];
 				postData.put(attributeName, attributeValue);
@@ -137,12 +117,4 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 		
 		return postData;
 	}
-	
-	public boolean setup(PluginProperties props) 
-	{
-		pattern = props.getProperty("bypassPattern");
-		
-		return super.setup(props);
-	}
-	
 }
