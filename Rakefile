@@ -93,8 +93,8 @@ namespace :migrations do
   end
    
   task :environment do
-    ActiveRecord::Base.establish_connection(YAML::load(File.open('database.yml'))[ENV["RAILS_ENV"] ? ENV["RAILS_ENV"] : "development"])
-    ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'a'))
+    ActiveRecord::Base.establish_connection(YAML::load(File.open('migrations/database.yml'))[ENV["RAILS_ENV"] ? ENV["RAILS_ENV"] : "development"])
+    ActiveRecord::Base.logger = Logger.new(File.open('migrations/database.log', 'a'))
   end
 end
 
