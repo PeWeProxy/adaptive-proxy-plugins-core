@@ -1,0 +1,20 @@
+
+SLON_DIR = 'slonik'
+CHECKOUT_DIR = 'checkouts/'
+PROXY_DIR = CHECKOUT_DIR + 'adaptive-proxy'
+PLUGINS_DIR = CHECKOUT_DIR + 'adaptive-proxy-plugins'
+JKEY_DIR = CHECKOUT_DIR + 'jkey-extractor'
+BROWSER_PATCHER_DIR = CHECKOUT_DIR + 'adaptive-proxy-browser-patcher'
+FFEXTENSION_DIR= CHECKOUT_DIR + 'adaptive-proxy-ffextension'
+PROXY_WEB_DIR = CHECKOUT_DIR + 'adaptive-proxy-web'
+RELEASE_DIR = '.'
+
+
+STATIC_DIR = '../../../static/'
+
+
+def copyStaticContent
+  FileUtils.mkdir("#{STATIC_DIR}")
+  
+  
+end
