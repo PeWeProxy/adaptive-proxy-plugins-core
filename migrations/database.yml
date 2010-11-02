@@ -1,0 +1,24 @@
+common: &common
+  adapter: mysql
+  host: localhost
+  port: 3306
+  encoding: utf8
+
+development:
+  <<: *common
+  username: root
+  password: 26101986
+  database: proxy
+
+staging:
+  <<: *common
+  username: proxy
+  password: peweproxy
+  database: proxy_staging
+
+production:
+  <<: *common
+  username: proxy
+  password: peweproxy
+  database: proxy
+
