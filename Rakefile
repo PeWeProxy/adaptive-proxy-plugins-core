@@ -1,9 +1,9 @@
 require 'rubygems'
 require 'fileutils'
 require 'jake'
-require 'whenever'
 require 'active_record'
 require 'active_support'
+require 'whenever'
 require 'yaml'
 require 'rake'
 require 'logger'
@@ -38,12 +38,12 @@ end
 
 
 namespace :offline do
-# we need to know what directories contain java application and what are the main classes
-java_apps = {
-	'test' => 'sk.fiit.plesko.test.MainClass'
-}
+  # we need to know what directories contain java application and what are the main classes
+  java_apps = {
+    #'test' => 'sk.fiit.plesko.test.MainClass'
+  }
 
-desc "Compile offline tasks"
+  desc "Compile offline tasks"
   task :build do
   
   	FileUtils.mkdir('offline/build') unless File.exists?("offline/build")
@@ -81,21 +81,22 @@ desc "Compile offline tasks"
   end
 end
 
-namespace :migrations
-# we need to make migrations for database
-desc "Migrate the database through scripts in this folder. Target specific version with VERSION=x"
-   task :migrate => :environment do
-     ActiveRecord::Migrator.migrate('migrations', ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
-   end
+namespace :migrations do
+  # we need to make migrations for database
+  desc "Migrate the database through scripts in this folder. Target specific version with VERSION=x"
+  task :migrate => :environment do
+    ActiveRecord::Migrator.migrate('migrations', ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
+  end
    
-   task :rollback => :environment do
-     ActiveRecord::Migrator.rollback('migrations')
-   end
+  task :rollback => :environment do
+    ActiveRecord::Migrator.rollback('migrations')
+  end
    
-   task :environment do
-     ActiveRecord::Base.establish_connection(YAML::load(File.open('database.yml'))[ENV["RAILS_ENV"] ? ENV["RAILS_ENV"] : "development"])
-     ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'a'))
-   end
+  task :environment do
+    ActiveRecord::Base.establish_connection(YAML::load(File.open('database.yml'))[ENV["RAILS_ENV"] ? ENV["RAILS_ENV"] : "development"])
+    ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'a'))
+  end
+end
 
 namespace :after do
   desc "Run task after deploy"
@@ -104,4 +105,4 @@ namespace :after do
   end
 end
 
-task :default => [":src:build", "migrations:migrate", "offline:build", "after:after_deploy"]
+task :default => [":src:build", ":src:jar", "migrations:migrate", "offline:build", "offline:schedule", "after:after_deploy"]
