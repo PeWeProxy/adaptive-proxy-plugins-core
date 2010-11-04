@@ -110,7 +110,7 @@ namespace :after do
 
     Dir.chdir('after') do
       `ruby bin/update_filters`
-			FileUtils.cp("after/filter.txt", ENV['PROXY_ROOT'])
+			FileUtils.cp("filter.txt", ENV['PROXY_ROOT'])
     end
   end
 end
