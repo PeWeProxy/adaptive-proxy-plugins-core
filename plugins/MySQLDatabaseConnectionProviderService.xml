@@ -5,6 +5,8 @@
   <classLocation/>
   <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.MySQLDatabaseConnectionProviderService</className>
   <libraries>
+    <lib>slf4j-api-1.5.11.jar</lib>
+    <lib>slf4j-simple-1.5.11.jar</lib>
     <lib>mysql-connector-java-5.1.12-bin.jar</lib>
     <lib>bonecp-0.6.5.jar</lib>
   </libraries>
