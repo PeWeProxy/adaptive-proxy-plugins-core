@@ -3,6 +3,9 @@
 <plugin>
 	<name>ReadabilityCleartextExtractionService</name>
 	<classLocation/>
+	<libraries>
+		<lib>jkeyextractor.jar</lib>
+	</libraries>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionService</className>
 	<types>
 		<type>ResponseServicePlugin</type>
