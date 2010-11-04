@@ -3,6 +3,9 @@
 <plugin>
 	<name>CachingPageInformationProviderService</name>
 	<classLocation/>
+	<libraries>
+		<lib>jkeyextractor.jar</lib>
+	</libraries>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.CachingPageInformationProviderService</className>
 	<types>
 		<type>ResponseServicePlugin</type>
