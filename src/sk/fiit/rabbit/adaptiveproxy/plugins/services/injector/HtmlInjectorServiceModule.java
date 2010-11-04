@@ -14,6 +14,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;

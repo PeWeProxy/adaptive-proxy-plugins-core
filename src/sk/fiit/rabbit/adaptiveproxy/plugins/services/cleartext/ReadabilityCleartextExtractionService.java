@@ -12,6 +12,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.headers.ResponseHeaders;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServicePluginAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.ResponseServiceProviderAdapter;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;

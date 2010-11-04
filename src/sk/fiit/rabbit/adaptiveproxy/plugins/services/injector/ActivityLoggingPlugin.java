@@ -14,10 +14,10 @@ import org.apache.log4j.Logger;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
 
 public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 {

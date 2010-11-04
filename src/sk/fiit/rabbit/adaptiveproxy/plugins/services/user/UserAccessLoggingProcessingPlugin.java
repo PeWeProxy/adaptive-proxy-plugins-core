@@ -22,17 +22,17 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
 
 public class UserAccessLoggingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
 	

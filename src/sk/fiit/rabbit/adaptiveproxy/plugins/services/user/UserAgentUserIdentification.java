@@ -14,6 +14,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseServicePro
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.RequestServiceProvider;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ResponseServiceProvider;

@@ -13,9 +13,10 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
 import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
 
 public class JavaScriptInjectingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
 	

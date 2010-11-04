@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
+package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.ProxyService;
 
