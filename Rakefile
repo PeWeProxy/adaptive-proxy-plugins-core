@@ -17,26 +17,6 @@ java_apps = {
 }
 
 namespace :src do
-
-  desc "Compile service definitions of proxy plugin bundle"
-  task :defbuild => :defclean do #TODO: clean
-    FileUtils.cp(Dir.glob('src/**/servicedefinitions/*.java'), 'def/');
-    Javac.in('.').execute do |javac|
-      javac.src = 'def/*.java'
-      javac.cp << 'external_libs/**/*.jar'
-      javac.cp << "../../#{PROXY_DIR}/bin"
-      javac.output = 'def/bin'
-    end
-  end
-  
-  desc "Clean service definitions build of proxy plugin bundle"
-  task :defclean do
-    FileUtils.mkdir('def') unless File.exists?("def")
-    FileUtils.rm_rf Dir.glob('def/*')
-    FileUtils.mkdir('def/bin') unless File.exists?("def/bin")
-    FileUtils.rm_rf Dir.glob('def/bin*')
-  end
-
   desc "Compile proxy plugin bundle"
   task :build => :clean do
     Javac.in('.').execute do |javac|
@@ -59,6 +39,26 @@ namespace :src do
       jar.name = File.dirname(__FILE__).match(/[^\/]+$/)[0] + '.jar'
       jar.bin << 'bin'
     end
+  end
+
+  desc "Compile service definitions of proxy plugin bundle"
+  task :defbuild => :defclean do #TODO: clean
+    FileUtils.cp(Dir.glob('src/**/servicedefinitions/*.java'), 'def/');
+    Javac.in('.').execute do |javac|
+      javac.src = 'def/*.java'
+      javac.cp << 'external_libs/**/*.jar'
+      javac.cp << "../../#{PROXY_DIR}/bin"
+      javac.cp << "bin"
+      javac.output = 'def/bin'
+    end
+  end
+
+  desc "Clean service definitions build of proxy plugin bundle"
+  task :defclean do
+    FileUtils.mkdir('def') unless File.exists?("def")
+    FileUtils.rm_rf Dir.glob('def/*')
+    FileUtils.mkdir('def/bin') unless File.exists?("def/bin")
+    FileUtils.rm_rf Dir.glob('def/bin*')
   end
 end
 
@@ -135,4 +135,4 @@ namespace :after do
   end
 end
 
-task :default => ["src:build", "src:jar", "migrations:migrate", "offline:build", "offline:schedule"]
+task :default => ["src:build", "src:jar", "src:defbuild", "migrations:migrate", "offline:build", "offline:schedule"]
