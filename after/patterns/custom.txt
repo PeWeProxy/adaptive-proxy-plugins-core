@@ -1,0 +1,27 @@
+googleads.
+rss.sme.sk
+utm_source
+utm_medium
+utm_campaign
+gravatar.com/avatar
+google.com/vt/lyrs=
+sme.sk/storm
+services.sme.sk
+# google maps
+mapclient=jsapi
+s=mapsapi
+maps.google.com/maps?file=api
+#
+safebrowsing-cache.google.com
+diskusie.sme.sk/diskusie/extern_action
+go.cz.bbelement.com
+etargetnet.com
+stip.netsuccess.sk
+ocsp.thawte.com
+fotky.sme.sk*type=s
+peweproxy.fiit.stuba.sk
+meebo.com
+facebook.com
+grooveshark.com
+soundz.fm
+toolbarqueries.google.com

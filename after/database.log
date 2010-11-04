@@ -1,0 +1,28 @@
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (66.1ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (45.4ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.4ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.4ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (0.2ms)[0m   [0mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;36;1mSQL (3.1ms)[0m   [0;1mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `timestamp` datetime) ENGINE=InnoDB[0m
+  [4;35;1mSQL (0.0ms)[0m   [0mMysql::Error: Key column 'userid' doesn't exist in table: CREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (56.9ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (8.7ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.6ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.5ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;35;1mSQL (3.2ms)[0m   [0mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(255), `timestamp` datetime, `url` varchar(255), `keywords` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (4.3ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;35;1mSQL (2.0ms)[0m   [0mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(255), `checksum` varchar(255), `keywords` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (7.4ms)[0m   [0;1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [4;35;1mSQL (0.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('1')[0m
