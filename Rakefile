@@ -10,6 +10,12 @@ require 'logger'
 
 PROXY_DIR = 'adaptive-proxy'
 
+# java offline tasks
+# directory (project name) => main class (including package)
+java_apps = {
+  'test' => 'sk.fiit.plesko.pokus.Test'
+}
+
 namespace :src do
   desc "Compile proxy plugin bundle"
   task :build => :clean do
@@ -20,13 +26,13 @@ namespace :src do
       javac.output = 'bin'
     end
   end
-  
+
   desc "Clean proxy plugin bundle build"
   task :clean do
     FileUtils.mkdir('bin') unless File.exists?("bin")
     FileUtils.rm_rf Dir.glob('bin/*')
   end
-  
+
   desc "Create proxy plugin bundle jar file"
   task :jar do
     Jar.in('.').execute do |jar|
@@ -38,46 +44,45 @@ end
 
 
 namespace :offline do
-  # we need to know what directories contain java application and what are the main classes
-  java_apps = {
-    #'test' => 'sk.fiit.plesko.test.MainClass'
-  }
 
   desc "Compile offline tasks"
   task :build do
-  
-  	FileUtils.mkdir('offline/build') unless File.exists?("offline/build")
+		Dir.chdir("offline")
+  	FileUtils.mkdir('jars') unless File.exists?("jars")
   	java_apps.each_pair do |app_name, mainclass|
-  
-  		FileUtils.rm_rf Dir.glob('offline/'+app_name+'/bin/')
-  		FileUtils.rm_rf Dir.glob('offline/'+app_name+'/META-INF')
-  		FileUtils.rm_rf Dir.glob('offline/'+app_name+'/*.jar')
-  		
-  		Javac.in('offline/'+app_name).execute do |javac|
+
+  		FileUtils.rm_rf Dir.glob(app_name+'/bin/')
+  		FileUtils.rm_rf Dir.glob(app_name+'/META-INF')
+  		FileUtils.rm_rf Dir.glob(app_name+'/*.jar')
+
+  		Javac.in(app_name).execute do |javac|
   			javac.src = 'src/**/*.java'
   			javac.cp << '.'
   			javac.output = 'bin'
   		end
-  
-  		Manifest.in('offline/'+app_name).execute do |manifest|
+
+  		Manifest.in(app_name).execute do |manifest|
   			manifest.main_class = mainclass
-  			manifest.cp = ''
+  			manifest.cp = '.'
   		end
-  
-  		Jar.in('offline/'+app_name).execute do |jar|
-  			jar.name = 'offline/'+app_name+'.jar'
+
+  		Jar.in(app_name).execute do |jar|
+  			jar.name = app_name+'.jar'
   			jar.bin << 'bin'
   			jar.with_manifest = true
   		end
-  
-  		FileUtils.mv('offline/'+app_name+'/'+app_name+'.jar', 'offline/build/'+app_name+'.jar')
-  		
+
+  		FileUtils.mv(app_name+'/'+app_name+'.jar', 'jars/'+app_name+'.jar')
+
   	end
+		Dir.chdir("..")
   end
-  
+
   desc "Schedule tasks as defined in config/schedule.rb"
   task :schedule do
-  	Whenever::CommandLine.execute({:update=>true})
+		Dir.chdir("offline")
+		Whenever::CommandLine.execute({:update=>true})
+		Dir.chdir("..")
   end
 end
 
@@ -87,11 +92,11 @@ namespace :migrations do
   task :migrate => :environment do
     ActiveRecord::Migrator.migrate('migrations', ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
   end
-   
+
   task :rollback => :environment do
     ActiveRecord::Migrator.rollback('migrations')
   end
-   
+
   task :environment do
     ActiveRecord::Base.establish_connection(YAML::load(File.open('migrations/database.yml'))[ENV["RAILS_ENV"] ? ENV["RAILS_ENV"] : "development"])
     ActiveRecord::Base.logger = Logger.new(File.open('migrations/database.log', 'a'))
