@@ -6,8 +6,8 @@ common: &common
 
 development:
   <<: *common
-  username: root
-  password: 26101986
+  username: proxy
+  password: rabbit
   database: proxy
 
 staging:
