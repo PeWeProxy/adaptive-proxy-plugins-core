@@ -107,7 +107,8 @@ namespace :after do
   desc "Run task after deploy"
   task :after_deploy do
     # Add code here to run after deploy
+		puts "After deploy task put here..."
   end
 end
 
-task :default => ["src:build", "src:jar", "migrations:migrate", "offline:build", "offline:schedule", "after:after_deploy"]
+task :default => ["src:build", "src:jar", "migrations:migrate", "offline:build", "offline:schedule"]
