@@ -4,6 +4,10 @@
   <name>MySQLDatabaseConnectionProviderService</name>
   <classLocation/>
   <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.MySQLDatabaseConnectionProviderService</className>
+  <libraries>
+    <lib>mysql-connector-java-5.1.12-bin.jar</lib>
+    <lib>bonecp-0.6.5.jar</lib>
+  </libraries>
   <types>
     <type>RequestServicePlugin</type>
     <type>ResponseServicePlugin</type>
