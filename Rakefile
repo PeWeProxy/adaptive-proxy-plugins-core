@@ -47,42 +47,42 @@ namespace :offline do
 
   desc "Compile offline tasks"
   task :build do
-		Dir.chdir("offline")
-  	FileUtils.mkdir('jars') unless File.exists?("jars")
-  	java_apps.each_pair do |app_name, mainclass|
+		Dir.chdir("offline") do
+			FileUtils.mkdir('jars') unless File.exists?("jars")
+			java_apps.each_pair do |app_name, mainclass|
 
-  		FileUtils.rm_rf Dir.glob(app_name+'/bin/')
-  		FileUtils.rm_rf Dir.glob(app_name+'/META-INF')
-  		FileUtils.rm_rf Dir.glob(app_name+'/*.jar')
+				FileUtils.rm_rf Dir.glob(app_name+'/bin/')
+				FileUtils.rm_rf Dir.glob(app_name+'/META-INF')
+				FileUtils.rm_rf Dir.glob(app_name+'/*.jar')
 
-  		Javac.in(app_name).execute do |javac|
-  			javac.src = 'src/**/*.java'
-  			javac.cp << '.'
-  			javac.output = 'bin'
-  		end
+				Javac.in(app_name).execute do |javac|
+					javac.src = 'src/**/*.java'
+					javac.cp << '.'
+					javac.output = 'bin'
+				end
 
-  		Manifest.in(app_name).execute do |manifest|
-  			manifest.main_class = mainclass
-  			manifest.cp = '.'
-  		end
+				Manifest.in(app_name).execute do |manifest|
+					manifest.main_class = mainclass
+					manifest.cp = '.'
+				end
 
-  		Jar.in(app_name).execute do |jar|
-  			jar.name = app_name+'.jar'
-  			jar.bin << 'bin'
-  			jar.with_manifest = true
-  		end
+				Jar.in(app_name).execute do |jar|
+					jar.name = app_name+'.jar'
+					jar.bin << 'bin'
+					jar.with_manifest = true
+				end
 
-  		FileUtils.mv(app_name+'/'+app_name+'.jar', 'jars/'+app_name+'.jar')
+				FileUtils.mv(app_name+'/'+app_name+'.jar', 'jars/'+app_name+'.jar')
 
-  	end
-		Dir.chdir("..")
+			end
+		end
   end
 
   desc "Schedule tasks as defined in config/schedule.rb"
   task :schedule do
-		Dir.chdir("offline")
-		Whenever::CommandLine.execute({:update=>true})
-		Dir.chdir("..")
+		Dir.chdir("offline") do
+			Whenever::CommandLine.execute({:update=>true})
+		end
   end
 end
 
