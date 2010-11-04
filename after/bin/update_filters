@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+begin
+  require 'filter'
+rescue LoadError
+  puts "Gem not found, using local version"
+
+  $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
+  require 'filter'
+end
+
+FilterGenerator.new.generate

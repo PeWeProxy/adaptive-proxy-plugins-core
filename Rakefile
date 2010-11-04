@@ -109,7 +109,6 @@ namespace :after do
     # Add code here to run after deploy
 
     Dir.chdir('after') do
-			puts Dir.getwd
       `ruby bin/update_filters`
 			FileUtils.cp("after/filter.txt", ENV['PROXY_ROOT'])
     end
