@@ -14,7 +14,7 @@ staging:
   <<: *common
   username: proxy
   password: peweproxy
-  database: proxy_staging
+  database: proxy
 
 production:
   <<: *common
