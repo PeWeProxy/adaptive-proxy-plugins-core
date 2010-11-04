@@ -13,7 +13,7 @@ PROXY_DIR = 'adaptive-proxy'
 # java offline tasks
 # directory (project name) => main class (including package)
 java_apps = {
-  'test' => 'sk.fiit.plesko.pokus.Test'
+  #'test' => 'sk.fiit.plesko.pokus.Test'
 }
 
 namespace :src do
