@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE variables SYSTEM "VariablesConfiguration.dtd">
 <variables>
-	<variable name="baseurl">http://localhost:3000</variable>
-	<variable name="proxyurl">http://localhost:9666</variable>
+	<!-- Kto tento subor commitne, tomu paprce dolamem! -->
+	<variable name="baseurl">http://peweproxy-staging.fiit.stuba.sk/proxy</variable>
+	<variable name="proxyurl">http://peweproxy-staging.fiit.stuba.sk:9666</variable>
 </variables>
