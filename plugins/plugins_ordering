@@ -3,16 +3,16 @@
 # Each line is considered to be one plugin's. Lines texts are trimmed !
  
 [request]
+UIDFromCookiePlugin
 RequestFilterService
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
-WebImpFeedbackPlugin
  
 [response]
 RequestFilterService
 SetupJavaScriptEnvironmentProcessingPlugin
-NotifyBar
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
 DatabaseLoggingService
-WebImpProcessingPlugin
+UserAccessLoggingProcessingPlugin
+UIDFromCookiePlugin

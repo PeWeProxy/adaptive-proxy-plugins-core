@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>UserAccessLoggingProcessingPlugin</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAccessLoggingProcessingPlugin</className>
+	<types>
+		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="scriptUrl">${baseurl}/javascripts/recognizeUser.js</param>
+		<param name="bypassPattern">userRecognitionRequest.html</param>
+	</parameters>
+</plugin>

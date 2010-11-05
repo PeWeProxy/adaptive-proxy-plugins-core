@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>UIDFromCookiePlugin</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UIDFromCookiePlugin</className>
+	<types>
+		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
+	</types>
+	<parameters>
+		<param name="scriptUrl">${baseurl}/set_cookie/cookie.js</param>
+		<param name="bypassPattern">${baseurl}/set_cookie/cookie.js</param>
+		<param name="generateResponse">true</param>
+		<param name="cookieDomain">${baseurl}</param>
+	</parameters>
+</plugin>

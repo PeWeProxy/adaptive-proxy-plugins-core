@@ -11,8 +11,8 @@
   <parameters>
     <param name="jdbcURL">jdbc:mysql://localhost:3306/proxy_staging?characterEncoding=UTF-8</param>
     <param name="driver">com.mysql.jdbc.Driver</param>
-    <param name="userName">RoR</param>
-    <param name="password">RoRatAleF</param>
+    <param name="userName">proxy</param>
+    <param name="password">peweproxy</param>
     <param name="validationQuery">SELECT 1</param>
     <param name="idleTestPeriod">10</param>
     <param name="partitionCount">2</param>
