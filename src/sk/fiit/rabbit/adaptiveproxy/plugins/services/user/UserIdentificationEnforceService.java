@@ -67,4 +67,8 @@ public class UserIdentificationEnforceService implements ResponseProcessingPlugi
 			HttpMessageFactory messageFactory) {
 		return response;
 	}
+
+	@Override
+	public void processTransferedResponse(HttpResponse response) {
+	}
 }

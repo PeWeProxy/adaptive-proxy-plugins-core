@@ -123,4 +123,9 @@ public class LoggingService implements ResponseProcessingPlugin {
 		return null;
 	}
 
+	@Override
+	public void processTransferedResponse(HttpResponse response) {
+		
+	}
+
 }

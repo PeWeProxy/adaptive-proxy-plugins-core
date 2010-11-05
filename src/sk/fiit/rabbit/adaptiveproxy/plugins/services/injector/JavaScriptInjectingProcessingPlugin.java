@@ -156,4 +156,12 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 			HttpMessageFactory messageFactory) {
 		return null;
 	}
+
+	@Override
+	public void processTransferedResponse(HttpResponse response) {
+	}
+
+	@Override
+	public void processTransferedRequest(HttpRequest request) {
+	}
 }

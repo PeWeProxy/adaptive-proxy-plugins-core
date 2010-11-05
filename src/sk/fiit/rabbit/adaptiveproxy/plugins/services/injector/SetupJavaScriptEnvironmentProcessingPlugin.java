@@ -62,4 +62,8 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		return null;
 	}
 
+	@Override
+	public void processTransferedResponse(HttpResponse response) {
+	}
+
 }

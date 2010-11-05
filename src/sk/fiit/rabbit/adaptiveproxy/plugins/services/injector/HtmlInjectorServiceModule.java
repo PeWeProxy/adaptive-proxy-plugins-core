@@ -3,7 +3,6 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

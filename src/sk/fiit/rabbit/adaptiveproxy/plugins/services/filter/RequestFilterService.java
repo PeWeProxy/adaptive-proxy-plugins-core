@@ -96,7 +96,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String url = request.getProxyRequestHeader().getRequestURI();
-		if(canProceed(url, request.getProxyRequestHeader(), "REQUEST")) {
+		if(request.hasBody() && canProceed(url, request.getProxyRequestHeader(), "REQUEST")) {
 			return RequestProcessingActions.PROCEED;
 		} else {
 			return RequestProcessingActions.FINAL_REQUEST;
@@ -106,7 +106,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	@Override
 	public HttpRequest getNewRequest(ModifiableHttpRequest request,
 			HttpMessageFactory messageFactory) {
-		return null;
+		return request;
 	}
 	
 	@Override
@@ -120,7 +120,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	public HttpResponse getNewResponse(ModifiableHttpResponse response,
 			HttpMessageFactory messageFactory) {
 		// TODO Auto-generated method stub
-		return null;
+		return response;
 	}
 	
 	@Override
@@ -134,7 +134,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		String url = response.getRequest().getClientRequestHeader().getRequestURI();
-		if(canProceed(url, response.getProxyResponseHeader(), "RESPONSE")) {
+		if(response.hasBody() && canProceed(url, response.getProxyResponseHeader(), "RESPONSE")) {
 			return ResponseProcessingActions.PROCEED;
 		} else {
 			return ResponseProcessingActions.FINAL_RESPONSE;
@@ -195,5 +195,13 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 		}
 
 		return true;
+	}
+
+	@Override
+	public void processTransferedResponse(HttpResponse response) {
+	}
+
+	@Override
+	public void processTransferedRequest(HttpRequest request) {
 	}
 }
