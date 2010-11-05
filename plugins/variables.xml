@@ -3,5 +3,5 @@
 <variables>
 	<!-- Kto tento subor commitne, tomu paprce dolamem! -->
 	<variable name="baseurl">http://peweproxy-staging.fiit.stuba.sk/proxy</variable>
-	<variable name="proxyurl">http://peweproxy-staging.fiit.stuba.sk:9666</variable>
+	<variable name="proxyurl">http://peweproxy-staging.fiit.stuba.sk</variable>
 </variables>
