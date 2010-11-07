@@ -13,6 +13,5 @@ RequestFilterService
 SetupJavaScriptEnvironmentProcessingPlugin
 KeywordsDisplayPlugin
 ActivityUpdaterPlugin
-DatabaseLoggingService
 UserAccessLoggingProcessingPlugin
 UIDFromCookiePlugin

@@ -1,8 +1,6 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,211 +9,161 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.log4j.Logger;
-
-import sk.fiit.rabbit.adaptiveproxy.plugins.PluginProperties;
-import sk.fiit.rabbit.adaptiveproxy.plugins.headers.RequestHeaders;
-import sk.fiit.rabbit.adaptiveproxy.plugins.helpers.RequestAndResponseProcessingPluginAdapter;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpMessageFactory;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.HttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpRequest;
-import sk.fiit.rabbit.adaptiveproxy.plugins.messages.ModifiableHttpResponse;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.ServiceUnavailableException;
+import sk.fiit.peweproxy.headers.RequestHeader;
+import sk.fiit.peweproxy.headers.ResponseHeader;
+import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
+import sk.fiit.peweproxy.messages.HttpResponse;
+import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
+import sk.fiit.peweproxy.services.ProxyService;
+import sk.fiit.peweproxy.services.content.ModifiableStringService;
+import sk.fiit.peweproxy.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.ModifiableStringService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.database.DatabaseConnectionProviderService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformationProviderService;
 
-public class UserAccessLoggingProcessingPlugin extends RequestAndResponseProcessingPluginAdapter {
-	
-	protected Logger logger = Logger.getLogger(JavaScriptInjectingProcessingPlugin.class);
-	
-	private String scriptUrl;
-	private String bypassPattern;
-	
+public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	@Override
-	public HttpRequest getNewRequest(ModifiableHttpRequest proxyRequest, HttpMessageFactory messageFactory) {		
-		return proxyRequest;
+	public ResponseProcessingActions processResponse(
+			ModifiableHttpResponse response) {
+
+		PageInformation pi = response.getServicesHandle()
+				.getService(PageInformationProviderService.class)
+				.getPageInformation();
+		
+		return super.processResponse(response);
 	}
 
 	@Override
-	public RequestProcessingActions processRequest(ModifiableHttpRequest request)
-	{
-		Map<String, String> postData;
-		
-		if(request.getClientRequestHeaders().getRequestURI().contains(bypassPattern))
-		{
+	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
+		StringContentService stringContentService = request.getServicesHandle()
+				.getService(StringContentService.class);
+
+		Map<String, String> postData = getPostDataFromRequest(stringContentService
+				.getContent());
+
+		Connection con = null;
+
+		if (postData.containsKey("__peweproxy_uid")
+				&& postData.containsKey("_ap_checksum")
+				&& postData.containsKey("__ap_url")) {
 			try {
-				StringContentService stringContentService = request.getServiceHandle().getService(StringContentService.class);
-				
-				postData = getPostDataFromRequest(stringContentService.getContent());				
-	
-				Connection con = null;
-				
-				if (postData.containsKey("__peweproxy_uid") && postData.containsKey("_ap_checksum") && postData.containsKey("__ap_url"))	
-				{
-					try {
-						con = request.getServiceHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
-						
-						createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), postData.get("__ap_url"), "ip");						
-					} finally {
-						SqlUtils.close(con);
-					}
-				}
-			} catch (ServiceUnavailableException e) {
-				logger.trace("StringContentService is unavailable");
+				con = request.getServicesHandle()
+						.getService(DatabaseConnectionProviderService.class)
+						.getDatabaseConnection();
+
+				createDatabaseLog(con, postData.get("__peweproxy_uid"),
+						postData.get("_ap_checksum"), postData.get("__ap_url"),
+						"ip");
+			} finally {
+				SqlUtils.close(con);
 			}
-			
-			return RequestProcessingActions.FINAL_RESPONSE;
 		}
-		else
-		{
-			return RequestProcessingActions.PROCEED;
-		}
-		
+		return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
-	private boolean createDatabaseLog(Connection connection, String uid, String checksum, String url, String ip)
-	{		
+	private boolean createDatabaseLog(Connection connection, String uid,
+			String checksum, String url, String ip) {
 		PreparedStatement page_stmt = null;
 		PreparedStatement log_stmt = null;
-		
+
 		String pid = "";
 		java.util.Date today = new java.util.Date();
 		String timestamp = new Timestamp(today.getTime()).toString();
-		String formatedTimeStamp = timestamp.substring(0, timestamp.indexOf("."));
-		
+		String formatedTimeStamp = timestamp.substring(0,
+				timestamp.indexOf("."));
+
 		try {
 			url = URLDecoder.decode(url, "utf-8");
 		} catch (UnsupportedEncodingException e) {
 			logger.warn(e);
 		}
-		
-//		url = url.replace("%2F", "/");
-//		url = url.replace("%3A", ":");
-//		url = url.replace("%3F", "?");
-//		url = url.replace("%26", "&");
-//		url = url.replace("%3D", "=");
-		
+
 		try {
-			page_stmt = connection.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
+			page_stmt = connection
+					.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
 			page_stmt.setString(1, url);
 			page_stmt.setString(2, checksum);
-			
+
 			page_stmt.execute();
 			ResultSet rs = page_stmt.getResultSet();
-			
+
 			while (rs.next()) {
 				pid = rs.getString(1);
 			}
-			
-			if (!"".equals(uid))
-			{
+
+			if (!"".equals(uid)) {
 				try {
-					log_stmt = connection.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
-	
+					log_stmt = connection
+							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
+
 					log_stmt.setString(1, uid);
 					log_stmt.setString(2, formatedTimeStamp);
 					log_stmt.setString(3, pid);
 					log_stmt.setString(4, url);
 					log_stmt.setString(5, Checksum.md5(ip));
-					
+
 					log_stmt.execute();
 				} catch (SQLException e) {
 					logger.error("Could not insert access_log ", e);
 				} finally {
 					SqlUtils.close(log_stmt);
 				}
-			}
-			else
-			{
+			} else {
 				SqlUtils.close(log_stmt);
 			}
-			
+
 		} catch (SQLException e) {
 			logger.error("Could not get page id for access log", e);
 		} finally {
 			SqlUtils.close(page_stmt);
 		}
-		
+
 		return true;
 	}
 	
-	
-	
-	private Map<String, String> getPostDataFromRequest(String requestContent)
-	{	
+	private Map<String, String> getPostDataFromRequest(String requestContent) {
 		try {
-			requestContent = URLDecoder.decode(requestContent,"utf-8");
+			requestContent = URLDecoder.decode(requestContent, "utf-8");
 		} catch (UnsupportedEncodingException e) {
 			logger.warn(e);
 		}
 		Map<String, String> postData = new HashMap<String, String>();
 		String attributeName;
 		String attributeValue;
-		
-		for (String postPair : requestContent.split("&"))
-		{
-			if (postPair.split("=").length == 2)
-			{
+
+		for (String postPair : requestContent.split("&")) {
+			if (postPair.split("=").length == 2) {
 				attributeName = postPair.split("=")[0];
 				attributeValue = postPair.split("=")[1];
 				postData.put(attributeName, attributeValue);
 			}
 		}
-		
+
 		return postData;
 	}
-	
-	@Override
-	public HttpResponse getResponse(ModifiableHttpRequest proxyResponse, HttpMessageFactory messageFactory)
-	{
-		return messageFactory.constructHttpResponse("text/plain");
-	}
 
-	
 	@Override
-	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		try {
-			PageInformation pi = response.getServiceHandle().getService(PageInformationProviderService.class).getPageInformation();
-		} catch (ServiceUnavailableException e) {
-			logger.error("PageInformationProviderService is unavailable", e);
-		}
-
-		
-		try {
-			HtmlInjectorService htmlInjectionService = response.getServiceHandle().getService(HtmlInjectorService.class);
-			
-			String scripts = "<script src='" + scriptUrl + "'></script>";
-			htmlInjectionService.inject(scripts, HtmlPosition.ON_MARK);
-			
-		} catch (ServiceUnavailableException e) {
-			logger.trace("HtmlInjectorService is unavailable, JavaScriptInjector takes no action");
-		}
-		
-		return ResponseProcessingActions.PROCEED;
-	}
-	
-	
-	@Override
-	public boolean setup(PluginProperties props) {
-		scriptUrl = props.getProperty("scriptUrl");
-		bypassPattern = props.getProperty("bypassPattern");
-		
-		return true;
+	public void desiredRequestServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			RequestHeader clientRQHeader) {
+		super.desiredRequestServices(desiredServices, clientRQHeader);
+		desiredServices.add(ModifiableStringService.class); //FIXME: toto je docasny hack kvoli late processingu, spravne tu ma byt len StringContentService
+		desiredServices.add(DatabaseConnectionProviderService.class);
 	}
 	
 	@Override
-	public boolean wantRequestContent(RequestHeaders clientRQHeaders) {
-		return true;
+	public void desiredResponseServices(
+			Set<Class<? extends ProxyService>> desiredServices,
+			ResponseHeader webRPHeader) {
+		super.desiredResponseServices(desiredServices, webRPHeader);
+		desiredServices.add(PageInformationProviderService.class);
 	}
 	
 }

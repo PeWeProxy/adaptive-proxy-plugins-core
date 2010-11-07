@@ -16,15 +16,14 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 
 public class ReadabilityCleartextExtractionServiceModule implements ResponseServiceModule {
 	
 	private static final Logger logger = Logger.getLogger(ReadabilityCleartextExtractionServiceModule.class);
 	
 	private class ReadabilityCleartextExtractionServiceProvider
-			implements
-			ClearTextExtractionService,
-			ResponseServiceProvider<ReadabilityCleartextExtractionServiceProvider> {
+			implements ClearTextExtractionService, ResponseServiceProvider<ReadabilityCleartextExtractionServiceProvider> {
 
 		private String content;
 		private String clearText;

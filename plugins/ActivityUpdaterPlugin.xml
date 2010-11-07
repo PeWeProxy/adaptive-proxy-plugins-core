@@ -3,14 +3,15 @@
 <plugin>
 	<name>ActivityUpdaterPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.ActivityLoggingPlugin</className>
 	<types>
 		<type>RequestProcessingPlugin</type>
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${baseurl}/javascripts/timelog.js</param>
+		<param name="scriptUrl">${proxyurl}/FileSender/timelog.js</param>
 		<param name="bypassPattern">activity/update</param>
 		<param name="bypassTo">${baseurl}/activity/update</param>
+		<param name="generateResponse">true</param>
 	</parameters>
 </plugin>

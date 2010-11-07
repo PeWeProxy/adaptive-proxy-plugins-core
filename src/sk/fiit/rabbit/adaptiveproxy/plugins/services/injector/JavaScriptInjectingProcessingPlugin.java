@@ -18,8 +18,9 @@ import sk.fiit.peweproxy.plugins.PluginProperties;
 import sk.fiit.peweproxy.plugins.processing.RequestProcessingPlugin;
 import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorService.HtmlPosition;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserIdentificationService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 
 public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
 	
@@ -77,7 +78,6 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 			if(!isAllowedDomain(response.getRequest().getClientRequestHeader().getRequestURI())) {
 				return ResponseProcessingActions.PROCEED;
 			}
-			
 			
 			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 				HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
@@ -154,7 +154,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request,
 			HttpMessageFactory messageFactory) {
-		return null;
+		return messageFactory.constructHttpResponse(null, "text/html");
 	}
 
 	@Override

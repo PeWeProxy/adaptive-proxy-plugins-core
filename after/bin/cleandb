@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+begin
+  require 'filter'
+rescue LoadError
+  puts "Gem not found, using local version"
+
+  $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
+  require 'filter'
+end
+
+if !File.exist? 'filter.txt' then
+  puts 'Filter definition file (filter.txt) not found, run update_filters first'
+  exit 1
+end
+
+if ARGV[0] == '--dry-run' then
+  puts "Running in a dry mode"
+  method = :dry_run
+else
+  method = :go
+end
+
+CleanDb.new.clean(method)

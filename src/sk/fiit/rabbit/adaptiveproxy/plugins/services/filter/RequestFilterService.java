@@ -96,7 +96,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
 		String url = request.getProxyRequestHeader().getRequestURI();
-		if(request.hasBody() && canProceed(url, request.getProxyRequestHeader(), "REQUEST")) {
+		if(canProceed(url, request.getProxyRequestHeader(), "REQUEST")) {
 			return RequestProcessingActions.PROCEED;
 		} else {
 			return RequestProcessingActions.FINAL_REQUEST;
@@ -134,7 +134,7 @@ public class RequestFilterService implements RequestProcessingPlugin, ResponsePr
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		String url = response.getRequest().getClientRequestHeader().getRequestURI();
-		if(response.hasBody() && canProceed(url, response.getProxyResponseHeader(), "RESPONSE")) {
+		if(canProceed(url, response.getProxyResponseHeader(), "RESPONSE")) {
 			return ResponseProcessingActions.PROCEED;
 		} else {
 			return ResponseProcessingActions.FINAL_RESPONSE;

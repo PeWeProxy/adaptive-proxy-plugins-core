@@ -1,13 +1,16 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
@@ -51,7 +54,7 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 		stringService.setContent(content);
 		return httpResponse;
 	}
-	
+
 	@Override
 	public boolean start(PluginProperties props) {
 		super.start(props);

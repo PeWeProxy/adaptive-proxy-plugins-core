@@ -8,7 +8,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${baseurl}/javascripts/notifybar.js</param>
+		<param name="scriptUrl">${proxyurl}/FileSender/notifybar.js</param>
 		<param name="additionalHTML"><![CDATA[<style type="text/css">
 .notify-bar {
 	width:100%;

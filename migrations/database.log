@@ -1,0 +1,520 @@
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.3ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (104.5ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (234.3ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.4ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.5ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;35;1mSQL (96.4ms)[0m   [0mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `url` varchar(4000), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (234.1ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;35;1mSQL (109.0ms)[0m   [0mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1000), `checksum` varchar(32), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (234.0ms)[0m   [0;1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [4;35;1mSQL (49.2ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('1')[0m
+Migrating to AddTimeLogging (2)
+  [4;36;1mSQL (241.2ms)[0m   [0;1mALTER TABLE `access_logs` ADD `checksum` varchar(32)[0m
+  [4;35;1mSQL (242.2ms)[0m   [0mALTER TABLE `access_logs` ADD `time_on_page` int(11)[0m
+  [4;36;1mSQL (57.7ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('2')[0m
+Migrating to AddPages (3)
+  [4;35;1mSQL (104.7ms)[0m   [0mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (234.3ms)[0m   [0;1mALTER TABLE `access_logs` DROP `url`[0m
+  [4;35;1mSQL (235.5ms)[0m   [0mALTER TABLE `access_logs` DROP `keywords`[0m
+  [4;36;1mSQL (234.0ms)[0m   [0;1mALTER TABLE `access_logs` DROP `checksum`[0m
+  [4;35;1mSQL (234.0ms)[0m   [0mALTER TABLE `access_logs` ADD `page_id` int(11)[0m
+  [4;36;1mSQL (57.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('3')[0m
+Migrating to DropKeywordsCache (4)
+  [4;35;1mSQL (39.5ms)[0m   [0mDROP TABLE `keyword_cache`[0m
+  [4;36;1mSQL (49.4ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('4')[0m
+Migrating to CreateEmail (5)
+  [4;35;1mSQL (105.1ms)[0m   [0mCREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (49.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('5')[0m
+Migrating to CreateStoredApuids (6)
+  [4;35;1mSQL (106.6ms)[0m   [0mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [4;36;1mSQL (49.4ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('6')[0m
+Migrating to AddScrollCountAndCopyCount (7)
+  [4;35;1mSQL (234.7ms)[0m   [0mALTER TABLE `access_logs` ADD `scroll_count` int(11)[0m
+  [4;36;1mSQL (209.1ms)[0m   [0;1mALTER TABLE `access_logs` ADD `copy_count` int(11)[0m
+  [4;35;1mSQL (49.2ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('7')[0m
+Migrating to AddReferer (8)
+  [4;36;1mSQL (224.9ms)[0m   [0;1mALTER TABLE `access_logs` ADD `referer` varchar(255)[0m
+  [4;35;1mSQL (49.2ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('8')[0m
+Migrating to EnlargeReferer (9)
+  [4;36;1mSQL (239.2ms)[0m   [0;1mALTER TABLE access_logs CHANGE referer referer VARCHAR(4000)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('9')[0m
+Migrating to CreateWebImpSchema (10)
+  [4;36;1mSQL (131.2ms)[0m   [0;1mCREATE TABLE `wi_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `content` text(4194304) NOT NULL, `url` varchar(1024) NOT NULL, `heading` varchar(512), `title` varchar(512), `date_time_accessed` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (94.6ms)[0m   [0mCREATE TABLE `wi_links` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `is_broken` tinyint(1) DEFAULT 1) ENGINE=InnoDB[0m
+  [4;36;1mSQL (91.2ms)[0m   [0;1mCREATE TABLE `wi_page_link` (`page_id` int(11) NOT NULL, `link_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (115.9ms)[0m   [0mCREATE TABLE `wi_feedback` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `url` varchar(1024) NOT NULL, `rating` int(11) NOT NULL, `timestamp` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.0ms)[0m   [0;1mCREATE TABLE `wi_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `page_id` int(11) NOT NULL, `name` varchar(128) NOT NULL, `caption` varchar(2048)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (107.7ms)[0m   [0mCREATE TABLE `wi_dates` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `event_id` int(11) NOT NULL, `value` date NOT NULL, `type` mediumint NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (107.7ms)[0m   [0;1mCREATE TABLE `wi_calendar` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (108.0ms)[0m   [0mCREATE TABLE `wi_calendar_date` (`calendar_id` int(11) NOT NULL, `date_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.1ms)[0m   [0;1mCREATE TABLE `wi_remove_event` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (242.6ms)[0m   [0mALTER TABLE wi_page_link ADD PRIMARY KEY (page_id, link_id)[0m
+  [4;36;1mSQL (252.5ms)[0m   [0;1mALTER TABLE wi_calendar_date ADD PRIMARY KEY (calendar_id, date_id)[0m
+  [4;35;1mSQL (41.1ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('10')[0m
+Migrating to AddIpAddress (11)
+  [4;36;1mSQL (248.2ms)[0m   [0;1mALTER TABLE `access_logs` ADD `ip` varchar(50)[0m
+  [4;35;1mSQL (40.8ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('11')[0m
+Migrating to AddChecksumIndex (12)
+  [4;36;1mSQL (257.9ms)[0m   [0;1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('12')[0m
+Migrating to CreateBifrostRecommendations (13)
+  [4;36;1mSQL (129.5ms)[0m   [0;1mCREATE TABLE `bf_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255), `recommended_query` varchar(255), `recommended_url` varchar(4000), `method` varchar(50)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.1ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('13')[0m
+Migrating to AddClicks (14)
+  [4;36;1mSQL (250.4ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (225.7ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('14')[0m
+Migrating to CreateAdaptiveImpSchema (15)
+  [4;35;1mSQL (131.8ms)[0m   [0mCREATE TABLE `wi_users` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (124.5ms)[0m   [0;1mCREATE TABLE `wi_pearson_coeffs` (`user1` int(11) NOT NULL, `user2` int(11) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (115.9ms)[0m   [0mCREATE TABLE `wi_interest` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `url` varchar(1024) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (242.9ms)[0m   [0;1mALTER TABLE wi_pearson_coeffs ADD PRIMARY KEY (user1, user2)[0m
+  [4;35;1mSQL (32.3ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('15')[0m
+Migrating to ChangeFeedback (16)
+  [4;36;1mSQL (224.9ms)[0m   [0;1mALTER TABLE `wi_feedback` DROP `rating`[0m
+  [4;35;1mSQL (242.5ms)[0m   [0mALTER TABLE `wi_feedback` ADD `positive_feedback` int(11)[0m
+  [4;36;1mSQL (250.6ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `negative_feedback` int(11)[0m
+  [4;35;1mSQL (41.2ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('16')[0m
+Migrating to CreateBifrostRecommendationGroups (17)
+  [4;36;1mSQL (115.1ms)[0m   [0;1mCREATE TABLE `bf_recommendation_groups` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (226.3ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `userid`[0m
+  [4;36;1mSQL (235.8ms)[0m   [0;1mALTER TABLE `bf_recommendations` DROP `timestamp`[0m
+  [4;35;1mSQL (242.3ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `original_query`[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('17')[0m
+Migrating to ReferenceRecommendationsFromGroups (18)
+  [4;35;1mSQL (208.2ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `groupid` int(11)[0m
+  [4;36;1mSQL (242.3ms)[0m   [0;1mCREATE INDEX `index_bf_recommendations_on_groupid` ON `bf_recommendations` (`groupid`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('18')[0m
+Migrating to AddResultPosition (19)
+  [4;36;1mSQL (241.6ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `position` int(11)[0m
+  [4;35;1mSQL (41.1ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('19')[0m
+Migrating to AddFeedback (20)
+  [4;36;1mSQL (332.4ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (282.7ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (225.8ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `negative` tinyint(1)[0m
+  [4;35;1mSQL (242.2ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `negative_at` datetime[0m
+  [4;36;1mSQL (41.1ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('20')[0m
+Migrating to AddFeedbackQuery (21)
+  [4;35;1mSQL (234.6ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_query` varchar(255)[0m
+  [4;36;1mSQL (217.4ms)[0m   [0;1mCREATE INDEX `index_bf_recommendation_groups_on_id_and_clicked_query` ON `bf_recommendation_groups` (`id`, `clicked_query`)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('21')[0m
+Migrating to AddIndexes (22)
+  [4;36;1mSQL (249.5ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)[0m
+  [4;35;1mSQL (242.4ms)[0m   [0mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`, `checksum`)[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('22')[0m
+Migrating to ReferencePageFromFeedback (23)
+  [4;35;1mSQL (216.3ms)[0m   [0mALTER TABLE `wi_feedback` DROP `url`[0m
+  [4;36;1mSQL (226.1ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `page_id` int(11) NOT NULL[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('23')[0m
+Migrating to RenameWiTables (24)
+  [4;36;1mSQL (63.4ms)[0m   [0;1mRENAME TABLE `wi_calendar` TO `wi_calendars`[0m
+  [4;35;1mSQL (49.4ms)[0m   [0mRENAME TABLE `wi_calendar_date` TO `wi_calendar_dates`[0m
+  [4;36;1mSQL (49.9ms)[0m   [0;1mRENAME TABLE `wi_feedback` TO `wi_feedbacks`[0m
+  [4;35;1mSQL (49.8ms)[0m   [0mRENAME TABLE `wi_interest` TO `wi_interests`[0m
+  [4;36;1mSQL (49.7ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('24')[0m
+Migrating to CreateBfCommunities (26)
+  [4;35;1mSQL (121.4ms)[0m   [0mCREATE TABLE `bf_communities` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `owner` varchar(32), `friends` text) ENGINE=InnoDB[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('26')[0m
+Migrating to AddWiRecommendations (27)
+  [4;35;1mSQL (115.0ms)[0m   [0mCREATE TABLE `wi_recommended_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `page_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (107.7ms)[0m   [0;1mCREATE TABLE `wi_recommended_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.1ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('27')[0m
+Migrating to AddWiRecommendationsCode (28)
+  [4;36;1mSQL (116.7ms)[0m   [0;1mCREATE TABLE `wi_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('28')[0m
+Migrating to AddWiPagesIndex (29)
+  [4;36;1mSQL (256.0ms)[0m   [0;1mCREATE INDEX `index_wi_pages_on_url` ON `wi_pages` (`url`)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('29')[0m
+Migrating to ChangeCalendarCodeType (30)
+  [4;36;1mSQL (0.8ms)[0m   [0;1mSHOW FIELDS FROM `wi_calendars`[0m
+  [4;35;1mSQL (247.5ms)[0m   [0mALTER TABLE `wi_calendars` CHANGE `code` `code` text(4194304) NOT NULL[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('30')[0m
+Migrating to AddWiNews (31)
+  [4;35;1mSQL (123.4ms)[0m   [0mCREATE TABLE `wi_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `title` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.0ms)[0m   [0;1mCREATE TABLE `wi_recommended_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `news_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (124.3ms)[0m   [0mCREATE TABLE `wi_recommendations_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (32.7ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('31')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (135.5ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (217.7ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.4ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.4ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;35;1mSQL (120.0ms)[0m   [0mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `url` varchar(4000), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (234.0ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;35;1mSQL (124.2ms)[0m   [0mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1000), `checksum` varchar(32), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (242.2ms)[0m   [0;1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('1')[0m
+Migrating to AddTimeLogging (2)
+  [4;36;1mSQL (258.1ms)[0m   [0;1mALTER TABLE `access_logs` ADD `checksum` varchar(32)[0m
+  [4;35;1mSQL (225.7ms)[0m   [0mALTER TABLE `access_logs` ADD `time_on_page` int(11)[0m
+  [4;36;1mSQL (32.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('2')[0m
+Migrating to AddPages (3)
+  [4;35;1mSQL (146.5ms)[0m   [0mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (250.8ms)[0m   [0;1mALTER TABLE `access_logs` DROP `url`[0m
+  [4;35;1mSQL (242.3ms)[0m   [0mALTER TABLE `access_logs` DROP `keywords`[0m
+  [4;36;1mSQL (218.9ms)[0m   [0;1mALTER TABLE `access_logs` DROP `checksum`[0m
+  [4;35;1mSQL (250.6ms)[0m   [0mALTER TABLE `access_logs` ADD `page_id` int(11)[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('3')[0m
+Migrating to DropKeywordsCache (4)
+  [4;35;1mSQL (55.1ms)[0m   [0mDROP TABLE `keyword_cache`[0m
+  [4;36;1mSQL (58.1ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('4')[0m
+Migrating to CreateEmail (5)
+  [4;35;1mSQL (146.7ms)[0m   [0mCREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('5')[0m
+Migrating to CreateStoredApuids (6)
+  [4;35;1mSQL (146.3ms)[0m   [0mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('6')[0m
+Migrating to AddScrollCountAndCopyCount (7)
+  [4;35;1mSQL (556.2ms)[0m   [0mALTER TABLE `access_logs` ADD `scroll_count` int(11)[0m
+  [4;36;1mSQL (210.5ms)[0m   [0;1mALTER TABLE `access_logs` ADD `copy_count` int(11)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('7')[0m
+Migrating to AddReferer (8)
+  [4;36;1mSQL (283.1ms)[0m   [0;1mALTER TABLE `access_logs` ADD `referer` varchar(255)[0m
+  [4;35;1mSQL (40.8ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('8')[0m
+Migrating to EnlargeReferer (9)
+  [4;36;1mSQL (258.3ms)[0m   [0;1mALTER TABLE access_logs CHANGE referer referer VARCHAR(4000)[0m
+  [4;35;1mSQL (40.8ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('9')[0m
+Migrating to CreateWebImpSchema (10)
+  [4;36;1mSQL (137.7ms)[0m   [0;1mCREATE TABLE `wi_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `content` text(4194304) NOT NULL, `url` varchar(1024) NOT NULL, `heading` varchar(512), `title` varchar(512), `date_time_accessed` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (112.2ms)[0m   [0mCREATE TABLE `wi_links` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `is_broken` tinyint(1) DEFAULT 1) ENGINE=InnoDB[0m
+  [4;36;1mSQL (107.8ms)[0m   [0;1mCREATE TABLE `wi_page_link` (`page_id` int(11) NOT NULL, `link_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (126.0ms)[0m   [0mCREATE TABLE `wi_feedback` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `url` varchar(1024) NOT NULL, `rating` int(11) NOT NULL, `timestamp` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (141.0ms)[0m   [0;1mCREATE TABLE `wi_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `page_id` int(11) NOT NULL, `name` varchar(128) NOT NULL, `caption` varchar(2048)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (124.8ms)[0m   [0mCREATE TABLE `wi_dates` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `event_id` int(11) NOT NULL, `value` date NOT NULL, `type` mediumint NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (107.7ms)[0m   [0;1mCREATE TABLE `wi_calendar` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (108.0ms)[0m   [0mCREATE TABLE `wi_calendar_date` (`calendar_id` int(11) NOT NULL, `date_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (107.7ms)[0m   [0;1mCREATE TABLE `wi_remove_event` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (226.1ms)[0m   [0mALTER TABLE wi_page_link ADD PRIMARY KEY (page_id, link_id)[0m
+  [4;36;1mSQL (217.5ms)[0m   [0;1mALTER TABLE wi_calendar_date ADD PRIMARY KEY (calendar_id, date_id)[0m
+  [4;35;1mSQL (32.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('10')[0m
+Migrating to AddIpAddress (11)
+  [4;36;1mSQL (324.4ms)[0m   [0;1mALTER TABLE `access_logs` ADD `ip` varchar(50)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('11')[0m
+Migrating to AddChecksumIndex (12)
+  [4;36;1mSQL (247.7ms)[0m   [0;1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('12')[0m
+Migrating to CreateBifrostRecommendations (13)
+  [4;36;1mSQL (113.1ms)[0m   [0;1mCREATE TABLE `bf_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255), `recommended_query` varchar(255), `recommended_url` varchar(4000), `method` varchar(50)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (32.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('13')[0m
+Migrating to AddClicks (14)
+  [4;36;1mSQL (223.0ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (250.7ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('14')[0m
+Migrating to CreateAdaptiveImpSchema (15)
+  [4;35;1mSQL (123.1ms)[0m   [0mCREATE TABLE `wi_users` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.0ms)[0m   [0;1mCREATE TABLE `wi_pearson_coeffs` (`user1` int(11) NOT NULL, `user2` int(11) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (116.5ms)[0m   [0mCREATE TABLE `wi_interest` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `url` varchar(1024) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (192.8ms)[0m   [0;1mALTER TABLE wi_pearson_coeffs ADD PRIMARY KEY (user1, user2)[0m
+  [4;35;1mSQL (32.4ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('15')[0m
+Migrating to ChangeFeedback (16)
+  [4;36;1mSQL (239.4ms)[0m   [0;1mALTER TABLE `wi_feedback` DROP `rating`[0m
+  [4;35;1mSQL (250.7ms)[0m   [0mALTER TABLE `wi_feedback` ADD `positive_feedback` int(11)[0m
+  [4;36;1mSQL (243.9ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `negative_feedback` int(11)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('16')[0m
+Migrating to CreateBifrostRecommendationGroups (17)
+  [4;36;1mSQL (106.2ms)[0m   [0;1mCREATE TABLE `bf_recommendation_groups` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (217.4ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `userid`[0m
+  [4;36;1mSQL (242.4ms)[0m   [0;1mALTER TABLE `bf_recommendations` DROP `timestamp`[0m
+  [4;35;1mSQL (234.2ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `original_query`[0m
+  [4;36;1mSQL (40.7ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('17')[0m
+Migrating to ReferenceRecommendationsFromGroups (18)
+  [4;35;1mSQL (215.6ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `groupid` int(11)[0m
+  [4;36;1mSQL (225.7ms)[0m   [0;1mCREATE INDEX `index_bf_recommendations_on_groupid` ON `bf_recommendations` (`groupid`)[0m
+  [4;35;1mSQL (116.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('18')[0m
+Migrating to AddResultPosition (19)
+  [4;36;1mSQL (406.6ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `position` int(11)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('19')[0m
+Migrating to AddFeedback (20)
+  [4;36;1mSQL (247.6ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (227.4ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (200.8ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `negative` tinyint(1)[0m
+  [4;35;1mSQL (234.0ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `negative_at` datetime[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('20')[0m
+Migrating to AddFeedbackQuery (21)
+  [4;35;1mSQL (248.7ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_query` varchar(255)[0m
+  [4;36;1mSQL (252.2ms)[0m   [0;1mCREATE INDEX `index_bf_recommendation_groups_on_id_and_clicked_query` ON `bf_recommendation_groups` (`id`, `clicked_query`)[0m
+  [4;35;1mSQL (32.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('21')[0m
+Migrating to AddIndexes (22)
+  [4;36;1mSQL (247.5ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)[0m
+  [4;35;1mSQL (242.4ms)[0m   [0mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`, `checksum`)[0m
+  [4;36;1mSQL (40.8ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('22')[0m
+Migrating to ReferencePageFromFeedback (23)
+  [4;35;1mSQL (248.0ms)[0m   [0mALTER TABLE `wi_feedback` DROP `url`[0m
+  [4;36;1mSQL (258.8ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `page_id` int(11) NOT NULL[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('23')[0m
+Migrating to RenameWiTables (24)
+  [4;36;1mSQL (63.2ms)[0m   [0;1mRENAME TABLE `wi_calendar` TO `wi_calendars`[0m
+  [4;35;1mSQL (57.8ms)[0m   [0mRENAME TABLE `wi_calendar_date` TO `wi_calendar_dates`[0m
+  [4;36;1mSQL (51.5ms)[0m   [0;1mRENAME TABLE `wi_feedback` TO `wi_feedbacks`[0m
+  [4;35;1mSQL (41.3ms)[0m   [0mRENAME TABLE `wi_interest` TO `wi_interests`[0m
+  [4;36;1mSQL (49.4ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('24')[0m
+Migrating to CreateBfCommunities (26)
+  [4;35;1mSQL (114.3ms)[0m   [0mCREATE TABLE `bf_communities` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `owner` varchar(32), `friends` text) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.1ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('26')[0m
+Migrating to AddWiRecommendations (27)
+  [4;35;1mSQL (121.5ms)[0m   [0mCREATE TABLE `wi_recommended_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `page_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.1ms)[0m   [0;1mCREATE TABLE `wi_recommended_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.1ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('27')[0m
+Migrating to AddWiRecommendationsCode (28)
+  [4;36;1mSQL (114.5ms)[0m   [0;1mCREATE TABLE `wi_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('28')[0m
+Migrating to AddWiPagesIndex (29)
+  [4;36;1mSQL (206.4ms)[0m   [0;1mCREATE INDEX `index_wi_pages_on_url` ON `wi_pages` (`url`)[0m
+  [4;35;1mSQL (32.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('29')[0m
+Migrating to ChangeCalendarCodeType (30)
+  [4;36;1mSQL (1.6ms)[0m   [0;1mSHOW FIELDS FROM `wi_calendars`[0m
+  [4;35;1mSQL (214.1ms)[0m   [0mALTER TABLE `wi_calendars` CHANGE `code` `code` text(4194304) NOT NULL[0m
+  [4;36;1mSQL (40.8ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('30')[0m
+Migrating to AddWiNews (31)
+  [4;35;1mSQL (90.1ms)[0m   [0mCREATE TABLE `wi_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `title` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (91.1ms)[0m   [0;1mCREATE TABLE `wi_recommended_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `news_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (91.2ms)[0m   [0mCREATE TABLE `wi_recommendations_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('31')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.6ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (0.3ms)[0m   [0mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+Migrating to AddTimeLogging (2)
+Migrating to AddPages (3)
+Migrating to DropKeywordsCache (4)
+Migrating to CreateEmail (5)
+Migrating to CreateStoredApuids (6)
+Migrating to AddScrollCountAndCopyCount (7)
+Migrating to AddReferer (8)
+Migrating to EnlargeReferer (9)
+Migrating to CreateWebImpSchema (10)
+Migrating to AddIpAddress (11)
+Migrating to AddChecksumIndex (12)
+Migrating to CreateBifrostRecommendations (13)
+Migrating to AddClicks (14)
+Migrating to CreateAdaptiveImpSchema (15)
+Migrating to ChangeFeedback (16)
+Migrating to CreateBifrostRecommendationGroups (17)
+Migrating to ReferenceRecommendationsFromGroups (18)
+Migrating to AddResultPosition (19)
+Migrating to AddFeedback (20)
+Migrating to AddFeedbackQuery (21)
+Migrating to AddIndexes (22)
+Migrating to ReferencePageFromFeedback (23)
+Migrating to RenameWiTables (24)
+Migrating to CreateBfCommunities (26)
+Migrating to AddWiRecommendations (27)
+Migrating to AddWiRecommendationsCode (28)
+Migrating to AddWiPagesIndex (29)
+Migrating to ChangeCalendarCodeType (30)
+Migrating to AddWiNews (31)
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (117.0ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (201.1ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.4ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.3ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;35;1mSQL (107.1ms)[0m   [0mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `url` varchar(4000), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (250.6ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;35;1mSQL (115.8ms)[0m   [0mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1000), `checksum` varchar(32), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (209.1ms)[0m   [0;1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [4;35;1mSQL (32.5ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('1')[0m
+Migrating to AddTimeLogging (2)
+  [4;36;1mSQL (231.2ms)[0m   [0;1mALTER TABLE `access_logs` ADD `checksum` varchar(32)[0m
+  [4;35;1mSQL (258.9ms)[0m   [0mALTER TABLE `access_logs` ADD `time_on_page` int(11)[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('2')[0m
+Migrating to AddPages (3)
+  [4;35;1mSQL (114.8ms)[0m   [0mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (242.5ms)[0m   [0;1mALTER TABLE `access_logs` DROP `url`[0m
+  [4;35;1mSQL (217.4ms)[0m   [0mALTER TABLE `access_logs` DROP `keywords`[0m
+  [4;36;1mSQL (292.2ms)[0m   [0;1mALTER TABLE `access_logs` DROP `checksum`[0m
+  [4;35;1mSQL (242.8ms)[0m   [0mALTER TABLE `access_logs` ADD `page_id` int(11)[0m
+  [4;36;1mSQL (42.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('3')[0m
+Migrating to DropKeywordsCache (4)
+  [4;35;1mSQL (260.7ms)[0m   [0mDROP TABLE `keyword_cache`[0m
+  [4;36;1mSQL (49.4ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('4')[0m
+Migrating to CreateEmail (5)
+  [4;35;1mSQL (131.9ms)[0m   [0mCREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (32.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('5')[0m
+Migrating to CreateStoredApuids (6)
+  [4;35;1mSQL (121.6ms)[0m   [0mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('6')[0m
+Migrating to AddScrollCountAndCopyCount (7)
+  [4;35;1mSQL (249.1ms)[0m   [0mALTER TABLE `access_logs` ADD `scroll_count` int(11)[0m
+  [4;36;1mSQL (250.6ms)[0m   [0;1mALTER TABLE `access_logs` ADD `copy_count` int(11)[0m
+  [4;35;1mSQL (40.8ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('7')[0m
+Migrating to AddReferer (8)
+  [4;36;1mSQL (243.0ms)[0m   [0;1mALTER TABLE `access_logs` ADD `referer` varchar(255)[0m
+  [4;35;1mSQL (32.6ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('8')[0m
+Migrating to EnlargeReferer (9)
+  [4;36;1mSQL (240.0ms)[0m   [0;1mALTER TABLE access_logs CHANGE referer referer VARCHAR(4000)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('9')[0m
+Migrating to CreateWebImpSchema (10)
+  [4;36;1mSQL (129.3ms)[0m   [0;1mCREATE TABLE `wi_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `content` text(4194304) NOT NULL, `url` varchar(1024) NOT NULL, `heading` varchar(512), `title` varchar(512), `date_time_accessed` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (98.9ms)[0m   [0mCREATE TABLE `wi_links` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `is_broken` tinyint(1) DEFAULT 1) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.1ms)[0m   [0;1mCREATE TABLE `wi_page_link` (`page_id` int(11) NOT NULL, `link_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (140.8ms)[0m   [0mCREATE TABLE `wi_feedback` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `url` varchar(1024) NOT NULL, `rating` int(11) NOT NULL, `timestamp` datetime NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.0ms)[0m   [0;1mCREATE TABLE `wi_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `page_id` int(11) NOT NULL, `name` varchar(128) NOT NULL, `caption` varchar(2048)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (124.2ms)[0m   [0mCREATE TABLE `wi_dates` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `event_id` int(11) NOT NULL, `value` date NOT NULL, `type` mediumint NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (124.3ms)[0m   [0;1mCREATE TABLE `wi_calendar` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (126.3ms)[0m   [0mCREATE TABLE `wi_calendar_date` (`calendar_id` int(11) NOT NULL, `date_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (124.0ms)[0m   [0;1mCREATE TABLE `wi_remove_event` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (250.9ms)[0m   [0mALTER TABLE wi_page_link ADD PRIMARY KEY (page_id, link_id)[0m
+  [4;36;1mSQL (242.5ms)[0m   [0;1mALTER TABLE wi_calendar_date ADD PRIMARY KEY (calendar_id, date_id)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('10')[0m
+Migrating to AddIpAddress (11)
+  [4;36;1mSQL (264.5ms)[0m   [0;1mALTER TABLE `access_logs` ADD `ip` varchar(50)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('11')[0m
+Migrating to AddChecksumIndex (12)
+  [4;36;1mSQL (232.8ms)[0m   [0;1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('12')[0m
+Migrating to CreateBifrostRecommendations (13)
+  [4;36;1mSQL (138.1ms)[0m   [0;1mCREATE TABLE `bf_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255), `recommended_query` varchar(255), `recommended_url` varchar(4000), `method` varchar(50)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('13')[0m
+Migrating to AddClicks (14)
+  [4;36;1mSQL (248.1ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (233.9ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (32.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('14')[0m
+Migrating to CreateAdaptiveImpSchema (15)
+  [4;35;1mSQL (121.5ms)[0m   [0mCREATE TABLE `wi_users` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (116.2ms)[0m   [0;1mCREATE TABLE `wi_pearson_coeffs` (`user1` int(11) NOT NULL, `user2` int(11) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (232.5ms)[0m   [0mCREATE TABLE `wi_interest` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `url` varchar(1024) NOT NULL, `value` float NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (260.7ms)[0m   [0;1mALTER TABLE wi_pearson_coeffs ADD PRIMARY KEY (user1, user2)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('15')[0m
+Migrating to ChangeFeedback (16)
+  [4;36;1mSQL (248.7ms)[0m   [0;1mALTER TABLE `wi_feedback` DROP `rating`[0m
+  [4;35;1mSQL (217.3ms)[0m   [0mALTER TABLE `wi_feedback` ADD `positive_feedback` int(11)[0m
+  [4;36;1mSQL (234.1ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `negative_feedback` int(11)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('16')[0m
+Migrating to CreateBifrostRecommendationGroups (17)
+  [4;36;1mSQL (123.3ms)[0m   [0;1mCREATE TABLE `bf_recommendation_groups` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `original_query` varchar(255)) ENGINE=InnoDB[0m
+  [4;35;1mSQL (244.2ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `userid`[0m
+  [4;36;1mSQL (233.9ms)[0m   [0;1mALTER TABLE `bf_recommendations` DROP `timestamp`[0m
+  [4;35;1mSQL (234.1ms)[0m   [0mALTER TABLE `bf_recommendations` DROP `original_query`[0m
+  [4;36;1mSQL (40.8ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('17')[0m
+Migrating to ReferenceRecommendationsFromGroups (18)
+  [4;35;1mSQL (248.1ms)[0m   [0mALTER TABLE `bf_recommendations` ADD `groupid` int(11)[0m
+  [4;36;1mSQL (339.2ms)[0m   [0;1mCREATE INDEX `index_bf_recommendations_on_groupid` ON `bf_recommendations` (`groupid`)[0m
+  [4;35;1mSQL (62.5ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('18')[0m
+Migrating to AddResultPosition (19)
+  [4;36;1mSQL (289.8ms)[0m   [0;1mALTER TABLE `bf_recommendations` ADD `position` int(11)[0m
+  [4;35;1mSQL (32.5ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('19')[0m
+Migrating to AddFeedback (20)
+  [4;36;1mSQL (248.0ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `clicked` tinyint(1)[0m
+  [4;35;1mSQL (242.3ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_at` datetime[0m
+  [4;36;1mSQL (234.0ms)[0m   [0;1mALTER TABLE `bf_recommendation_groups` ADD `negative` tinyint(1)[0m
+  [4;35;1mSQL (219.0ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `negative_at` datetime[0m
+  [4;36;1mSQL (32.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('20')[0m
+Migrating to AddFeedbackQuery (21)
+  [4;35;1mSQL (256.2ms)[0m   [0mALTER TABLE `bf_recommendation_groups` ADD `clicked_query` varchar(255)[0m
+  [4;36;1mSQL (242.3ms)[0m   [0;1mCREATE INDEX `index_bf_recommendation_groups_on_id_and_clicked_query` ON `bf_recommendation_groups` (`id`, `clicked_query`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('21')[0m
+Migrating to AddIndexes (22)
+  [4;36;1mSQL (256.5ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)[0m
+  [4;35;1mSQL (227.0ms)[0m   [0mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`, `checksum`)[0m
+  [4;36;1mSQL (32.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('22')[0m
+Migrating to ReferencePageFromFeedback (23)
+  [4;35;1mSQL (272.9ms)[0m   [0mALTER TABLE `wi_feedback` DROP `url`[0m
+  [4;36;1mSQL (251.0ms)[0m   [0;1mALTER TABLE `wi_feedback` ADD `page_id` int(11) NOT NULL[0m
+  [4;35;1mSQL (40.7ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('23')[0m
+Migrating to RenameWiTables (24)
+  [4;36;1mSQL (46.5ms)[0m   [0;1mRENAME TABLE `wi_calendar` TO `wi_calendars`[0m
+  [4;35;1mSQL (49.9ms)[0m   [0mRENAME TABLE `wi_calendar_date` TO `wi_calendar_dates`[0m
+  [4;36;1mSQL (50.0ms)[0m   [0;1mRENAME TABLE `wi_feedback` TO `wi_feedbacks`[0m
+  [4;35;1mSQL (49.8ms)[0m   [0mRENAME TABLE `wi_interest` TO `wi_interests`[0m
+  [4;36;1mSQL (49.8ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('24')[0m
+Migrating to CreateBfCommunities (26)
+  [4;35;1mSQL (123.0ms)[0m   [0mCREATE TABLE `bf_communities` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `owner` varchar(32), `friends` text) ENGINE=InnoDB[0m
+  [4;36;1mSQL (32.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('26')[0m
+Migrating to AddWiRecommendations (27)
+  [4;35;1mSQL (121.5ms)[0m   [0mCREATE TABLE `wi_recommended_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `page_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (125.9ms)[0m   [0;1mCREATE TABLE `wi_recommended_events` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `event_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('27')[0m
+Migrating to AddWiRecommendationsCode (28)
+  [4;36;1mSQL (115.2ms)[0m   [0;1mCREATE TABLE `wi_recommendations` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('28')[0m
+Migrating to AddWiPagesIndex (29)
+  [4;36;1mSQL (256.1ms)[0m   [0;1mCREATE INDEX `index_wi_pages_on_url` ON `wi_pages` (`url`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('29')[0m
+Migrating to ChangeCalendarCodeType (30)
+  [4;36;1mSQL (1.3ms)[0m   [0;1mSHOW FIELDS FROM `wi_calendars`[0m
+  [4;35;1mSQL (254.6ms)[0m   [0mALTER TABLE `wi_calendars` CHANGE `code` `code` text(4194304) NOT NULL[0m
+  [4;36;1mSQL (32.5ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('30')[0m
+Migrating to AddWiNews (31)
+  [4;35;1mSQL (121.5ms)[0m   [0mCREATE TABLE `wi_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1024) NOT NULL, `title` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (124.3ms)[0m   [0;1mCREATE TABLE `wi_recommended_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `user_id` int(11) NOT NULL, `news_id` int(11) NOT NULL) ENGINE=InnoDB[0m
+  [4;35;1mSQL (117.5ms)[0m   [0mCREATE TABLE `wi_recommendations_news` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32) NOT NULL, `code` varchar(10000) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('31')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.6ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (0.2ms)[0m   [0mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+Migrating to AddTimeLogging (2)
+Migrating to AddPages (3)
+Migrating to DropKeywordsCache (4)
+Migrating to CreateEmail (5)
+Migrating to CreateStoredApuids (6)
+Migrating to AddScrollCountAndCopyCount (7)
+Migrating to AddReferer (8)
+Migrating to EnlargeReferer (9)
+Migrating to AddIpAddress (11)
+Migrating to AddChecksumIndex (12)
+Migrating to AddIndexes (22)
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSHOW TABLES[0m
+  [4;35;1mSQL (120.4ms)[0m   [0mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [4;36;1mSQL (184.4ms)[0m   [0;1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [4;35;1mSQL (0.4ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.4ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateSchema (1)
+  [4;35;1mSQL (135.2ms)[0m   [0mCREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `url` varchar(4000), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (250.6ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)[0m
+  [4;35;1mSQL (124.2ms)[0m   [0mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1000), `checksum` varchar(32), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (258.8ms)[0m   [0;1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('1')[0m
+Migrating to AddTimeLogging (2)
+  [4;36;1mSQL (239.7ms)[0m   [0;1mALTER TABLE `access_logs` ADD `checksum` varchar(32)[0m
+  [4;35;1mSQL (233.9ms)[0m   [0mALTER TABLE `access_logs` ADD `time_on_page` int(11)[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('2')[0m
+Migrating to AddPages (3)
+  [4;35;1mSQL (141.6ms)[0m   [0mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (292.3ms)[0m   [0;1mALTER TABLE `access_logs` DROP `url`[0m
+  [4;35;1mSQL (234.1ms)[0m   [0mALTER TABLE `access_logs` DROP `keywords`[0m
+  [4;36;1mSQL (217.3ms)[0m   [0;1mALTER TABLE `access_logs` DROP `checksum`[0m
+  [4;35;1mSQL (259.0ms)[0m   [0mALTER TABLE `access_logs` ADD `page_id` int(11)[0m
+  [4;36;1mSQL (40.9ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('3')[0m
+Migrating to DropKeywordsCache (4)
+  [4;35;1mSQL (48.6ms)[0m   [0mDROP TABLE `keyword_cache`[0m
+  [4;36;1mSQL (51.4ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('4')[0m
+Migrating to CreateEmail (5)
+  [4;35;1mSQL (131.6ms)[0m   [0mCREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB[0m
+  [4;36;1mSQL (41.0ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('5')[0m
+Migrating to CreateStoredApuids (6)
+  [4;35;1mSQL (121.3ms)[0m   [0mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [4;36;1mSQL (32.7ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('6')[0m
+Migrating to AddScrollCountAndCopyCount (7)
+  [4;35;1mSQL (214.5ms)[0m   [0mALTER TABLE `access_logs` ADD `scroll_count` int(11)[0m
+  [4;36;1mSQL (242.2ms)[0m   [0;1mALTER TABLE `access_logs` ADD `copy_count` int(11)[0m
+  [4;35;1mSQL (41.0ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('7')[0m
+Migrating to AddReferer (8)
+  [4;36;1mSQL (264.5ms)[0m   [0;1mALTER TABLE `access_logs` ADD `referer` varchar(255)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('8')[0m
+Migrating to EnlargeReferer (9)
+  [4;36;1mSQL (241.7ms)[0m   [0;1mALTER TABLE access_logs CHANGE referer referer VARCHAR(4000)[0m
+  [4;35;1mSQL (32.4ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('9')[0m
+Migrating to AddIpAddress (11)
+  [4;36;1mSQL (224.8ms)[0m   [0;1mALTER TABLE `access_logs` ADD `ip` varchar(50)[0m
+  [4;35;1mSQL (40.8ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('11')[0m
+Migrating to AddChecksumIndex (12)
+  [4;36;1mSQL (265.4ms)[0m   [0;1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [4;35;1mSQL (40.9ms)[0m   [0mINSERT INTO schema_migrations (version) VALUES ('12')[0m
+Migrating to AddIndexes (22)
+  [4;36;1mSQL (256.7ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)[0m
+  [4;35;1mSQL (235.8ms)[0m   [0mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`, `checksum`)[0m
+  [4;36;1mSQL (32.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('22')[0m
