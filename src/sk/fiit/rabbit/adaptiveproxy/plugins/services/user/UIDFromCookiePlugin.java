@@ -33,7 +33,7 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 			HttpMessageFactory messageFactory) {
 		ModifiableHttpResponse httpResponse = messageFactory.constructHttpResponse(null, "text/html");
 		ModifiableStringService stringService = httpResponse.getServicesHandle().getService(ModifiableStringService.class);
-		String cookies = proxyRequest.getClientRequestHeader().getField("Cookie");
+		String cookies = proxyRequest.getRequestHeader().getField("Cookie");
 		String content = ""; 
 		if (cookies != null) {
 			Pattern pattern = Pattern.compile("^.*__peweproxy_uid=(.*?)(:?;|$)");

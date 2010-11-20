@@ -36,7 +36,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		if(request.getClientRequestHeader().getRequestURI().contains(bypassPattern)) {
+		if(request.getOriginalRequest().getRequestHeader().getRequestURI().contains(bypassPattern)) {
 			if(generateResponse) {
 				return RequestProcessingActions.FINAL_RESPONSE;
 			} else {
@@ -51,20 +51,20 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	public HttpRequest getNewRequest(ModifiableHttpRequest proxyRequest, HttpMessageFactory messageFactory) {
 		String queryParams;
 		
-		int queryParamsIdx = proxyRequest.getClientRequestHeader().getRequestURI().indexOf("?");
+		int queryParamsIdx = proxyRequest.getRequestHeader().getRequestURI().indexOf("?");
 		
 		if(queryParamsIdx > -1) {
-			queryParams = proxyRequest.getClientRequestHeader().getRequestURI().substring(queryParamsIdx);
+			queryParams = proxyRequest.getRequestHeader().getRequestURI().substring(queryParamsIdx);
 		} else {
 			queryParams = "";
 		}
 		
-		proxyRequest.getProxyRequestHeader().setRequestURI(bypassTo + queryParams);
+		proxyRequest.getRequestHeader().setRequestURI(bypassTo + queryParams);
 		
 		try {
 			URL url = new URL(bypassTo);
-			proxyRequest.getProxyRequestHeader().removeField("Host");
-			proxyRequest.getProxyRequestHeader().addField("Host", url.getHost());
+			proxyRequest.getRequestHeader().removeField("Host");
+			proxyRequest.getRequestHeader().addField("Host", url.getHost());
 		} catch (MalformedURLException e) {
 			logger.warn("Malformed URL", e);
 		}
@@ -75,7 +75,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		try {
-			if(!isAllowedDomain(response.getRequest().getClientRequestHeader().getRequestURI())) {
+			if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
 				return ResponseProcessingActions.PROCEED;
 			}
 			

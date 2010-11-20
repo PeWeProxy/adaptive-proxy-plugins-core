@@ -137,7 +137,7 @@ public class UserAgentUserIdentification implements RequestServiceModule, Respon
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		if(serviceClass.equals(UserIdentificationService.class)) {
-			String userIDString = getUIDForMessage(response.getRequest().getClientRequestHeader());
+			String userIDString = getUIDForMessage(response.getRequest().getRequestHeader());
 			return (ResponseServiceProvider<Service>) new UserServiceProvider(userIDString);
 		}
 		
@@ -158,7 +158,7 @@ public class UserAgentUserIdentification implements RequestServiceModule, Respon
 			throws ServiceUnavailableException {
 		
 		if(serviceClass.equals(UserIdentificationService.class)) {
-			String userIDString = getUIDForMessage(request.getClientRequestHeader());
+			String userIDString = getUIDForMessage(request.getRequestHeader());
 			return (RequestServiceProvider<Service>) new UserServiceProvider(userIDString);
 		}
 		
