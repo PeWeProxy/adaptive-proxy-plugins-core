@@ -14,7 +14,7 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
-public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
+public class UIDFromCookieProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	
 	private String cookieDomain; 
 	

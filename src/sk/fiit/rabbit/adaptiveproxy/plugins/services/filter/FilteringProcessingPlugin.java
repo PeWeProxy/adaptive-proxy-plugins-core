@@ -24,14 +24,14 @@ import sk.fiit.peweproxy.plugins.processing.RequestProcessingPlugin;
 import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 
-public class RequestFilterService implements RequestProcessingPlugin, ResponseProcessingPlugin {
+public class FilteringProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
 	
 	private Set<String> startFilters = new HashSet<String>();
 	private Set<String> endFilters = new HashSet<String>();
 	private Set<String> matchFilters = new HashSet<String>();
 	private Set<String> simpleFilters = new HashSet<String>();
 	
-	Logger logger = Logger.getLogger(RequestFilterService.class);
+	Logger logger = Logger.getLogger(FilteringProcessingPlugin.class);
 	
 	@Override
 	public boolean start(PluginProperties props) {

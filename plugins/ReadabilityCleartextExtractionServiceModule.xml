@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>ReadabilityCleartextExtractionService</name>
+	<name>ReadabilityCleartextExtractionServiceModule</name>
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionServiceModule</className>
 	<types>

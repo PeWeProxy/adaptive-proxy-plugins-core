@@ -20,11 +20,11 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 
-public class UserAgentUserIdentification implements RequestServiceModule, ResponseServiceModule {
+public class UserAgentUserIdentificationServiceModule implements RequestServiceModule, ResponseServiceModule {
 	
 	private static final int APUID_LENGTH = 32;
 
-	private static final Logger logger = Logger.getLogger(UserAgentUserIdentification.class);
+	private static final Logger logger = Logger.getLogger(UserAgentUserIdentificationServiceModule.class);
 	
 	private static final String USER_AGENT = "User-Agent";
 

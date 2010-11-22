@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>HtmlInjectorService</name>
+	<name>HtmlInjectorServiceModule</name>
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.HtmlInjectorServiceModule</className>
 	<types>

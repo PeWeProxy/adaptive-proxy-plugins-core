@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>CachingPageInformationProviderService</name>
+	<name>CachingPageInformationProviderServiceModule</name>
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.CachingPageInformationProviderServiceModule</className>
 	<types>

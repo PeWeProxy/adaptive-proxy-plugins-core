@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>UserAgentUserIdentification</name>
+	<name>UserAgentUserIdentificationServiceModule</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentification</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserAgentUserIdentificationServiceModule</className>
 	<types>
 		<type>RequestServiceModule</type>
 		<type>ResponseServiceModule</type>

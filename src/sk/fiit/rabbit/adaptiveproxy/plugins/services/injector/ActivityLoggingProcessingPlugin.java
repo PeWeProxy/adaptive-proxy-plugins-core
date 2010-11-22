@@ -22,9 +22,9 @@ import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 
-public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
+public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 {
-	protected Logger logger = Logger.getLogger(ActivityLoggingPlugin.class);
+	protected Logger logger = Logger.getLogger(ActivityLoggingProcessingPlugin.class);
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {

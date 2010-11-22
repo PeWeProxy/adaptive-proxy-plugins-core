@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>UIDFromCookiePlugin</name>
+	<name>UIDFromCookieProcessingPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UIDFromCookiePlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UIDFromCookieProcessingPlugin</className>
 	<types>
 		<type>RequestProcessingPlugin</type>
 		<type>ResponseProcessingPlugin</type>
