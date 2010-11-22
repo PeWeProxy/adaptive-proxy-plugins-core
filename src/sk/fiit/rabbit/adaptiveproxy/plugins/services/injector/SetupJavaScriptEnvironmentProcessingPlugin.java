@@ -20,17 +20,21 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
-		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
+		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
+				&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
 		
-		String scripts = "" +
-                         "<script type='text/javascript'>" +
-                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
-                          "</script>" +
-                          "<script src='" + jQueryPath + "'></script>" +
-                          "<!-- __ap_scripts__ -->";
-		htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
+			ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
+			HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 			
+			String scripts = "" +
+	                         "<script type='text/javascript'>" +
+	                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
+	                          "</script>" +
+	                          "<script src='" + jQueryPath + "'></script>" +
+	                          "<!-- __ap_scripts__ -->";
+			htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
+		}
+		
 		return ResponseProcessingActions.PROCEED;
 	}
 	

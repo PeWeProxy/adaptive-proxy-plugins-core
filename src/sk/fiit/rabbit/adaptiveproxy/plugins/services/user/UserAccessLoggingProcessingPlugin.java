@@ -14,7 +14,6 @@ import java.util.Set;
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
-import sk.fiit.peweproxy.messages.HttpRequest;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -32,16 +31,22 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	@Override
 	public ResponseProcessingActions processResponse(
 			ModifiableHttpResponse response) {
-
-		PageInformation pi = response.getServicesHandle()
-				.getService(PageInformationProviderService.class)
-				.getPageInformation();
 		
+		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
+			PageInformation pi = response.getServicesHandle()
+					.getService(PageInformationProviderService.class)
+					.getPageInformation();
+		}
+			
 		return super.processResponse(response);
 	}
 
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
+		if(!request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
+			return messageFactory.constructHttpResponse(null, "text/html");
+		}
+		
 		StringContentService stringContentService = request.getServicesHandle()
 				.getService(StringContentService.class);
 
@@ -53,6 +58,9 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		if (postData.containsKey("__peweproxy_uid")
 				&& postData.containsKey("_ap_checksum")
 				&& postData.containsKey("__ap_url")) {
+			if(!request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+				return messageFactory.constructHttpResponse(null, "text/html");
+			}
 			try {
 				con = request.getServicesHandle()
 						.getService(DatabaseConnectionProviderService.class)

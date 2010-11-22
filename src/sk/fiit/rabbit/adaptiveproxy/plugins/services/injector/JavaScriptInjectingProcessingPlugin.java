@@ -74,18 +74,21 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		try {
-			if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
-				return ResponseProcessingActions.PROCEED;
+		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
+				&& response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)) {
+			try {
+				if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
+					return ResponseProcessingActions.PROCEED;
+				}
+				
+				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
+					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
+					String scripts = "<script src='" + scriptUrl + "'></script>";
+					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
+				}
+			} catch (MalformedURLException e) {
+				logger.warn("Cannot provide javascript injector service for invalid URL", e);
 			}
-			
-			if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
-				HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-				String scripts = "<script src='" + scriptUrl + "'></script>";
-				htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
-			}
-		} catch (MalformedURLException e) {
-			logger.warn("Cannot provide javascript injector service for invalid URL", e);
 		}
 		
 		return ResponseProcessingActions.PROCEED;

@@ -32,6 +32,9 @@ public class UIDFromCookiePlugin extends JavaScriptInjectingProcessingPlugin {
 	public HttpResponse getResponse(ModifiableHttpRequest proxyRequest,
 			HttpMessageFactory messageFactory) {
 		ModifiableHttpResponse httpResponse = messageFactory.constructHttpResponse(null, "text/html");
+		
+		if(!httpResponse.getServicesHandle().isServiceAvailable(ModifiableStringService.class)) return httpResponse;
+		
 		ModifiableStringService stringService = httpResponse.getServicesHandle().getService(ModifiableStringService.class);
 		String cookies = proxyRequest.getRequestHeader().getField("Cookie");
 		String content = ""; 

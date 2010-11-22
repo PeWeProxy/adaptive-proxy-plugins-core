@@ -28,21 +28,24 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
-		Map<String, String> postData;
-		
-		StringContentService stringContentService = request.getServicesHandle().getService(StringContentService.class);
-		
-		postData = getPostDataFromRequest(stringContentService.getContent());				
-
-		Connection con = null;
-		
-		if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls")) {
-			try {
-				con = request.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
-				
-				updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"));						
-			} finally {
-				SqlUtils.close(con);
+		if(request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)
+				&& request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
+			Map<String, String> postData;
+			
+			StringContentService stringContentService = request.getServicesHandle().getService(StringContentService.class);
+			
+			postData = getPostDataFromRequest(stringContentService.getContent());				
+	
+			Connection con = null;
+			
+			if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls")) {
+				try {
+					con = request.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
+					
+					updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"));						
+				} finally {
+					SqlUtils.close(con);
+				}
 			}
 		}
 		

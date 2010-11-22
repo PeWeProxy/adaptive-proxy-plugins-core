@@ -158,9 +158,9 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 
-		if (serviceClass == HtmlInjectorService.class) {
+		if (serviceClass == HtmlInjectorService.class 
+				&& response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)) {
 			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
-			
 			return (ResponseServiceProvider<Service>) new HtmlInjectorServiceProvider(requestURI);
 		}
 		

@@ -102,7 +102,8 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if(serviceClass.equals(ClearTextExtractionService.class)) {
+		if (serviceClass.equals(ClearTextExtractionService.class)
+				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)) {
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			return (ResponseServiceProvider<Service>) new ReadabilityCleartextExtractionServiceProvider(content);
 		}

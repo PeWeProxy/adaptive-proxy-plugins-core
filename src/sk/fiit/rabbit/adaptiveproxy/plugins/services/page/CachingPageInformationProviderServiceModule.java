@@ -242,7 +242,10 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if(serviceClass.equals(PageInformationProviderService.class)) {
+		if(serviceClass.equals(PageInformationProviderService.class)
+				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)
+				&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
+			
 			String requestURI = response.getRequest().getRequestHeader().getRequestURI();
 			DatabaseConnectionProviderService connectionService = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
 			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
