@@ -3,7 +3,7 @@
 <plugin>
 	<name>ActivityLoggingProcessingPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.ActivityLoggingProcessingPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.ActivityLoggingProcessingPlugin</className>
 	<types>
 		<type>RequestProcessingPlugin</type>
 		<type>ResponseProcessingPlugin</type>

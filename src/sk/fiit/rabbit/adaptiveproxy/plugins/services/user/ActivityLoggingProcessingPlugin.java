@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
+package sk.fiit.rabbit.adaptiveproxy.plugins.services.user;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -21,6 +21,7 @@ import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
 public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 {
