@@ -113,9 +113,11 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 
 		@Override
 		public void doChanges(ModifiableHttpResponse response) {
-			StringBuilder content = response.getServicesHandle().getService(ModifiableStringService.class).getModifiableContent();
-			for (InjectingInstruction instruction : instructions) {
-				injectToMessage(content, instruction.text, instruction.position);
+			if(response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)) {
+				StringBuilder content = response.getServicesHandle().getService(ModifiableStringService.class).getModifiableContent();
+				for (InjectingInstruction instruction : instructions) {
+					injectToMessage(content, instruction.text, instruction.position);
+				}
 			}
 		}
 	}
@@ -158,8 +160,7 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 
-		if (serviceClass == HtmlInjectorService.class 
-				&& response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)) {
+		if (serviceClass == HtmlInjectorService.class) {
 			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
 			return (ResponseServiceProvider<Service>) new HtmlInjectorServiceProvider(requestURI);
 		}
