@@ -1,6 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
 import java.util.Set;
+import java.util.UUID;
 
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
@@ -25,7 +26,8 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		
 		String scripts = "" +
                          "<script type='text/javascript'>" +
-                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
+                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "';" +
+                           " _ap_uuid = '" + UUID.randomUUID().toString() + "';" +
                           "</script>" +
                           "<script src='" + jQueryPath + "'></script>" +
                           "<!-- __ap_scripts__ -->";

@@ -36,11 +36,11 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 
 		Connection con = null;
 		
-		if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls")) {
+		if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls") && postData.containsKey("_ap_uuid")) {
 			try {
 				con = request.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 				
-				updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"));						
+				updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"), postData.get("_ap_uuid"));						
 			} finally {
 				SqlUtils.close(con);
 			}
@@ -49,7 +49,7 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 		return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
-	private boolean updateDatabaseLog(Connection connection, String uid, String checksum, String period, String copies, String scrolls) {			
+	private boolean updateDatabaseLog(Connection connection, String uid, String checksum, String period, String copies, String scrolls, String uuid) {			
 		try {
 			Statement stmt = connection.createStatement(
                     ResultSet.TYPE_SCROLL_SENSITIVE,

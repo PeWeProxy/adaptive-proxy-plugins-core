@@ -52,7 +52,8 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 
 		if (postData.containsKey("__peweproxy_uid")
 				&& postData.containsKey("_ap_checksum")
-				&& postData.containsKey("__ap_url")) {
+				&& postData.containsKey("__ap_url")
+				&& postData.containsKey("_ap_uuid")) {
 			try {
 				con = request.getServicesHandle()
 						.getService(DatabaseConnectionProviderService.class)
@@ -60,7 +61,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 
 				createDatabaseLog(con, postData.get("__peweproxy_uid"),
 						postData.get("_ap_checksum"), postData.get("__ap_url"),
-						"ip");
+						"ip", postData.get("_ap_uuid"));
 			} finally {
 				SqlUtils.close(con);
 			}
@@ -69,7 +70,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	}
 	
 	private boolean createDatabaseLog(Connection connection, String uid,
-			String checksum, String url, String ip) {
+			String checksum, String url, String ip, String uuid) {
 		PreparedStatement page_stmt = null;
 		PreparedStatement log_stmt = null;
 
@@ -101,13 +102,14 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			if (!"".equals(uid)) {
 				try {
 					log_stmt = connection
-							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?);");
+							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`, 'uuid') VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?);");
 
 					log_stmt.setString(1, uid);
 					log_stmt.setString(2, formatedTimeStamp);
 					log_stmt.setString(3, pid);
 					log_stmt.setString(4, url);
 					log_stmt.setString(5, Checksum.md5(ip));
+					log_stmt.setString(6, uuid);
 
 					log_stmt.execute();
 				} catch (SQLException e) {

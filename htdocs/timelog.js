@@ -40,7 +40,7 @@ timelog = function($) {
   upload_activity = function() {
     if (active_in_last_period) {
       $.post('http://' + base + '/activity/update?nologging', { 'checksum': _ap_checksum, 'period': period, 
-        'scrolls': num_of_scrolls, 'copies': num_of_copies, 'nologging': 'true', 'uid' : __peweproxy_uid });
+        'scrolls': num_of_scrolls, 'copies': num_of_copies, 'nologging': 'true', 'uid' : __peweproxy_uid, '_ap_uuid' : _ap_uuid });
       active_in_last_period = false;
       num_of_scrolls = 0;
       num_of_copies = 0;
