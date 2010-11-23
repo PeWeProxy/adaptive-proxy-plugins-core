@@ -3,6 +3,7 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,11 +37,11 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 
 		Connection con = null;
 		
-		if (postData.containsKey("uid") && postData.containsKey("checksum")  && postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls") && postData.containsKey("_ap_uuid")) {
+		if (postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls") && postData.containsKey("_ap_uuid")) {
 			try {
 				con = request.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 				
-				updateDatabaseLog(con, postData.get("uid"), postData.get("checksum"), postData.get("period"), postData.get("copies"), postData.get("scrolls"), postData.get("_ap_uuid"));						
+				updateDatabaseLog(con, postData.get("period"), postData.get("copies"), postData.get("scrolls"), postData.get("_ap_uuid"));						
 			} finally {
 				SqlUtils.close(con);
 			}
@@ -49,46 +50,20 @@ public class ActivityLoggingPlugin extends JavaScriptInjectingProcessingPlugin
 		return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
-	private boolean updateDatabaseLog(Connection connection, String uid, String checksum, String period, String copies, String scrolls, String uuid) {			
+	private boolean updateDatabaseLog(Connection connection, String period, String copies, String scrolls, String uuid) {			
 		try {
-			Statement stmt = connection.createStatement(
-                    ResultSet.TYPE_SCROLL_SENSITIVE,
-                    ResultSet.CONCUR_UPDATABLE);
-			String query = "SELECT * FROM access_logs INNER JOIN pages ON pages.id = access_logs.page_id WHERE pages.checksum = '" + 
-				checksum + "' AND access_logs.userid = '" + uid + "' ORDER BY timestamp ASC LIMIT 1;";
-				
-			ResultSet rs = stmt.executeQuery(query);
-
-			rs.absolute(1);
+			PreparedStatement page_stmt = null;
 			
-			String id = rs.getString("id");
-			stmt.close();
-			
-			Statement stmt_log = connection.createStatement(
-                    ResultSet.TYPE_SCROLL_SENSITIVE,
-                    ResultSet.CONCUR_UPDATABLE);
-			query = "SELECT * FROM access_logs WHERE access_logs.id = '" + 
-				id + "';";
-				
-			ResultSet rsUpdate = stmt_log.executeQuery(query);
-			
-			rsUpdate.absolute(1);
-			
-			int time_on_page = rsUpdate.getInt("time_on_page");
-			time_on_page += Integer.valueOf(period).intValue();
-			rsUpdate.updateInt("time_on_page", time_on_page);
-			
-			int scroll_count = rsUpdate.getInt("scroll_count");
-			scroll_count += Integer.valueOf(scrolls).intValue();
-			rsUpdate.updateInt("scroll_count", scroll_count);
-			
-			int copy_count = rsUpdate.getInt("copy_count");
-			copy_count += Integer.valueOf(copies).intValue();
-			rsUpdate.updateInt("copy_count", copy_count);
-			rsUpdate.updateRow();
+			page_stmt = connection
+						.prepareStatement("update access_logs set `time_on_page` = `time_on_page` + ?, `scroll_count` = `scroll_count` + ?, `copy_count` = `copy_count` + ? WHERE uuid = ?");
+			page_stmt.setString(1, period);
+			page_stmt.setString(2, scrolls);
+			page_stmt.setString(3, copies);
+			page_stmt.setString(4, uuid);
+			page_stmt.execute();
 			
 		} catch (SQLException e) {
-			logger.error("Could not get page id for access log", e);
+			logger.error("Could not log activity", e);
 		} finally {
 			SqlUtils.close(connection);
 		}
