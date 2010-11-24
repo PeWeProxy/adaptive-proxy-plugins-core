@@ -9,7 +9,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${proxyurl}/FileSender/timelog.js</param>
+		<param name="scriptUrl">${proxyurl}/FileSender/public/timelog.js</param>
 		<param name="bypassPattern">activity/update</param>
 		<param name="bypassTo">${baseurl}/activity/update</param>
 		<param name="generateResponse">true</param>
