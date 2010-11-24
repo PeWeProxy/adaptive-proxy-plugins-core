@@ -16,7 +16,6 @@ import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
-import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.peweproxy.services.content.StringContentService;
@@ -29,18 +28,14 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	@Override
-	public ResponseProcessingActions processResponse(
-			ModifiableHttpResponse response) {
-		
+	public void processTransferedResponse(HttpResponse response) {
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
 			PageInformation pi = response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
 					.getPageInformation();
 		}
-			
-		return super.processResponse(response);
 	}
-
+	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
 		if(!request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
@@ -112,7 +107,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			if (!"".equals(uid)) {
 				try {
 					log_stmt = connection
-							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`, 'uuid') VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?);");
+							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`, `uuid`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?);");
 
 					log_stmt.setString(1, uid);
 					log_stmt.setString(2, formatedTimeStamp);
@@ -166,7 +161,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			Set<Class<? extends ProxyService>> desiredServices,
 			RequestHeader clientRQHeader) {
 		super.desiredRequestServices(desiredServices, clientRQHeader);
-		desiredServices.add(ModifiableStringService.class); //FIXME: toto je docasny hack kvoli late processingu, spravne tu ma byt len StringContentService
+		desiredServices.add(ModifiableStringService.class); //FIXME: hack kvoli late processingu, ma tu byt len StringContentService
 		desiredServices.add(DatabaseConnectionProviderService.class);
 	}
 	
