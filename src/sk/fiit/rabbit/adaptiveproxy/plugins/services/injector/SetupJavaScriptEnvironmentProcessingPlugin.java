@@ -1,6 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
 import java.util.Set;
+import java.util.UUID;
 
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
@@ -25,14 +26,16 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		
 			ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
 			HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-			
-			String scripts = "" +
-	                         "<script type='text/javascript'>" +
-	                           "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "'" +
-	                          "</script>" +
-	                          "<script src='" + jQueryPath + "'></script>" +
-	                          "<!-- __ap_scripts__ -->";
-			htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
+
+            String scripts = "" +
+                            "<script type='text/javascript'>" +
+                              "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "';" +
+                              " _ap_uuid = '" + UUID.randomUUID().toString() + "';" +
+                              "</script>" +
+                              "<script src='" + jQueryPath + "'></script>" +
+                              "<!-- __ap_scripts__ -->";
+
+            htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
 		}
 		
 		return ResponseProcessingActions.PROCEED;
