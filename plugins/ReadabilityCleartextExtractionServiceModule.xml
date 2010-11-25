@@ -4,6 +4,35 @@
 	<name>ReadabilityCleartextExtractionServiceModule</name>
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext.ReadabilityCleartextExtractionServiceModule</className>
+	<libraries>
+		<lib>jkeyextractor.jar</lib>
+		<lib>ant.jar</lib>
+		<lib>apache-mime4j-0.6.jar</lib>
+		<lib>commons-codec-1.3.jar</lib>
+		<lib>commons-httpclient-3.0.jar</lib>
+		<lib>commons-logging-1.1.1.jar</lib>
+		<lib>commons-logging.jar</lib>
+		<lib>delicious-1.14.jar</lib>
+		<lib>dragontool.jar</lib>
+		<lib>google-api-translate-java-trunk-patched.jar</lib>
+		<lib>htmlcleaner2_1.jar</lib>
+		<lib>httpclient-4.0.jar</lib>
+		<lib>httpcore-4.0.1.jar</lib>
+		<lib>httpmime-4.0.jar</lib>
+		<lib>jakarta-ant-optional.jar</lib>
+		<lib>jatr.jar</lib>
+		<lib>jericho-html-2.6.jar</lib>
+		<lib>json_simple-1.1.jar</lib>
+		<lib>junit-4.1.jar</lib>
+		<lib>junit.jar</lib>
+		<lib>log4j-1.2.15.jar</lib>
+		<lib>maxent-2.4.0.jar</lib>
+		<lib>opennlp-tools-1.3.0.jar</lib>
+		<lib>text.jar</lib>
+		<lib>trove-2.0.4.jar</lib>
+		<lib>trove.jar</lib>
+		<lib>wit-commons.jar</lib>
+	</libraries>
 	<types>
 		<type>ResponseServiceModule</type>
 	</types>
