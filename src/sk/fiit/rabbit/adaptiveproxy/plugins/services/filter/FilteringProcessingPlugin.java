@@ -38,7 +38,8 @@ public class FilteringProcessingPlugin implements RequestProcessingPlugin, Respo
 		try {
 			String line;
 			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(props.getProperty("patternFile")))));
+			File filter = new File(props.getRootDir().getAbsolutePath() + File.separator + "filter.txt");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filter)));
 
 			// toto nebude fungovat pre filtre tvaru |swf| ale take
 			// aj tak nemaju zmysel
