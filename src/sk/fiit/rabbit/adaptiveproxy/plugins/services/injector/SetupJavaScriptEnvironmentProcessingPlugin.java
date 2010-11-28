@@ -30,7 +30,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
             String scripts = "" +
                             "<script type='text/javascript'>" +
                               "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "';" +
-                              " _ap_uuid = '" + UUID.randomUUID().toString() + "';" +
+                              " page_uid = '" + UUID.randomUUID().toString() + "';" +
                               "</script>" +
                               "<script src='" + jQueryPath + "'></script>" +
                               "<!-- __ap_scripts__ -->";

@@ -14,8 +14,10 @@ import java.util.Set;
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
+import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.peweproxy.services.content.StringContentService;
@@ -53,7 +55,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		if (postData.containsKey("__peweproxy_uid")
 				&& postData.containsKey("_ap_checksum")
 				&& postData.containsKey("__ap_url")
-				&& postData.containsKey("_ap_uuid")) {
+				&& postData.containsKey("page_uid")) {
 			
 			if(!request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 				return messageFactory.constructHttpResponse(null, "text/html");
@@ -66,7 +68,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 
 				createDatabaseLog(con, postData.get("__peweproxy_uid"),
 						postData.get("_ap_checksum"), postData.get("__ap_url"),
-						"ip", postData.get("_ap_uuid"));
+						"ip", postData.get("page_uid"));
 			} finally {
 				SqlUtils.close(con);
 			}
@@ -107,14 +109,14 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			if (!"".equals(uid)) {
 				try {
 					log_stmt = connection
-							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`, `uuid`) VALUES (NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?);");
-
-					log_stmt.setString(1, uid);
-					log_stmt.setString(2, formatedTimeStamp);
-					log_stmt.setString(3, pid);
-					log_stmt.setString(4, url);
-					log_stmt.setString(5, Checksum.md5(ip));
-					log_stmt.setString(6, uuid);
+							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");
+					
+					log_stmt.setString(1, uuid);
+					log_stmt.setString(2, uid);
+					log_stmt.setString(3, formatedTimeStamp);
+					log_stmt.setString(4, pid);
+					log_stmt.setString(5, url);
+					log_stmt.setString(6, Checksum.md5(ip));
 
 					log_stmt.execute();
 				} catch (SQLException e) {
@@ -161,7 +163,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			Set<Class<? extends ProxyService>> desiredServices,
 			RequestHeader clientRQHeader) {
 		super.desiredRequestServices(desiredServices, clientRQHeader);
-		desiredServices.add(ModifiableStringService.class); //FIXME: hack kvoli late processingu, ma tu byt len StringContentService
+		desiredServices.add(ModifiableStringService.class); //FIXME: toto je docasny hack kvoli late processingu, spravne tu ma byt len StringContentService
 		desiredServices.add(DatabaseConnectionProviderService.class);
 	}
 	

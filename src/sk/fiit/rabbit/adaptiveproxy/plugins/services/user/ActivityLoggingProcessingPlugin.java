@@ -4,9 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,11 +39,11 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 	
 			Connection con = null;
 			
-			if (postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls") && postData.containsKey("_ap_uuid")) {
+			if (postData.containsKey("period") && postData.containsKey("copies") && postData.containsKey("scrolls") && postData.containsKey("page_uid")) {
 				try {
 					con = request.getServicesHandle().getService(DatabaseConnectionProviderService.class).getDatabaseConnection();
 					
-					updateDatabaseLog(con, postData.get("period"), postData.get("copies"), postData.get("scrolls"), postData.get("_ap_uuid"));						
+					updateDatabaseLog(con, postData.get("period"), postData.get("copies"), postData.get("scrolls"), postData.get("page_uid"));						
 				} finally {
 					SqlUtils.close(con);
 				}
@@ -60,7 +58,7 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 			PreparedStatement page_stmt = null;
 			
 			page_stmt = connection
-						.prepareStatement("update access_logs set `time_on_page` = `time_on_page` + ?, `scroll_count` = `scroll_count` + ?, `copy_count` = `copy_count` + ? WHERE uuid = ?");
+						.prepareStatement("update access_logs set `time_on_page` = `time_on_page` + ?, `scroll_count` = `scroll_count` + ?, `copy_count` = `copy_count` + ? WHERE id = ?");
 			page_stmt.setString(1, period);
 			page_stmt.setString(2, scrolls);
 			page_stmt.setString(3, copies);
