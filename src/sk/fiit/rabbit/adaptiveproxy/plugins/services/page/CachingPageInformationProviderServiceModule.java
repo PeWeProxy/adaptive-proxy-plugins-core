@@ -1,6 +1,14 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.Buffer;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,10 +17,13 @@ import java.sql.Statement;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import sk.fiit.keyextractor.JKeyExtractor;
-import sk.fiit.keyextractor.extractors.OpenCalaisKeyExtractor;
-import sk.fiit.keyextractor.extractors.TagTheNetKeyExtractor;
+import rabbit.util.CharsetUtils;
+import sk.fiit.peweproxy.headers.ReadableHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -21,6 +32,7 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
 import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
+import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
@@ -35,17 +47,23 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		implements PageInformationProviderService,
 		ResponseServiceProvider<PageInformationProviderService> {
 		
+		private static final String serviceMethod = "GET";
+		private static final String metaServiceLocation = "http://peweproxy-staging.fiit.stuba.sk/metall/meta";
+		
 		DatabaseConnectionProviderService connectionService;
 		String clearText;
 		String requestURI;
+		String charset;
 		
 		Connection connection;
 		
 		public CachingPageInformationProviderServiceProvider(String requestURI,
-				DatabaseConnectionProviderService connectionService, String clearText) {
+				DatabaseConnectionProviderService connectionService, String clearText,
+				String charset) {
 			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
+			this.charset = charset;
 		}
 
 		PageInformation pi;
@@ -70,10 +88,16 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				pi.url = requestURI;
 				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
 				loadPageInformationFromCache(pi);
+				System.out.println("\n\n\n\n\n\n00");
 				
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
-					pi.keywords = extractKeywords(requestURI, clearText);
+					try {
+						pi.keywords = extractKeywords(requestURI, charset);
+					} catch (IOException e) {
+						// TODO: some error with response 500, when sending img url
+						logger.debug("Metall meta keywords extraction client FAILED:"+e.getMessage());
+					}
 					
 					savePageInformation(pi);
 				}
@@ -121,37 +145,70 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			}
 		}
 
-		
-		private String extractKeywords(String url, String clearText) {
+		private String extractKeywords(String url, String chrset) throws MalformedURLException, IOException {
+			String jsonString = null;
+			String keywords = "";
 			
-			if(clearText == null || clearText.trim() == "") {
-				return "";
-			}
-			
-			JKeyExtractor jKeyExtractor = new JKeyExtractor();
-			
-			jKeyExtractor.addAlgorithm(new TagTheNetKeyExtractor());
-			jKeyExtractor.addAlgorithm(new OpenCalaisKeyExtractor());
-			
-			Set<String> l = null;
+			URL serviceCallURL = new URL(metaServiceLocation+"/?url="+requestURI);
+
+		    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
+		    connection.setRequestMethod(serviceMethod);
+		    connection.setDoInput(true);
+		    connection.setDoOutput(true);
+		    connection.setAllowUserInteraction(false);
+		    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, */*;q=0.1");
+		    connection.setRequestProperty("Accept-Language", "sk-SK,sk;q=0.9,en;q=0.8");
+		    
+		    if(charset != null) {
+		    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
+		    } else {
+		    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
+		    }
+		    
+		    ByteArrayOutputStream os = new ByteArrayOutputStream();
+		    InputStream is = connection.getInputStream();
+		    
+		    connection.connect();
+		    
+		    byte[] response = new byte[4096];
+		    while (is.read(response) != -1) {
+		    	os.write(response);
+		    }
+
+		    connection.disconnect();
+	    	is.close();
+		    os.flush();
+		    
+		    if(os != null) {
+			    if(charset == null) {
+			    	charset="iso-8859-2";
+			    }
+		    	Buffer charBuffer = CharsetUtils.decodeBytes(os.toByteArray(), Charset.forName(charset), false);
+		    	jsonString = charBuffer.toString();
+		    	os.close();
+		    }
+
+		    // trim some extra curious characters
+		    if(jsonString.lastIndexOf("]") != -1) {
+		    	jsonString = jsonString.substring(0, jsonString.lastIndexOf("]")+1).trim();
+		    }
+		    jsonString = jsonString.trim();
+		    
 			try {
-				l = jKeyExtractor.getAllKeys(url, clearText);
-			} catch (MalformedURLException e) {
-				return "";
+				if(jsonString != null && jsonString.equals("")) {
+					JSONParser parser = new JSONParser();
+					JSONArray jsonArray = (JSONArray)parser.parse(jsonString);
+					for (Object jsonObject : jsonArray) {
+						if(((JSONObject)jsonObject).containsKey("name")) {
+							keywords += ((JSONObject)jsonObject).get("name")+",";
+						}
+					}
+				}
+			} catch (ParseException e) {
+				logger.error("JSON parser exception:"+e.getMessage());
 			}
-			
-			String kws = "";
-			
-			for (String kw : l) {
-				kws += kw + ',';
-			}
-			
-			if(kws.length() > 0) {
-				return kws.substring(0, kws.length() - 1);
-			} else {
-				return "";
-			}
-			
+		    
+		    return keywords;
 		}
 		
 		private void savePageInformation(PageInformation pi) {
@@ -242,15 +299,24 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if(serviceClass.equals(PageInformationProviderService.class)
-				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)
+		if (serviceClass.equals(PageInformationProviderService.class)
+				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)
 				&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
-			
-			String requestURI = response.getRequest().getRequestHeader().getRequestURI();
 			DatabaseConnectionProviderService connectionService = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
+			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
+			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
 			
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText);
+			String charset = null;
+			try {
+				charset = CharsetUtils.detectCharset((ReadableHeader)response.getResponseHeader(), content.getBytes(), false).toString();
+			} catch (UnsupportedCharsetException e) {
+				logger.debug("Unable to detect character set:"+e.getMessage());
+			} catch (IOException e) {
+				logger.error("Wrong input. This should not happens:"+e.getMessage());
+			}
+			
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, charset);
 		}
 		
 		return null;
