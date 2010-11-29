@@ -3,15 +3,17 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.cleartext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.Buffer;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sk.fiit.keyextractor.exceptions.TextFilteringException;
-import sk.fiit.keyextractor.filters.parser.ReadabilityParser;
+import rabbit.util.CharsetUtils;
+import sk.fiit.peweproxy.headers.ReadableHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -25,7 +27,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtracti
 
 public class ReadabilityCleartextExtractionServiceModule implements ResponseServiceModule {
 	private static final String serviceMethod = "GET";
-	private static final String readabilityServiceLocation = "http://peweproxy.fiit.stuba.sk/metall/readability";
+	private static final String readabilityServiceLocation = "http://peweproxy-staging.fiit.stuba.sk/metall/readability";
 	
 	private static final Logger logger = Logger.getLogger(ReadabilityCleartextExtractionServiceModule.class);
 	
@@ -35,9 +37,12 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 		private String requestURI;
 		private String content;
 		private String clearText;
+		private String charset;
 		
-		public ReadabilityCleartextExtractionServiceProvider(String requestURI) {
+		public ReadabilityCleartextExtractionServiceProvider(String requestURI, String charset, String content) {
 			this.requestURI = requestURI;
+			this.charset = charset;
+			this.content = content;
 		}
 		
 		@Override
@@ -45,35 +50,40 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 
 			if(clearText == null) {
 				try {
-					clearText = MetallReadabilityCleartextClient(requestURI);
+					clearText = MetallReadabilityCleartextClient(requestURI, charset);
 				} catch(IOException e) {
-					logger.debug("Metall readability cleartext client parser FAILED", e);
+					// TODO: some error with response 500, when sending img url
+					logger.debug("Metall readability cleartext client parser FAILED:"+e.getMessage());
 					clearText = content;
 				} 
 			}
 			
 			return clearText;
-			
 		}
 		
 
-		private String MetallReadabilityCleartextClient(String sourceURL) throws IOException {
+		private String MetallReadabilityCleartextClient(String requestURI, String charset) throws IOException {
 		    String clearText = null;
 		    
-			URL serviceCallURL = new URL(readabilityServiceLocation+"?url="+sourceURL);
+			URL serviceCallURL = new URL(readabilityServiceLocation+"/?url="+requestURI);
 
 		    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
 		    connection.setRequestMethod(serviceMethod);
 		    connection.setDoInput(true);
+		    connection.setDoOutput(true);
 		    connection.setAllowUserInteraction(false);
-		    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1");
+		    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, */*;q=0.1");
 		    connection.setRequestProperty("Accept-Language", "sk-SK,sk;q=0.9,en;q=0.8");
-		    connection.setRequestProperty("Accept-Charset", "iso-8859-1, utf-8, utf-16, *;q=0.1");
-		    connection.setRequestProperty("Accept-Encoding", "deflate, gzip, x-gzip, identity, *;q=0");
-
-		    OutputStream os = new ByteArrayOutputStream();
+		    
+		    if(charset != null) {
+		    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
+		    } else {
+		    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
+		    }
+		    
+		    ByteArrayOutputStream os = new ByteArrayOutputStream();
 		    InputStream is = connection.getInputStream();
-
+		    
 		    connection.connect();
 		    
 		    byte[] response = new byte[4096];
@@ -85,13 +95,17 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 	    	is.close();
 		    os.flush();
 		    
+		    
 		    if(os != null) {
-		    	clearText = os.toString();
+			    if(charset == null) {
+			    	charset="iso-8859-2";
+			    }
+		    	Buffer charBuffer = CharsetUtils.decodeBytes(os.toByteArray(), Charset.forName(charset), false);
+		    	clearText = charBuffer.toString();
+//		    	clearText = os.toString();
 		    	os.close();
 		    }
 		    
-		    System.out.println("\n\n\n"+clearText);
-			    
 			return(clearText);
 		}
 
@@ -148,10 +162,24 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if (serviceClass.equals(ClearTextExtractionService.class) && response.getResponseHeader().getField("content-type").contains("text/html")) {
+		if (serviceClass.equals(ClearTextExtractionService.class)
+//				&& response.getResponseHeader().getField("Content-Type").contains("text/html")
+				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)) {
 			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
-			return (ResponseServiceProvider<Service>) new ReadabilityCleartextExtractionServiceProvider(requestURI);
+			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
+			
+			String charset = null;
+			try {
+				charset = CharsetUtils.detectCharset((ReadableHeader)response.getResponseHeader(), content.getBytes(), false).toString();
+			} catch (UnsupportedCharsetException e) {
+				logger.debug("Unable to detect character set:"+e.getMessage());
+			} catch (IOException e) {
+				logger.error("Wrong input. This should not happens:"+e.getMessage());
+			}
+			
+			return (ResponseServiceProvider<Service>) new ReadabilityCleartextExtractionServiceProvider(requestURI, charset, content);
 		}
+		
 
 		return null;
 	}
