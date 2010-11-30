@@ -25,8 +25,6 @@ public class UserAgentUserIdentificationServiceModule implements RequestServiceM
 	private static final int APUID_LENGTH = 32;
 
 	private static final Logger logger = Logger.getLogger(UserAgentUserIdentificationServiceModule.class);
-	
-	private static final String USER_AGENT = "User-Agent";
 
 	String idPart = null;
 
@@ -72,7 +70,7 @@ public class UserAgentUserIdentificationServiceModule implements RequestServiceM
 	}
 	
 	private String getUIDForMessage(ReadableHeader headers) {
-		String uaHeader =  headers.getField(USER_AGENT);
+		String uaHeader =  headers.getField("Cookie");
 		
 		if (uaHeader != null) {
 			int indexOfIdPart = uaHeader.indexOf(idPart);

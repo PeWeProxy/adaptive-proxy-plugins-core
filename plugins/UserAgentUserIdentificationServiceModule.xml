@@ -9,6 +9,6 @@
 		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
-		<param name="idPart">APUID=</param>
+		<param name="idPart">__peweproxy_uid=</param>
 	</parameters>
 </plugin>
