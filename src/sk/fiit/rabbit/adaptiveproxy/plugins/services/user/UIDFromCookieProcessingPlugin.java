@@ -41,7 +41,10 @@ public class UIDFromCookieProcessingPlugin extends JavaScriptInjectingProcessing
 			String uid = "";
 			if (matcher.matches()) {
 				uid = matcher.group(1).split(";")[0];
-				content = "var __peweproxy_uid = '" + uid + "'";
+				content = 	"var __peweproxy_uid = '" + uid + "';\n" +
+							"var exdate=new Date();\n"+
+							"exdate.setDate(exdate.getDate()+1000);\n"+ //1000 dni bude cookie validna
+							"document.cookie='__peweproxy_uid='+__peweproxy_uid+';expires='+exdate.toUTCString();";
 				if ("".equals(uid)) {
 					content = redirectContent();
 				}
