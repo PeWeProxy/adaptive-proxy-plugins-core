@@ -7,7 +7,6 @@ UIDFromCookieProcessingPlugin
 FilteringProcessingPlugin
 KeywordsDisplayProcessingPlugin
 ActivityLoggingProcessingPlugin
-UIDRemoverProcessingPlugin
 
 [response]
 FilteringProcessingPlugin

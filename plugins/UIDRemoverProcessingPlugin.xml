@@ -9,5 +9,6 @@
 	</types>
 	<parameters>
 		<param name="pattern">__peweproxy_uid=</param>
+		<param name="header">Cookie</param>
 	</parameters>
 </plugin>

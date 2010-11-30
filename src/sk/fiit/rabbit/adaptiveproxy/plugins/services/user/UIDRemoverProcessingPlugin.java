@@ -14,17 +14,19 @@ import sk.fiit.peweproxy.services.ProxyService;
 public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 
 	private String pattern = null;
+	private String header = null;
 	
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request)
 	{
-		return RequestProcessingActions.FINAL_REQUEST;
+		String cookie = request.getRequestHeader().getField(header);
+		cookie = removeUID(cookie);
+		request.getRequestHeader().setField(header, cookie);
+		
+		return RequestProcessingActions.PROCEED;
 	}
 	
 	public HttpRequest getNewRequest(ModifiableHttpRequest request, HttpMessageFactory messageFactory)
 	{
-		String cookie = request.getRequestHeader().getField("Cookie");
-		cookie = removeUID(cookie);
-		request.getRequestHeader().setField("Cookie", cookie);
 		return request;
 	}
 	
@@ -39,6 +41,7 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 			result += element.indexOf(pattern) == -1 ? (element + ";") : "";
 		}
 		
+		result = result.substring(0, result.length() - 1);
 		return result;
 	}
 	
@@ -61,6 +64,7 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	public boolean start(PluginProperties props)
 	{
 		pattern = props.getProperty("pattern");
+		header = props.getProperty("header");
 		return true;
 	}
 	

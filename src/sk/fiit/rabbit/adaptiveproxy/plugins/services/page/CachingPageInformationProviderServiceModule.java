@@ -73,7 +73,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
-					//pi.keywords = extractKeywords(requestURI, clearText);
+					pi.keywords = extractKeywords(requestURI, clearText);
 					
 					savePageInformation(pi);
 				}

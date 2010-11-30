@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>CookieUserIdentificationServiceModule</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.CookieUserIdentificationServiceModule</className>
+	<types>
+		<type>RequestServiceModule</type>
+		<type>ResponseServiceModule</type>
+	</types>
+	<parameters>
+		<param name="header">Cookie</param>
+		<param name="idPart">__peweproxy_uid=</param>
+	</parameters>
+</plugin>
