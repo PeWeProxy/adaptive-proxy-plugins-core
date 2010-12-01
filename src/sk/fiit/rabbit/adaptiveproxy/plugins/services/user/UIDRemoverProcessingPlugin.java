@@ -19,8 +19,10 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request)
 	{
 		String cookie = request.getRequestHeader().getField(header);
-		cookie = removeUID(cookie);
-		request.getRequestHeader().setField(header, cookie);
+		if (cookie != null) {
+		    cookie = removeUID(cookie);
+		    request.getRequestHeader().setField(header, cookie);
+		}
 		
 		return RequestProcessingActions.PROCEED;
 	}

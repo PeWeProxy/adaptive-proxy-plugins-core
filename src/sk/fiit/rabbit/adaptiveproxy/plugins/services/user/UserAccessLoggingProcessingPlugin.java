@@ -7,22 +7,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
-import sk.fiit.peweproxy.messages.HttpRequest;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
-import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
-import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
@@ -40,40 +37,31 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
-		if(!request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
-			return messageFactory.constructHttpResponse(null, "text/html");
-		}
-		
-		StringContentService stringContentService = request.getServicesHandle()
-				.getService(StringContentService.class);
 
-		Map<String, String> postData = getPostDataFromRequest(stringContentService
-				.getContent());
-
-		Connection con = null;
-
-		if (postData.containsKey("__peweproxy_uid")
-				&& postData.containsKey("_ap_checksum")
-				&& postData.containsKey("__ap_url")
-				&& postData.containsKey("page_uid")) {
-			
-			if(!request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
-				return messageFactory.constructHttpResponse(null, "text/html");
-			}
-			
-			try {
-				con = request.getServicesHandle()
-						.getService(DatabaseConnectionProviderService.class)
-						.getDatabaseConnection();
-
-				createDatabaseLog(con, postData.get("__peweproxy_uid"),
-						postData.get("_ap_checksum"), postData.get("__ap_url"),
-						"ip", postData.get("page_uid"));
-			} finally {
-				SqlUtils.close(con);
-			}
-		}
+	    if (!request.getServicesHandle().isServiceAvailable(PostDataParserService.class))
 		return messageFactory.constructHttpResponse(null, "text/html");
+	    
+	    Map<String, String> postData = request.getServicesHandle().getService(PostDataParserService.class).getPostData();
+	    	
+	    if(postData != null && request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+		Connection con = null;
+		
+	    	if (postData.containsKey("__peweproxy_uid") && postData.containsKey("_ap_checksum")
+	    		&& postData.containsKey("__ap_url") && postData.containsKey("page_uid")) {
+	    	    try {
+			con = request.getServicesHandle()
+				.getService(DatabaseConnectionProviderService.class)
+				.getDatabaseConnection();
+
+			createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
+				postData.get("__ap_url"), "ip", postData.get("page_uid"));
+	    	    } finally {
+			SqlUtils.close(con);
+	    	    }
+		}
+	    }
+	
+	    return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
 	private boolean createDatabaseLog(Connection connection, String uid,
@@ -135,27 +123,6 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		}
 
 		return true;
-	}
-	
-	private Map<String, String> getPostDataFromRequest(String requestContent) {
-		try {
-			requestContent = URLDecoder.decode(requestContent, "utf-8");
-		} catch (UnsupportedEncodingException e) {
-			logger.warn(e);
-		}
-		Map<String, String> postData = new HashMap<String, String>();
-		String attributeName;
-		String attributeValue;
-
-		for (String postPair : requestContent.split("&")) {
-			if (postPair.split("=").length == 2) {
-				attributeName = postPair.split("=")[0];
-				attributeValue = postPair.split("=")[1];
-				postData.put(attributeName, attributeValue);
-			}
-		}
-
-		return postData;
 	}
 
 	@Override
