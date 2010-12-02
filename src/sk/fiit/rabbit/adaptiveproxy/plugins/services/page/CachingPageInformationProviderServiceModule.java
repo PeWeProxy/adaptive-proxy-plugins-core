@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.Buffer;
@@ -93,7 +94,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				pi.url = requestURI;
 				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
 				loadPageInformationFromCache(pi);
-				System.out.println("\n\n\n\n\n\n00");
 				
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
@@ -149,93 +149,115 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				SqlUtils.close(stmt);
 			}
 		}
-
-		private String extractKeywords(String content, String chrset) throws MalformedURLException, IOException {
-			String jsonString = null;
-			String keywords = "";
-
-			// initialize connection and set headers 
-			URL serviceCallURL = new URL(metaServiceLocation);
-		    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
-		    connection.setRequestMethod(serviceMethod);
-		    connection.setDoInput(true);
-		    connection.setDoOutput(true);
-		    connection.setAllowUserInteraction(false);
-		    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, */*;q=0.1");
-		    connection.setRequestProperty("Accept-Language", "sk-SK,sk;q=0.9,en;q=0.8");
-		    
-		    if(charset != null) {
-		    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
-		    } else {
-		    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
-		    	charset="utf-8";
-		    }
-		    
-	        // establish connection
-		    connection.connect();
-		    
-		    // prepare post data
-		    content = "content="+content;
-		    String data = URLEncoder.encode(content);
-		    InputStream byteInputStream = new ByteArrayInputStream(data.getBytes());
-		    
-	        // open output stream & write request data to body
-		    OutputStream os = connection.getOutputStream();
-	        byte buffer[] = new byte[2048];
-	        int read = 0;
-	        if (byteInputStream != null) {
-	            while ((read = byteInputStream.read(buffer)) != -1) {
-	                os.write(buffer, 0, read);
-	            }
-	            os.flush();
-	            os.close();
-	        }
-
-		    
-		    // read response
-		    InputStream is = connection.getInputStream();
-		    ByteArrayOutputStream responseOut = new ByteArrayOutputStream();
-		    byte[] response = new byte[2048];
-		    while (is.read(response) != -1) {
-		    	responseOut.write(response);
-		    }
-		    is.close();
-		    
-
-		    // close connection
-		    connection.disconnect();
-		    
-		    // read response data to string
-		    if(responseOut != null) {
-		    	Buffer charBuffer = CharsetUtils.decodeBytes(responseOut.toByteArray(), Charset.forName(charset), false);
-		    	jsonString = charBuffer.toString();
-		    	responseOut.close();
-		    }
-
-
-		    // trim some extra curious characters
-		    if(jsonString.lastIndexOf("]") != -1) {
-		    	jsonString = jsonString.substring(0, jsonString.lastIndexOf("]")+1).trim();
-		    }
-		    jsonString = jsonString.trim();
-
-			try {
-				if(jsonString != null && jsonString.equals("")) {
-					JSONParser parser = new JSONParser();
-					JSONArray jsonArray = (JSONArray)parser.parse(jsonString);
-					for (Object jsonObject : jsonArray) {
-						if(((JSONObject)jsonObject).containsKey("name")) {
-							keywords += ((JSONObject)jsonObject).get("name")+",";
+		
+			public String extractKeywords(String content, String chrset) throws MalformedURLException, IOException {
+				String jsonString = null;
+				String keywords = "";
+	
+				// initialize connection and set headers
+				HttpURLConnection connection = initConnection(chrset);
+			    
+		        // establish connection
+			    connection.connect();
+			    
+			    // encode and write post data to request
+			    writePostData(connection, content);
+	
+			    // read response
+			    ByteArrayOutputStream responseOut = readResponseData(connection);
+	
+			    // close connection
+			    connection.disconnect();
+			    
+			    // convert response data to string
+			    jsonString = byteArrayOut2String(responseOut);
+	
+			    // cut some extra curious characters
+			    if(jsonString.lastIndexOf("]") != -1) {
+			    	jsonString = jsonString.substring(0, jsonString.lastIndexOf("]")+1).trim();
+			    }
+			    jsonString = jsonString.trim();
+	
+				try {
+					if(jsonString != null && jsonString.equals("")) {
+						JSONParser parser = new JSONParser();
+						JSONArray jsonArray = (JSONArray)parser.parse(jsonString);
+						for (Object jsonObject : jsonArray) {
+							if(((JSONObject)jsonObject).containsKey("name")) {
+								keywords += ((JSONObject)jsonObject).get("name")+",";
+							}
 						}
 					}
+				} catch (ParseException e) {
+					logger.error("JSON parser exception:"+e.getMessage());
 				}
-			} catch (ParseException e) {
-				logger.error("JSON parser exception:"+e.getMessage());
+			    
+			    return keywords;
 			}
-		    
-		    return keywords;
-		}
-		
+			
+			private HttpURLConnection initConnection(String charset) throws MalformedURLException, ProtocolException, IOException {
+				// initialize connection and set headers 
+				URL serviceCallURL = new URL(metaServiceLocation);
+			    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
+			    connection.setRequestMethod(serviceMethod);
+			    connection.setDoInput(true);
+			    connection.setDoOutput(true);
+			    connection.setAllowUserInteraction(false);
+			    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, */*;q=0.1");
+			    connection.setRequestProperty("Accept-Language", "sk-SK,sk;q=0.9,en;q=0.8");
+			    
+			    if(charset != null) {
+			    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
+			    } else {
+			    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
+			    }
+			    
+				return(connection);
+			}
+			
+			private void writePostData(HttpURLConnection connection, String content) throws IOException {
+			    // prepare post data
+			    String data = URLEncoder.encode("content="+content);
+			    InputStream byteInputStream = new ByteArrayInputStream(data.getBytes());
+			    
+		        // open output stream & write request data to body
+			    OutputStream os = connection.getOutputStream();
+		        byte buffer[] = new byte[2048];
+		        int read = 0;
+		        if (byteInputStream != null) {
+		            while ((read = byteInputStream.read(buffer)) != -1) {
+		                os.write(buffer, 0, read);
+		            }
+		            os.flush();
+		            os.close();
+		        }
+		        return;
+			}
+			
+			private ByteArrayOutputStream readResponseData(HttpURLConnection connection) throws IOException {
+			    // read response
+			    InputStream is = connection.getInputStream();
+			    ByteArrayOutputStream responseOut = new ByteArrayOutputStream();
+			    byte[] response = new byte[2048];
+			    while (is.read(response) != -1) {
+			    	responseOut.write(response);
+			    }
+			    is.close();
+			    
+			    return(responseOut);
+			}
+			
+			private String byteArrayOut2String(ByteArrayOutputStream os) throws IOException {
+				String jsonString = null;
+			    // read response data to string
+			    if(os != null) {
+			    	Buffer charBuffer = CharsetUtils.decodeBytes(os.toByteArray(), Charset.forName(charset), false);
+			    	jsonString = charBuffer.toString();
+			    	os.close();
+			    }
+			    return(jsonString);
+			}
+			
 		private void savePageInformation(PageInformation pi) {
 			
 			if(connection == null) {
