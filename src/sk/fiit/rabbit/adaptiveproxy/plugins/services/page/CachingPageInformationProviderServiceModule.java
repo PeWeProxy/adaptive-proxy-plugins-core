@@ -1,11 +1,14 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -47,23 +50,25 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		implements PageInformationProviderService,
 		ResponseServiceProvider<PageInformationProviderService> {
 		
-		private static final String serviceMethod = "GET";
-		private static final String metaServiceLocation = "http://peweproxy-staging.fiit.stuba.sk/metall/meta";
+		private static final String serviceMethod = "POST";
+		private static final String metaServiceLocation = "http://peweproxy-staging.fiit.stuba.sk/metall/meta/";
 		
 		DatabaseConnectionProviderService connectionService;
 		String clearText;
 		String requestURI;
 		String charset;
+		String content;
 		
 		Connection connection;
 		
 		public CachingPageInformationProviderServiceProvider(String requestURI,
 				DatabaseConnectionProviderService connectionService, String clearText,
-				String charset) {
+				String charset, String content) {
 			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
 			this.charset = charset;
+			this.content = content;
 		}
 
 		PageInformation pi;
@@ -93,7 +98,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
 					try {
-						pi.keywords = extractKeywords(requestURI, charset);
+						pi.keywords = extractKeywords(content, charset);
 					} catch (IOException e) {
 						// TODO: some error with response 500, when sending img url
 						logger.debug("Metall meta keywords extraction client FAILED:"+e.getMessage());
@@ -145,12 +150,12 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			}
 		}
 
-		private String extractKeywords(String url, String chrset) throws MalformedURLException, IOException {
+		private String extractKeywords(String content, String chrset) throws MalformedURLException, IOException {
 			String jsonString = null;
 			String keywords = "";
-			
-			URL serviceCallURL = new URL(metaServiceLocation+"/?url="+requestURI);
 
+			// initialize connection and set headers 
+			URL serviceCallURL = new URL(metaServiceLocation);
 		    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
 		    connection.setRequestMethod(serviceMethod);
 		    connection.setDoInput(true);
@@ -163,37 +168,57 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
 		    } else {
 		    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
+		    	charset="utf-8";
 		    }
 		    
-		    ByteArrayOutputStream os = new ByteArrayOutputStream();
-		    InputStream is = connection.getInputStream();
-		    
+	        // establish connection
 		    connection.connect();
 		    
-		    byte[] response = new byte[4096];
+		    // prepare post data
+		    content = "content="+content;
+		    String data = URLEncoder.encode(content);
+		    InputStream byteInputStream = new ByteArrayInputStream(data.getBytes());
+		    
+	        // open output stream & write request data to body
+		    OutputStream os = connection.getOutputStream();
+	        byte buffer[] = new byte[2048];
+	        int read = 0;
+	        if (byteInputStream != null) {
+	            while ((read = byteInputStream.read(buffer)) != -1) {
+	                os.write(buffer, 0, read);
+	            }
+	            os.flush();
+	            os.close();
+	        }
+
+		    
+		    // read response
+		    InputStream is = connection.getInputStream();
+		    ByteArrayOutputStream responseOut = new ByteArrayOutputStream();
+		    byte[] response = new byte[2048];
 		    while (is.read(response) != -1) {
-		    	os.write(response);
+		    	responseOut.write(response);
+		    }
+		    is.close();
+		    
+
+		    // close connection
+		    connection.disconnect();
+		    
+		    // read response data to string
+		    if(responseOut != null) {
+		    	Buffer charBuffer = CharsetUtils.decodeBytes(responseOut.toByteArray(), Charset.forName(charset), false);
+		    	jsonString = charBuffer.toString();
+		    	responseOut.close();
 		    }
 
-		    connection.disconnect();
-	    	is.close();
-		    os.flush();
-		    
-		    if(os != null) {
-			    if(charset == null) {
-			    	charset="iso-8859-2";
-			    }
-		    	Buffer charBuffer = CharsetUtils.decodeBytes(os.toByteArray(), Charset.forName(charset), false);
-		    	jsonString = charBuffer.toString();
-		    	os.close();
-		    }
 
 		    // trim some extra curious characters
 		    if(jsonString.lastIndexOf("]") != -1) {
 		    	jsonString = jsonString.substring(0, jsonString.lastIndexOf("]")+1).trim();
 		    }
 		    jsonString = jsonString.trim();
-		    
+
 			try {
 				if(jsonString != null && jsonString.equals("")) {
 					JSONParser parser = new JSONParser();
@@ -316,7 +341,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				logger.error("Wrong input. This should not happens:"+e.getMessage());
 			}
 			
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, charset);
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, charset, content);
 		}
 		
 		return null;
