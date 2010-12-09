@@ -28,6 +28,10 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	@Override
 	public void processTransferedResponse(HttpResponse response) {
+	    	String reqURI = response.getRequest().getRequestHeader().getRequestURI();
+	    	
+	    	if (reqURI.contains("?nologging") || reqURI.contains(".js?") || reqURI.endsWith(".js"))
+	    	    return;
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
 			PageInformation pi = response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
