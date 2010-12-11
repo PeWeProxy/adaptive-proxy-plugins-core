@@ -101,7 +101,7 @@ namespace :offline do
   desc "Schedule tasks as defined in config/schedule.rb"
   task :schedule do
 		Dir.chdir("offline") do
-			Whenever::CommandLine.execute({:update=>true,:deploy_path=>ENV["DEPLOY_PATH"]})
+			Whenever::CommandLine.execute({:update=>true,:deploy_path=>ENV["DEPLOY_PATH"]+'offline/'})
 		end
   end
 end
