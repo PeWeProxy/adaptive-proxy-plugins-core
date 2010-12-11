@@ -1,3 +1,3 @@
 every 1.minute do
-  command "ruby offline/scripts/myjob.rb"
+  command "ruby #{options[:deploy_path]}/scripts/myjob.rb"
 end
