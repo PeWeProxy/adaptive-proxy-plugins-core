@@ -1,7 +1,7 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
 public class PageInformation {
-	Long id;
+	String id;
 	String url;
 	String checksum;
 	Integer contentLength;
@@ -10,7 +10,7 @@ public class PageInformation {
 	public PageInformation() {
 	}
 
-	public PageInformation(Long id, String url, String checksum,
+	public PageInformation(String id, String url, String checksum,
 			Integer contentLength, String keywords) {
 		super();
 		this.id = id;
@@ -20,11 +20,11 @@ public class PageInformation {
 		this.keywords = keywords;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

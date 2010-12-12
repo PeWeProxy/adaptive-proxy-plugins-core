@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -51,13 +50,13 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		Connection con = null;
 		
 	    	if (postData.containsKey("__peweproxy_uid") && postData.containsKey("_ap_checksum")
-	    		&& postData.containsKey("__ap_url") && postData.containsKey("page_uid")) {
+	    		&& postData.containsKey("__ap_url") && postData.containsKey("page_uid") && postData.containsKey("log_id")) {
 	    	    try {
 			con = request.getServicesHandle()
 				.getService(DatabaseConnectionProviderService.class)
 				.getDatabaseConnection();
 
-			createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
+			createDatabaseLog(con, postData.get("log_id"), postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
 				postData.get("__ap_url"), "ip", postData.get("page_uid"));
 	    	    } finally {
 			SqlUtils.close(con);
@@ -68,12 +67,10 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	    return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
-	private boolean createDatabaseLog(Connection connection, String uid,
+	private boolean createDatabaseLog(Connection connection, String log_id, String uid,
 			String checksum, String url, String ip, String uuid) {
-		PreparedStatement page_stmt = null;
 		PreparedStatement log_stmt = null;
 
-		String pid = "";
 		java.util.Date today = new java.util.Date();
 		String timestamp = new Timestamp(today.getTime()).toString();
 		String formatedTimeStamp = timestamp.substring(0,
@@ -85,45 +82,25 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			logger.warn(e);
 		}
 
-		try {
-			page_stmt = connection
-					.prepareStatement("SELECT * FROM pages WHERE url=? AND checksum =? ORDER BY id DESC LIMIT 1;");
-			page_stmt.setString(1, url);
-			page_stmt.setString(2, checksum);
-
-			page_stmt.execute();
-			ResultSet rs = page_stmt.getResultSet();
-
-			while (rs.next()) {
-				pid = rs.getString(1);
-			}
-
-			if (!"".equals(uid)) {
-				try {
-					log_stmt = connection
-							.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");
+		if (!"".equals(uid)) {
+			try {
+				log_stmt = connection
+					.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");
 					
-					log_stmt.setString(1, uuid);
-					log_stmt.setString(2, uid);
-					log_stmt.setString(3, formatedTimeStamp);
-					log_stmt.setString(4, pid);
-					log_stmt.setString(5, url);
-					log_stmt.setString(6, Checksum.md5(ip));
-
-					log_stmt.execute();
-				} catch (SQLException e) {
-					logger.error("Could not insert access_log ", e);
-				} finally {
-					SqlUtils.close(log_stmt);
-				}
-			} else {
+				log_stmt.setString(1, uuid);
+				log_stmt.setString(2, uid);
+				log_stmt.setString(3, formatedTimeStamp);
+				log_stmt.setString(4, log_id);
+				log_stmt.setString(5, url);
+				log_stmt.setString(6, Checksum.md5(ip));
+				log_stmt.execute();
+			} catch (SQLException e) {
+				logger.error("Could not insert access_log ", e);
+			} finally {
 				SqlUtils.close(log_stmt);
 			}
-
-		} catch (SQLException e) {
-			logger.error("Could not get page id for access log", e);
-		} finally {
-			SqlUtils.close(page_stmt);
+		} else {
+			SqlUtils.close(log_stmt);
 		}
 
 		return true;

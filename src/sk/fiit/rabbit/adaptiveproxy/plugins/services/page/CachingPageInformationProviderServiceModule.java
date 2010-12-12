@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -23,6 +24,7 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
@@ -40,12 +42,14 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		String requestURI;
 		
 		Connection connection;
+		String log_id;
 		
 		public CachingPageInformationProviderServiceProvider(String requestURI,
-				DatabaseConnectionProviderService connectionService, String clearText) {
+				DatabaseConnectionProviderService connectionService, String clearText, String log_id) {
 			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
+			this.log_id = log_id;
 		}
 
 		PageInformation pi;
@@ -74,6 +78,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
 					pi.keywords = extractKeywords(requestURI, clearText);
+					pi.id = log_id;
 					
 					savePageInformation(pi);
 				}
@@ -109,7 +114,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				rs = stmt.executeQuery();
 				
 				if(rs.next()) {
-					pi.id = rs.getLong(1);
+					pi.id = rs.getString(1);
 					pi.contentLength = rs.getInt(2);
 					pi.keywords = rs.getString(3);
 				}
@@ -160,29 +165,21 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				return;
 			}
 			
-			String query = "INSERT INTO pages(url, checksum, content_length, keywords) VALUES(?, ?, ?, ?)";
+			String query = "INSERT INTO pages(id, url, checksum, content_length, keywords) VALUES(?, ?, ?, ?, ?)";
 			
 			PreparedStatement stmt = null;
-			ResultSet keys = null;
 			
 			try {
 				stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-				stmt.setString(1, pi.getUrl());
-				stmt.setString(2, pi.getChecksum());
-				stmt.setInt(3, pi.getContentLength());
-				stmt.setString(4, pi.getKeywords());
-				
+				stmt.setString(1, pi.id);
+				stmt.setString(2, pi.getUrl());
+				stmt.setString(3, pi.getChecksum());
+				stmt.setInt(4, pi.getContentLength());
+				stmt.setString(5, pi.getKeywords());
 				stmt.execute();
-				
-				keys = stmt.getGeneratedKeys();
-				
-				if(keys.next()) {
-					pi.id = keys.getLong(1);
-				}
 			} catch (SQLException e) {
 				logger.error("Could not save page information", e);
 			} finally {
-				SqlUtils.close(keys);
 				SqlUtils.close(stmt);
 			}
 		}
@@ -249,8 +246,9 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			String requestURI = response.getRequest().getRequestHeader().getRequestURI();
 			DatabaseConnectionProviderService connectionService = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
 			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
+			String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
 			
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText);
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, log_id);
 		}
 		
 		return null;
