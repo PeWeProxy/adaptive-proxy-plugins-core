@@ -1,6 +1,8 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
+import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -20,13 +22,15 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserSer
 public class PageIDServiceModule implements ResponseServiceModule {
 	
 	private static final Logger logger = Logger.getLogger(PageIDServiceModule.class);
+	private HashMap idMap = new HashMap();
 	
 	private class PageIDServiceProvider
 			implements PageIDService, ResponseServiceProvider<PageIDService> {
 
 		private String id;
 		
-		public PageIDServiceProvider() {
+		public PageIDServiceProvider(String pageID) {
+		    this.id = pageID;
 		}
 		
 
@@ -51,10 +55,6 @@ public class PageIDServiceModule implements ResponseServiceModule {
 
 		@Override
 		public String getID() {
-		    if (this.id == null)
-		    {
-			this.id = Double.toString(Math.random());
-		    }
 		    return this.id;
 		}
 	}
@@ -77,6 +77,7 @@ public class PageIDServiceModule implements ResponseServiceModule {
 	public void desiredResponseServices(
 			Set<Class<? extends ProxyService>> desiredServices,
 			ResponseHeader webRPHeader) {
+	    desiredServices.add(ClearTextExtractionService.class);
 	}
 
 	@Override
@@ -89,8 +90,18 @@ public class PageIDServiceModule implements ResponseServiceModule {
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
-	    if(serviceClass.equals(PageIDService.class)) {
-		return (ResponseServiceProvider<Service>) new PageIDServiceProvider();
+	    if(serviceClass.equals(PageIDService.class)
+		    && response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
+		
+		int key = response.getRequest().getOriginalRequest().hashCode();
+		String pageID = "";
+		if (idMap.containsKey(key)) {
+		    pageID = String.valueOf(idMap.get(key));
+		} else {
+		    pageID = UUID.randomUUID().toString();
+		    idMap.put(key, pageID);
+		}
+		return (ResponseServiceProvider<Service>) new PageIDServiceProvider(pageID);
 	    }
 	    
 	    return null;

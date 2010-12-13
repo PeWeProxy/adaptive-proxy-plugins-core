@@ -34,7 +34,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		
 		String checksum = Checksum.md5(clearTextService.getCleartext());
 		String page_uid = UUID.randomUUID().toString();
-		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();//UUID.randomUUID().toString();
+		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
 		
 		String scripts = "" +
                     "<script type='text/javascript'>" +
