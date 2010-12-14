@@ -1,18 +1,5 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.Buffer;
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -34,8 +21,6 @@ import org.json.simple.parser.ParseException;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
-import rabbit.util.CharsetUtils;
-import sk.fiit.peweproxy.headers.ReadableHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -49,6 +34,8 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtracti
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient.MetallClientException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 
 public class CachingPageInformationProviderServiceModule implements ResponseServiceModule {
@@ -59,24 +46,19 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		implements PageInformationProviderService,
 		ResponseServiceProvider<PageInformationProviderService> {
 		
-		private static final String serviceMethod = "POST";
-		private static final String metaServiceLocation = "http://peweproxy-staging.fiit.stuba.sk/metall/meta/";
-		
 		DatabaseConnectionProviderService connectionService;
 		String clearText;
 		String requestURI;
-		String charset;
 		String content;
 		
 		Connection connection;
 		
 		public CachingPageInformationProviderServiceProvider(String requestURI,
 				DatabaseConnectionProviderService connectionService, String clearText,
-				String charset, String content) {
+				String content) {
 			this.connectionService = connectionService;
 			this.clearText = clearText;
 			this.requestURI = requestURI;
-			this.charset = charset;
 			this.content = content;
 		}
 
@@ -109,16 +91,17 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
 					try {
-						jsonArray = extractKeywords(content, charset);
-					} catch (MalformedURLException e) {
-						logger.error("Malformed URL for Metall/meta keywords extraction service:", e);
-					} catch (IOException e) {
-						// TODO: some error with response 500, when sending img url
-						logger.debug("Metall meta keywords extraction client FAILED:"+e.getMessage()+" for URI:"+requestURI);
+						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
+					} catch (ParseException e) {
+						logger.warn(e);
+					} catch (MetallClientException e) {
+						logger.warn(e);
 					}
+					
 					if(jsonArray == null) {
 						return;
 					}
+					
 					pi.setPageTermsList(Json2PagesTerms(jsonArray));
 					save(pi);
 				}
@@ -229,154 +212,47 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			}
 		}
 		
-			public JSONArray extractKeywords(String content, String charset) throws MalformedURLException, IOException {
-				String jsonString = null;
-				JSONArray jsonArray = null;
-				
-				// initialize connection and set headers
-				HttpURLConnection connection = initConnection(charset);
-			    
-		        // establish connection
-			    connection.connect();
-			    
-			    // encode and write post data to request
-			    writePostData(connection, content);
-	
-			    // read response
-			    ByteArrayOutputStream responseOut = readResponseData(connection);
+		private List<PagesTerms> Json2PagesTerms(JSONArray jsonArray) {
 
-			    if(connection.getResponseCode() == 500) {
-			    	return(null);
-			    }
-	
-			    // close connection
-			    connection.disconnect();
-			    
-			    // convert response data to string
-			    jsonString = byteArrayOut2String(responseOut);
-	
-			    // cut some extra curious characters
-			    if(jsonString.lastIndexOf("]") != -1) {
-			    	jsonString = jsonString.substring(0, jsonString.lastIndexOf("]")+1).trim();
-			    }
-			    jsonString = jsonString.trim();
-	
-				try {
-					if(!jsonString.equals("")) {
-						JSONParser parser = new JSONParser();
-						jsonArray = (JSONArray)parser.parse(jsonString);
-					}
-				} catch (ParseException e) {
-					logger.error("JSON parser exception:"+e.getMessage());
-				}
-
-			    return jsonArray;
+			if(jsonArray == null) {
+				return(null);
 			}
 			
-			private HttpURLConnection initConnection(String charset) throws MalformedURLException, ProtocolException, IOException {
-				// initialize connection and set headers 
-				URL serviceCallURL = new URL(metaServiceLocation);
-			    HttpURLConnection connection = (HttpURLConnection)serviceCallURL.openConnection();
-			    connection.setRequestMethod(serviceMethod);
-			    connection.setDoInput(true);
-			    connection.setDoOutput(true);
-			    connection.setAllowUserInteraction(false);
-			    connection.setRequestProperty("Accept", "text/html, application/xml;q=0.9, */*;q=0.1");
-			    connection.setRequestProperty("Accept-Language", "sk-SK,sk;q=0.9,en;q=0.8");
-			    
-			    if(charset != null) {
-			    	connection.setRequestProperty("Accept-Charset", charset+";q=1");
-			    } else {
-			    	connection.setRequestProperty("Accept-Charset", "windows-1250, utf-8, iso-8859-2, iso-8859-1;q=0.2, utf-16;q=0.1, *;q=0.1");
-			    }
-			    
-				return(connection);
-			}
+			Iterator<JSONObject> i = jsonArray.iterator();
+			List<PagesTerms> ptList = new ArrayList<PagesTerms>();
+			PagesTerms pt = null;
+			Term term = null;
 			
-			private void writePostData(HttpURLConnection connection, String content) throws IOException {
-			    // prepare post data
-			    String data = URLEncoder.encode("content="+content);
-			    InputStream byteInputStream = new ByteArrayInputStream(data.getBytes());
-			    
-		        // open output stream & write request data to body
-			    OutputStream os = connection.getOutputStream();
-		        byte buffer[] = new byte[2048];
-		        int read = 0;
-		        if (byteInputStream != null) {
-		            while ((read = byteInputStream.read(buffer)) != -1) {
-		                os.write(buffer, 0, read);
-		            }
-		            os.flush();
-		            os.close();
-		        }
-		        return;
-			}
-			
-			private ByteArrayOutputStream readResponseData(HttpURLConnection connection) throws IOException {
-			    // read response
-			    InputStream is = connection.getInputStream();
-			    ByteArrayOutputStream responseOut = new ByteArrayOutputStream();
-			    byte[] response = new byte[2048];
-			    while (is.read(response) != -1) {
-			    	responseOut.write(response);
-			    }
-			    is.close();
-			    
-			    return(responseOut);
-			}
-			
-			private String byteArrayOut2String(ByteArrayOutputStream os) throws IOException {
-				String jsonString = null;
-			    // read response data to string
-			    if(os != null) {
-			    	Buffer charBuffer = CharsetUtils.decodeBytes(os.toByteArray(), Charset.forName(charset), false);
-			    	jsonString = charBuffer.toString();
-			    	os.close();
-			    }
-			    return(jsonString);
-			}
-			
-			private List<PagesTerms> Json2PagesTerms(JSONArray jsonArray) {
-
-				if(jsonArray == null) {
-					return(null);
-				}
+			while(i.hasNext()) {
+				JSONObject jsonObject = (JSONObject)i.next();
 				
-				Iterator<JSONObject> i = jsonArray.iterator();
-				List<PagesTerms> ptList = new ArrayList<PagesTerms>();
-				PagesTerms pt = null;
-				Term term = null;
+				pt = new PagesTerms();
+				term = new Term();
 				
-				while(i.hasNext()) {
-					JSONObject jsonObject = (JSONObject)i.next();
-					
-					pt = new PagesTerms();
-					term = new Term();
-					
-					pt.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-					pt.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-					
-					if(jsonObject.containsKey("name") && !jsonObject.get("name").equals(null)) {
-						term.setLabel((String)jsonObject.get("name"));
-					}
-					if(jsonObject.containsKey("type") && !jsonObject.get("type").equals(null)) {
-						term.setTermType((String)jsonObject.get("type"));
-					}
-					if(jsonObject.containsKey("relevance") && !jsonObject.get("relevance").equals("")) {
-						try {
-							pt.setWeight(new Float(jsonObject.get("relevance").toString()));
-						} catch (NumberFormatException e){
-							logger.debug("Metall meta keywords extraction relevance weight is not a float:"+e.getMessage());
-						}
-					}
-					if(jsonObject.containsKey("source") && !jsonObject.get("source").equals(null)) {
-						pt.setSource((String)jsonObject.get("source"));
-					}
-					pt.setTerm(term);
-					ptList.add(pt);
+				pt.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+				pt.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+				
+				if(jsonObject.containsKey("name") && !jsonObject.get("name").equals(null)) {
+					term.setLabel((String)jsonObject.get("name"));
 				}
-				return(ptList);
+				if(jsonObject.containsKey("type") && !jsonObject.get("type").equals(null)) {
+					term.setTermType((String)jsonObject.get("type"));
+				}
+				if(jsonObject.containsKey("relevance") && !jsonObject.get("relevance").equals("")) {
+					try {
+						pt.setWeight(new Float(jsonObject.get("relevance").toString()));
+					} catch (NumberFormatException e){
+						logger.debug("Metall meta keywords extraction relevance weight is not a float:"+e.getMessage());
+					}
+				}
+				if(jsonObject.containsKey("source") && !jsonObject.get("source").equals(null)) {
+					pt.setSource((String)jsonObject.get("source"));
+				}
+				pt.setTerm(term);
+				ptList.add(pt);
 			}
+			return(ptList);
+		}
 			
 		private Long savePageInformation(PageInformation pi) {
 			
@@ -577,6 +453,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			ResponseHeader webRPHeader) {
 		desiredServices.add(ClearTextExtractionService.class);
 		desiredServices.add(DatabaseConnectionProviderService.class);
+		desiredServices.add(StringContentService.class);
 	}
 
 	@Override
@@ -598,16 +475,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
 			
-			String charset = null;
-			try {
-				charset = CharsetUtils.detectCharset((ReadableHeader)response.getResponseHeader(), content.getBytes(), false).toString();
-			} catch (UnsupportedCharsetException e) {
-				logger.debug("Unable to detect character set:"+e.getMessage());
-			} catch (IOException e) {
-				logger.error("Wrong input. This should not happens:"+e.getMessage());
-			}
-			
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, charset, content);
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(requestURI, connectionService, clearText, content);
 		}
 		
 		return null;
