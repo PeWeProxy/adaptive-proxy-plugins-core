@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>PageIDServiceModule</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageIDServiceModule</className>
+	<types>
+		<type>ResponseServiceModule</type>
+	</types>
+	<parameters>
+	</parameters>
+</plugin>
