@@ -4,6 +4,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import sk.fiit.keyextractor.exceptions.TextFilteringException;
+import sk.fiit.keyextractor.filters.io.StringSource;
+import sk.fiit.keyextractor.filters.parser.ReadabilityParser;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -14,9 +17,9 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient;
 
 public class ReadabilityCleartextExtractionServiceModule implements ResponseServiceModule {
+	
 	private static final Logger logger = Logger.getLogger(ReadabilityCleartextExtractionServiceModule.class);
 	
 	private class ReadabilityCleartextExtractionServiceProvider
@@ -32,18 +35,20 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 		@Override
 		public String getCleartext() {
 			if(clearText == null) {
-				try {
-					clearText = new MetallClient().cleartext(content);
-				} catch (MetallClient.MetallClientException e) {
-					logger.warn(e);
-					return clearText;
+				try{
+					clearText = new ReadabilityParser(new StringSource(content)).process();
+					if(clearText == null) {
+						clearText = content;
+					}
+				} catch(TextFilteringException e) {
+					logger.debug("Readability parser FAILED", e);
+					clearText = content;
 				}
-				
 			}
 			
 			return clearText;
 		}
-		
+
 		@Override
 		public String getServiceIdentification() {
 			return this.getClass().getName();
@@ -100,11 +105,9 @@ public class ReadabilityCleartextExtractionServiceModule implements ResponseServ
 		if (serviceClass.equals(ClearTextExtractionService.class)
 				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)) {
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
-			
 			return (ResponseServiceProvider<Service>) new ReadabilityCleartextExtractionServiceProvider(content);
 		}
 		
-
 		return null;
 	}
 
