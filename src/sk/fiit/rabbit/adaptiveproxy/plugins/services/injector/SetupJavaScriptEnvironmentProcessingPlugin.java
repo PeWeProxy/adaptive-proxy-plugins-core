@@ -3,6 +3,8 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
+
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
 import sk.fiit.peweproxy.messages.HttpResponse;
@@ -12,35 +14,43 @@ import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 
 public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProcessingPlugin {
 	
 	private String jQueryPath;
+	protected Logger logger = Logger.getLogger(SetupJavaScriptEnvironmentProcessingPlugin.class);
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
-				&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
+	    if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
+		&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)
+		&& response.getServicesHandle().isServiceAvailable(PageIDService.class)) {
 		
-			ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
-			HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-
-            String scripts = "" +
-                            "<script type='text/javascript'>" +
-                              "_ap_checksum = '" + Checksum.md5(clearTextService.getCleartext()) + "';" +
-                              " page_uid = '" + UUID.randomUUID().toString() + "';" +
-                              "</script>" +
-                              "<script src='" + jQueryPath + "'></script>" +
-                              "<!-- __ap_scripts__ -->";
-
-            htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
-		}
+		ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
+		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
-		return ResponseProcessingActions.PROCEED;
+		String checksum = Checksum.md5(clearTextService.getCleartext());
+		String page_uid = UUID.randomUUID().toString();
+		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
+		
+		String scripts = "" +
+                    "<script type='text/javascript'>" +
+                      "_ap_checksum = '" + checksum + "';" +
+                      " page_uid = '" + page_uid + "';" +
+                      " log_id = '" + log_id + "';" +
+                      "</script>" +
+                      "<script src='" + jQueryPath + "'></script>" +
+                      "<!-- __ap_scripts__ -->";
+
+		htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
+	    }
+		
+	    return ResponseProcessingActions.PROCEED;
 	}
-	
+
 	@Override
 	public boolean start(PluginProperties props) {
 		jQueryPath = props.getProperty("jQueryPath");
