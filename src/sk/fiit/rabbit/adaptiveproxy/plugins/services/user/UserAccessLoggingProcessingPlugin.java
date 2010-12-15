@@ -32,7 +32,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	    	if (reqURI.contains("?nologging") || reqURI.contains(".js?") || reqURI.endsWith(".js"))
 	    	    return;
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
-			PageInformation pi = response.getServicesHandle()
+			response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
 					.getPageInformation();
 		}
