@@ -54,7 +54,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				.getDatabaseConnection();
 
 			createDatabaseLog(con, postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
-				postData.get("__ap_url"), "ip", postData.get("page_uid"));
+				postData.get("__ap_url"), request.getClientSocketAddress().toString(), postData.get("page_uid"));
 	    	    } finally {
 			SqlUtils.close(con);
 	    	    }
