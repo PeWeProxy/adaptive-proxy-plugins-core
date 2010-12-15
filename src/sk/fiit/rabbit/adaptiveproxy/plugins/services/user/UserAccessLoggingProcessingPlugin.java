@@ -22,7 +22,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserSer
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	@Override
