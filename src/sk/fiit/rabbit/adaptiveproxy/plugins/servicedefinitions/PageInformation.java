@@ -1,11 +1,11 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 public class PageInformation {
-	String id;
-	String url;
-	String checksum;
-	Integer contentLength;
-	String keywords;
+	public String id;
+	public String url;
+	public String checksum;
+	public Integer contentLength;
+	public String keywords;
 	
 	public PageInformation() {
 	}
