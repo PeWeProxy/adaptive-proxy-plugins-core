@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.page;
+package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 public class PageInformation {
 	String id;
