@@ -8,6 +8,7 @@
 		<type>RequestProcessingPlugin</type>
 	</types>
 	<parameters>
+		<param name="exception">${baseurl}</param>
 		<param name="pattern">__peweproxy_uid=</param>
 		<param name="header">Cookie</param>
 	</parameters>
