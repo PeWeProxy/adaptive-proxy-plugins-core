@@ -1,16 +1,19 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
+package sk.fiit.rabbit.adaptiveproxy.plugins.beans;
+
+import java.util.List;
 
 public class PageInformation {
-	public String id;
+	public Long id;
 	public String url;
 	public String checksum;
 	public Integer contentLength;
 	public String keywords;
+	public List<PagesTerms> pageTermsList;
 	
 	public PageInformation() {
 	}
 
-	public PageInformation(String id, String url, String checksum,
+	public PageInformation(Long id, String url, String checksum,
 			Integer contentLength, String keywords) {
 		super();
 		this.id = id;
@@ -20,14 +23,14 @@ public class PageInformation {
 		this.keywords = keywords;
 	}
 
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
-
+	
 	public String getUrl() {
 		return url;
 	}
@@ -59,4 +62,13 @@ public class PageInformation {
 	public void setKeywords(String keywords) {
 		this.keywords = keywords;
 	}
+
+	public List<PagesTerms> getPageTermsList() {
+		return pageTermsList;
+	}
+
+	public void setPageTermsList(List<PagesTerms> pageTermsList) {
+		this.pageTermsList = pageTermsList;
+	}
+		
 }
