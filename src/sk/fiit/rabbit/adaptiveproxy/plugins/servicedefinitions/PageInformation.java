@@ -1,6 +1,7 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.beans;
+package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 import java.util.List;
+
 
 public class PageInformation {
 	public String id;

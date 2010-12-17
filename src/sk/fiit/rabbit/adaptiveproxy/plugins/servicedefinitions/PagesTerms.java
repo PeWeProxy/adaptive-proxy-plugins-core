@@ -1,6 +1,7 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.beans;
+package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 import java.sql.Timestamp;
+
 
 public class PagesTerms {
 	public Long id;

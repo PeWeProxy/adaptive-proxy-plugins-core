@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.beans;
+package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
 public class Term {
 	public Long id;
