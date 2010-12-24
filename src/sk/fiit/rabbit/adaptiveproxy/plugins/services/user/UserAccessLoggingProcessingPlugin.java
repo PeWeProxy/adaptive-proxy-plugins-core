@@ -22,7 +22,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserSer
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.page.PageInformation;
 
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	@Override
@@ -32,7 +31,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	    	if (reqURI.contains("?nologging") || reqURI.contains(".js?") || reqURI.endsWith(".js"))
 	    	    return;
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
-			PageInformation pi = response.getServicesHandle()
+			response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
 					.getPageInformation();
 		}

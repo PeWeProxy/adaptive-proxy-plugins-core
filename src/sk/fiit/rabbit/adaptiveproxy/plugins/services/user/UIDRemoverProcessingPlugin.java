@@ -15,13 +15,19 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 
 	private String pattern = null;
 	private String header = null;
+	private String exception = null;
 	
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request)
 	{
-		String cookie = request.getRequestHeader().getField(header);
-		if (cookie != null) {
-		    cookie = removeUID(cookie);
-		    request.getRequestHeader().setField(header, cookie);
+		if ((exception != null) && (!exception.equals("")) && (!(request.getRequestHeader().getRequestURI().contains(exception))))
+		{
+			{
+				String cookie = request.getRequestHeader().getField(header);
+				if (cookie != null) {
+				    cookie = removeUID(cookie);
+				    request.getRequestHeader().setField(header, cookie);
+				}
+			}
 		}
 		
 		return RequestProcessingActions.PROCEED;
@@ -67,6 +73,7 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	{
 		pattern = props.getProperty("pattern");
 		header = props.getProperty("header");
+		exception = props.getProperty("exception");
 		return true;
 	}
 	
