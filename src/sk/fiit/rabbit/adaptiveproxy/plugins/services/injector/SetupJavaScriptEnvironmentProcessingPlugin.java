@@ -32,7 +32,10 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
 		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
-		String checksum = Checksum.md5(clearTextService.getCleartext());
+		String checksum = null;
+		if(clearTextService.getCleartext() != null) {
+			checksum = clearTextService.getCleartext();
+		}
 		String page_uid = UUID.randomUUID().toString();
 		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
 		

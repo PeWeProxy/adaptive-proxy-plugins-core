@@ -19,6 +19,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.fourspaces.couchdb.Database;
+import com.fourspaces.couchdb.Document;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.ViewResults;
+
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -30,6 +35,7 @@ import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
@@ -53,12 +59,16 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		String requestURI;
 		String content;
 		String log_id;
+		HttpResponse response;
 		
 		Connection connection;
+		Database database;
 		
 		public CachingPageInformationProviderServiceProvider(
+				HttpResponse response,
 				DatabaseConnectionProviderService connectionService,
 				String content, String requestURI, String cleartext, String log_id) {
+			this.response = response;
 			this.connectionService = connectionService;
 			this.clearText = cleartext;
 			this.requestURI = requestURI;
@@ -67,15 +77,29 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		}
 
 		PageInformation pi;
+		PageInformation piCouchDB;
 		
 		@Override
-		public PageInformation getPageInformation() {
+		public PageInformation getPageInformation(Connection connection, Database database) {
 			
 			if(pi != null) {
 				return pi;
 			}
 			
 			pi = new PageInformation();
+			pi.pageTermsList = new ArrayList<PagesTerms>();
+			
+			piCouchDB = new PageInformation();
+			piCouchDB.pageTermsList = new ArrayList<PagesTerms>();
+			
+			if(this.connection == null) {
+				this.connection = connection;
+			}
+			
+			if(this.database == null) {
+				this.database = database;
+			}			
+			
 			extractPageInformation(pi);
 			
 			return pi;
@@ -87,9 +111,16 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				connection = connectionService.getDatabaseConnection();
 				pi.url = requestURI;
 				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
+				
+				piCouchDB.url = requestURI;
+				piCouchDB.checksum = clearText != null ? Checksum.md5(clearText) : null;
+
 				loadPageInformationFromCache(pi);
+				loadPageInformationFromCacheCouchDB(piCouchDB);
+				
 				if(pi.id == null && clearText != null) {
 					pi.contentLength = clearText.length();
+					piCouchDB.contentLength = clearText.length();
 					try {
 						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
 					} catch (MetallClientException e) {
@@ -104,6 +135,11 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 					pi.setId(log_id);
 					pi.setPageTermsList(Json2PagesTerms(jsonArray));
 					save(pi);
+					
+					piCouchDB.setId(log_id);
+					piCouchDB.setPageTermsList(Json2PagesTerms(jsonArray));
+					saveCouchDB(piCouchDB);
+					
 				}
 			} finally {
 				SqlUtils.close(connection);
@@ -211,6 +247,72 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				SqlUtils.close(stmt);
 			}
 		}
+		
+		private void loadPageInformationFromCacheCouchDB(PageInformation piCouchDB) {
+			
+			if(database == null) {
+				if(response.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
+					database = response.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
+				} else {
+					return;
+				}
+			}
+			View view = new View("_design/page/_view/url");
+			view.setStartKey("\""+(piCouchDB.url)+"\"");
+			view.setEndKey("\""+(piCouchDB.url)+"\"");
+			ViewResults vr = database.view(view);
+			
+			if(vr == null || vr.size() == 0) {
+				return;
+			}
+			
+			List<Document> list = vr.getResults();
+				
+			if(list.size() == 0) {
+				return;
+			}
+			
+			Document doc = (Document)list.get(0);
+			
+			if(doc == null) {
+				return;
+			}
+			
+			doc = database.getDocumentWithRevisions((String)doc.get("id"));
+			if(doc == null) {
+				return;
+			}
+			
+			
+			piCouchDB.id = doc.getId();
+			piCouchDB.checksum = doc.containsKey("checksum") ? doc.getString("checksum") : null;
+			piCouchDB.url = doc.containsKey("url") ? doc.getString("url") : null;
+			piCouchDB.contentLength = doc.containsKey("content_length") ? doc.getInt("content_length") : null;
+			piCouchDB.keywords = doc.containsKey("keywords") ? doc.getString("keywords") : null;
+			
+			
+			net.sf.json.JSONArray pages_terms = doc.getJSONArray("pages_terms");
+			
+			PagesTerms page_term = null;
+			Term term = null;
+			for (Object ptObj : pages_terms) {
+				net.sf.json.JSONObject pageTermJson = (net.sf.json.JSONObject)ptObj;
+
+				term = new Term();
+				term.label = pageTermJson.containsKey("label") ? pageTermJson.getString("label") : null;
+				term.termType = pageTermJson.containsKey("term_type") ? pageTermJson.getString("term_type") : null;
+
+				page_term = new PagesTerms();
+				page_term.weight = pageTermJson.containsKey("weight") ? new Float(pageTermJson.getDouble("weight")) : null;
+				page_term.createdAt = pageTermJson.containsKey("created_at") ? java.sql.Timestamp.valueOf(pageTermJson.getString("created_at")+" 00:00:00") : null;
+				page_term.updatedAt = pageTermJson.containsKey("updated_at") ? java.sql.Timestamp.valueOf(pageTermJson.getString("updated_at")+" 00:00:00") : null;
+				page_term.source = pageTermJson.containsKey("source") ? pageTermJson.getString("source") : null;
+				page_term.term = term;
+				page_term.pi = piCouchDB;
+				
+				piCouchDB.pageTermsList.add(page_term);
+			}					
+		}		
 		
 		private List<PagesTerms> Json2PagesTerms(JSONArray jsonArray) {
 
@@ -410,6 +512,46 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			}
 		}
 		
+		private void saveCouchDB(PageInformation piCouchDB) {
+			if(database == null) {
+				if(response.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
+					database = response.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
+				} else {
+					return;
+				}
+			}
+			
+			Document page = new Document();
+			page.put("_id", piCouchDB.getId());
+			page.put("type", "PAGE");
+			page.put("url", piCouchDB.getUrl());
+			page.put("checksum", piCouchDB.getChecksum());
+			page.put("content_length", piCouchDB.getContentLength());
+			page.put("keywords", piCouchDB.getKeywords());
+			
+			JSONArray pages_terms = new JSONArray();
+			Document page_term = null;
+			List<PagesTerms> ptList = piCouchDB.getPageTermsList();
+			for (PagesTerms pt : ptList) {
+				page_term = new Document();
+				
+				page_term.put("label", pt.getTerm().getLabel());
+				page_term.put("term_type", pt.getTerm().getTermType());
+				page_term.put("weight", pt.getWeight());
+				page_term.put("created_at", new Date(pt.getCreatedAt().getTime()).toString());
+				page_term.put("updated_at", new Date(System.currentTimeMillis()).toString());
+				page_term.put("source", pt.getSource());
+				pages_terms.add(page_term);
+			}
+			
+			page.put("pages_terms", pages_terms);
+			try {
+				database.saveDocument(page);
+			} catch (Exception e) {
+				System.err.println("Document save error");
+			}
+		}		
+		
 		@Override
 		public String getServiceIdentification() {
 			return this.getClass().getName();
@@ -453,6 +595,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		desiredServices.add(StringContentService.class);
 		desiredServices.add(DatabaseConnectionProviderService.class);
 		desiredServices.add(ClearTextExtractionService.class);
+		desiredServices.add(DatabaseSessionProviderService.class);
 		desiredServices.add(PageIDService.class);
 	}
 
@@ -475,8 +618,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
 			String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
-			
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(connectionService, content, requestURI, clearText, log_id);
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(response, connectionService, content, requestURI, clearText, log_id);
 		}
 		
 		return null;

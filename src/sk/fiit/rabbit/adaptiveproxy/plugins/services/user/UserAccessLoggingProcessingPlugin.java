@@ -9,6 +9,9 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Set;
 
+import com.fourspaces.couchdb.Database;
+import com.fourspaces.couchdb.Document;
+
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
@@ -17,6 +20,7 @@ import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
@@ -33,7 +37,15 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
 			response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
-					.getPageInformation();
+					.getPageInformation(
+							response.getServicesHandle()
+							.getService(DatabaseConnectionProviderService.class)
+							.getDatabaseConnection(),
+							response.getServicesHandle()
+							.getService(DatabaseSessionProviderService.class)
+							.getDatabase()
+							
+					);
 		}
 	}
 	
@@ -47,6 +59,10 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	    	
 	    if(postData != null && request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 		Connection con = null;
+		    Database database = null;
+		    if(request.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
+		    	database = request.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
+		    }
 		
 	    	if (postData.containsKey("__peweproxy_uid") && postData.containsKey("_ap_checksum")
 	    		&& postData.containsKey("__ap_url") && postData.containsKey("page_uid") && postData.containsKey("log_id")) {
@@ -55,7 +71,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				.getService(DatabaseConnectionProviderService.class)
 				.getDatabaseConnection();
 
-			createDatabaseLog(con, postData.get("log_id"), postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
+			createDatabaseLog(database, con, postData.get("log_id"), postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
 				postData.get("__ap_url"), request.getClientSocketAddress().toString(), postData.get("page_uid"));
 	    	    } finally {
 			SqlUtils.close(con);
@@ -66,7 +82,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	    return messageFactory.constructHttpResponse(null, "text/html");
 	}
 	
-	private boolean createDatabaseLog(Connection connection, String log_id, String uid,
+	private boolean createDatabaseLog(Database database, Connection connection, String log_id, String uid,
 			String checksum, String url, String ip, String uuid) {
 		PreparedStatement log_stmt = null;
 
@@ -82,6 +98,23 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		}
 
 		if (!"".equals(uid)) {
+			try {
+				Document access_log = new Document();
+				access_log.put("_id", uuid);
+				access_log.put("type", "ACCESS_LOG");
+				access_log.put("userid", uid);
+				access_log.put("timestamp", formatedTimeStamp);
+				access_log.put("time_on_page", 0);
+				access_log.put("page_id", log_id);
+				access_log.put("scroll_count", 0);
+				access_log.put("copy_count", 0);
+				access_log.put("referer", url);
+				access_log.put("ip", Checksum.md5(ip));
+				database.saveDocument(access_log);
+			} catch (Exception e) {
+				logger.error("Unknown exception:", e);
+			}
+			
 			try {
 				log_stmt = connection
 					.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");

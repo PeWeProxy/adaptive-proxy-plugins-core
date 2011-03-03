@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+  <name>CouchDBDatabaseSessionService</name>
+  <classLocation/>
+  <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.CouchDBDatabaseSessionServiceModul</className>
+  <libraries>
+  	<lib>commons-beanutils-1.8.3.jar</lib>
+  	<lib>commons-codec-1.4.jar</lib>
+  	<lib>commons-collections-3.2.1.jar</lib>
+  	<lib>commons-httpclient-3.0.jar</lib>
+  	<lib>commons-lang-2.5.jar</lib>
+  	<lib>commons-logging-1.1.1.jar</lib>
+  	<lib>couchdb4j-0.1.2.jar</lib>
+  	<lib>ezmorph-1.0.6.jar</lib>
+  	<lib>json-lib-2.4-jdk15.jar</lib>
+  	<lib>slf4j-api-1.5.11.jar</lib>
+  	<lib>slf4j-simple-1.5.11.jar</lib>
+  </libraries>
+  <types>
+    <type>RequestServiceModule</type>
+    <type>ResponseServiceModule</type>
+  </types>
+  <parameters>
+  	<param name="host">localhost</param>
+  	<param name="port">5984</param>
+  	<param name="dbName">proxy</param>
+    <param name="userName">proxy</param>
+    <param name="password">rabbit</param>
+  </parameters>
+</plugin>
