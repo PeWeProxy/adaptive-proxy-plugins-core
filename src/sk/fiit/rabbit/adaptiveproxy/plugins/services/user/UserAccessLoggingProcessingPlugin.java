@@ -31,7 +31,6 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	@Override
 	public void processTransferedResponse(HttpResponse response) {
 	    	String reqURI = response.getRequest().getRequestHeader().getRequestURI();
-	    	
 	    	if (reqURI.contains("?nologging") || reqURI.contains(".js?") || reqURI.endsWith(".js"))
 	    	    return;
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
@@ -44,14 +43,12 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 							response.getServicesHandle()
 							.getService(DatabaseSessionProviderService.class)
 							.getDatabase()
-							
 					);
 		}
 	}
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
-
 	    if (!request.getServicesHandle().isServiceAvailable(PostDataParserService.class))
 		return messageFactory.constructHttpResponse(null, "text/html");
 	    
@@ -63,15 +60,14 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 		    if(request.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
 		    	database = request.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
 		    }
-		
-	    	if (postData.containsKey("__peweproxy_uid") && postData.containsKey("_ap_checksum")
+	    	if (postData.containsKey("__peweproxy_uid")
 	    		&& postData.containsKey("__ap_url") && postData.containsKey("page_uid") && postData.containsKey("log_id")) {
 	    	    try {
 			con = request.getServicesHandle()
 				.getService(DatabaseConnectionProviderService.class)
 				.getDatabaseConnection();
 
-			createDatabaseLog(database, con, postData.get("log_id"), postData.get("__peweproxy_uid"), postData.get("_ap_checksum"), 
+			createDatabaseLog(database, con, postData.get("log_id"), postData.get("__peweproxy_uid"), 
 				postData.get("__ap_url"), request.getClientSocketAddress().toString(), postData.get("page_uid"));
 	    	    } finally {
 			SqlUtils.close(con);
@@ -83,7 +79,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	}
 	
 	private boolean createDatabaseLog(Database database, Connection connection, String log_id, String uid,
-			String checksum, String url, String ip, String uuid) {
+			String url, String ip, String uuid) {
 		PreparedStatement log_stmt = null;
 
 		java.util.Date today = new java.util.Date();

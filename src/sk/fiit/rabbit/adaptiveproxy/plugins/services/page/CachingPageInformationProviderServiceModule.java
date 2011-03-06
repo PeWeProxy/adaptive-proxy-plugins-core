@@ -33,7 +33,6 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
@@ -41,7 +40,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PagesTerms;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.Term;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient.MetallClientException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
@@ -55,7 +53,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		ResponseServiceProvider<PageInformationProviderService> {
 		
 		DatabaseConnectionProviderService connectionService;
-		String clearText;
 		String requestURI;
 		String content;
 		String log_id;
@@ -67,10 +64,10 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		public CachingPageInformationProviderServiceProvider(
 				HttpResponse response,
 				DatabaseConnectionProviderService connectionService,
-				String content, String requestURI, String cleartext, String log_id) {
+				String content, String requestURI,
+				String log_id) {
 			this.response = response;
 			this.connectionService = connectionService;
-			this.clearText = cleartext;
 			this.requestURI = requestURI;
 			this.content = content;
 			this.log_id = log_id;
@@ -110,17 +107,13 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			try {
 				connection = connectionService.getDatabaseConnection();
 				pi.url = requestURI;
-				pi.checksum = clearText != null ? Checksum.md5(clearText) : null;
 				
 				piCouchDB.url = requestURI;
-				piCouchDB.checksum = clearText != null ? Checksum.md5(clearText) : null;
 
 				loadPageInformationFromCache(pi);
 				loadPageInformationFromCacheCouchDB(piCouchDB);
 				
-				if(pi.id == null && clearText != null) {
-					pi.contentLength = clearText.length();
-					piCouchDB.contentLength = clearText.length();
+				if(pi.id == null) {
 					try {
 						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
 					} catch (MetallClientException e) {
@@ -159,17 +152,9 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			try {
 				String query = "SELECT id, content_length, keywords FROM pages WHERE url = ?";
 				
-				if(pi.checksum != null) {
-					query += " AND checksum = ?";
-				}
-				
 				stmt = connection.prepareStatement(query);
 				stmt.setString(1, requestURI);
 				
-				if(pi.checksum != null) {
-					stmt.setString(2, pi.checksum);
-				}
-		
 				rs = stmt.executeQuery();
 				
 				if(rs.next()) {
@@ -285,9 +270,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			
 			
 			piCouchDB.id = doc.getId();
-			piCouchDB.checksum = doc.containsKey("checksum") ? doc.getString("checksum") : null;
 			piCouchDB.url = doc.containsKey("url") ? doc.getString("url") : null;
-			piCouchDB.contentLength = doc.containsKey("content_length") ? doc.getInt("content_length") : null;
 			piCouchDB.keywords = doc.containsKey("keywords") ? doc.getString("keywords") : null;
 			
 			
@@ -362,8 +345,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				return null;
 			}
 			
-			String query = "INSERT INTO pages(id, url, checksum, content_length, keywords) VALUES(?, ?, ?, ?, ?)";
-			
+			String query = "INSERT INTO pages(id, url, keywords) VALUES(?, ?, ?)";
 			PreparedStatement stmt = null;
 			ResultSet keys = null;
 			
@@ -371,9 +353,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				stmt.setString(1, pi.getId());
 				stmt.setString(2, pi.getUrl());
-				stmt.setString(3, pi.getChecksum());
-				stmt.setInt(4, pi.getContentLength());
-				stmt.setString(5, pi.getKeywords());
+				stmt.setString(3, pi.getKeywords());
 				
 				stmt.execute();
 				
@@ -498,7 +478,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		}
 		
 		private void save(PageInformation pi) {
-			
 			savePageInformation(pi);
 			
 			List<PagesTerms> ptList = pi.getPageTermsList();
@@ -525,8 +504,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			page.put("_id", piCouchDB.getId());
 			page.put("type", "PAGE");
 			page.put("url", piCouchDB.getUrl());
-			page.put("checksum", piCouchDB.getChecksum());
-			page.put("content_length", piCouchDB.getContentLength());
 			page.put("keywords", piCouchDB.getKeywords());
 			
 			JSONArray pages_terms = new JSONArray();
@@ -594,7 +571,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			ResponseHeader webRPHeader) {
 		desiredServices.add(StringContentService.class);
 		desiredServices.add(DatabaseConnectionProviderService.class);
-		desiredServices.add(ClearTextExtractionService.class);
 		desiredServices.add(DatabaseSessionProviderService.class);
 		desiredServices.add(PageIDService.class);
 	}
@@ -612,13 +588,12 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		
 		if (serviceClass.equals(PageInformationProviderService.class)
 				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)
-				&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
+			) {
 			DatabaseConnectionProviderService connectionService = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
 			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
-			String clearText = response.getServicesHandle().getService(ClearTextExtractionService.class).getCleartext();
 			String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
-			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(response, connectionService, content, requestURI, clearText, log_id);
+			return (ResponseServiceProvider<Service>) new CachingPageInformationProviderServiceProvider(response, connectionService, content, requestURI, log_id);
 		}
 		
 		return null;

@@ -12,7 +12,7 @@ import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.plugins.PluginProperties;
 import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
+//import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
@@ -26,22 +26,15 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 	    if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
-		&& response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)
 		&& response.getServicesHandle().isServiceAvailable(PageIDService.class)) {
 		
-		ClearTextExtractionService clearTextService = response.getServicesHandle().getService(ClearTextExtractionService.class);
 		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
-		String checksum = null;
-		if(clearTextService.getCleartext() != null) {
-			checksum = clearTextService.getCleartext();
-		}
 		String page_uid = UUID.randomUUID().toString();
 		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
 		
 		String scripts = "" +
                     "<script type='text/javascript'>" +
-                      "_ap_checksum = '" + checksum + "';" +
                       " page_uid = '" + page_uid + "';" +
                       " log_id = '" + log_id + "';" +
                       "</script>" +
@@ -64,7 +57,6 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 	public void desiredResponseServices(
 			Set<Class<? extends ProxyService>> desiredServices,
 			ResponseHeader webRPHeader) {
-		desiredServices.add(ClearTextExtractionService.class);
 		desiredServices.add(HtmlInjectorService.class);
 	}
 

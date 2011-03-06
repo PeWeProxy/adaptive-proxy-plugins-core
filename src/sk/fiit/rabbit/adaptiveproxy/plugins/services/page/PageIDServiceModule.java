@@ -15,7 +15,6 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.ClearTextExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 
@@ -77,7 +76,6 @@ public class PageIDServiceModule implements ResponseServiceModule {
 	public void desiredResponseServices(
 			Set<Class<? extends ProxyService>> desiredServices,
 			ResponseHeader webRPHeader) {
-	    desiredServices.add(ClearTextExtractionService.class);
 	}
 
 	@Override
@@ -90,8 +88,7 @@ public class PageIDServiceModule implements ResponseServiceModule {
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
-	    if(serviceClass.equals(PageIDService.class)
-		    && response.getServicesHandle().isServiceAvailable(ClearTextExtractionService.class)) {
+	    if(serviceClass.equals(PageIDService.class)) {
 		
 		int key = response.getRequest().getOriginalRequest().hashCode();
 		String pageID = "";
