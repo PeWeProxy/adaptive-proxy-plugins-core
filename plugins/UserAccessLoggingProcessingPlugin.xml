@@ -9,7 +9,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${proxyurl}/FileSender/public/recognizeUser.js</param>
+		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/recognizeUser.js</param>
 		<param name="bypassPattern">userRecognitionRequest.html</param>
 		<param name="generateResponse">true</param>
 	</parameters>
