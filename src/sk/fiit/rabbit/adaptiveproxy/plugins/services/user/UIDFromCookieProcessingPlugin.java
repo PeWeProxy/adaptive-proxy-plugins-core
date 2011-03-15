@@ -22,7 +22,7 @@ public class UIDFromCookieProcessingPlugin extends JavaScriptInjectingProcessing
 				"	return str.match(re)[1].toString();\n"+
 				"}\n"+
 				"if (window.location.host != getHostName('" + cookieDomain + "/')) {\n" +
-				"	window.location='" + cookieDomain + "/set_cookie/cookie?back='+window.location;\n}\n";
+				"	window.location='" + cookieDomain + "/en/set_cookie/cookie?back='+window.location;\n}\n";
 	}
 	
 	@Override	
