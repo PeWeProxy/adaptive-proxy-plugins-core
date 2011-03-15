@@ -21,6 +21,7 @@ public class UIDFromCookieProcessingPlugin extends JavaScriptInjectingProcessing
 				"	var re = new RegExp('^(?:f|ht)tp(?:s)?\\://([^/]+)', 'im');\n"+
 				"	return str.match(re)[1].toString();\n"+
 				"}\n"+
+				"__peweproxy_uid = null;\n"+
 				"if (window.location.host != getHostName('" + cookieDomain + "/')) {\n" +
 				"	window.location='" + cookieDomain + "/en/set_cookie/cookie?back='+window.location;\n}\n";
 	}
