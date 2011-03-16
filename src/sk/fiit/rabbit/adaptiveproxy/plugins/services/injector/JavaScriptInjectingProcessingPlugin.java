@@ -81,8 +81,12 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 			Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
 			Matcher matcher = pattern.matcher(scriptUrl);
 			if (matcher.matches()) {
-				File script = new File("htdocs/public/"+matcher.group(1));
-				lastModified = "?" + script.lastModified();
+				try {
+					File script = new File("./htdocs/public/"+matcher.group(1));
+					lastModified = "?" + script.lastModified();
+				} catch (NullPointerException e){
+					lastModified = "";
+				}
 			}
 		}
 		return lastModified;
