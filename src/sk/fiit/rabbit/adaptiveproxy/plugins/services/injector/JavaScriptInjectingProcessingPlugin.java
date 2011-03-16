@@ -75,6 +75,19 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		return proxyRequest;
 	}
 	
+	private String lastModifiedAppendix(){
+		String lastModified = "";
+		if (scriptUrl.contains("/FileSender/public/")){
+			Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
+			Matcher matcher = pattern.matcher(scriptUrl);
+			if (matcher.matches()) {
+				File script = new File("htdocs/public/"+matcher.group(1));
+				lastModified = "?" + script.lastModified();
+			}
+		}
+		return lastModified;
+	}
+	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
@@ -86,18 +99,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 				
 				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-					String lastModified = "";
-					if (scriptUrl.contains("/FileSender/public/")){
-						Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
-						Matcher matcher = pattern.matcher(scriptUrl);
-						String scriptName = null;
-						if (matcher.matches()) {
-							scriptName = matcher.group(1);
-							File script = new File("htdocs/public/"+scriptName);
-							lastModified = "?" + script.lastModified();
-						}
-					}
-					String scripts = "<script src='" + scriptUrl + lastModified + "'></script>";
+					String scripts = "<script src='" + scriptUrl + lastModifiedAppendix() + "'></script>";
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 				}
 			} catch (MalformedURLException e) {
