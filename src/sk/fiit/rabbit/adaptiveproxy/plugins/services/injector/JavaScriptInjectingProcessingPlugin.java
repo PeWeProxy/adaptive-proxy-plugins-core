@@ -1,9 +1,12 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -83,7 +86,18 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 				
 				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-					String scripts = "<script src='" + scriptUrl + "'></script>";
+					String lastModified = "";
+					if (scriptUrl.contains("/FileSender/public/")){
+						Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
+						Matcher matcher = pattern.matcher(scriptUrl);
+						String scriptName = null;
+						if (matcher.matches()) {
+							scriptName = matcher.group(1);
+							File script = new File("htdocs/public/"+scriptName);
+							lastModified = "?" + script.lastModified();
+						}
+					}
+					String scripts = "<script src='" + scriptUrl + lastModified + "'></script>";
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 				}
 			} catch (MalformedURLException e) {
