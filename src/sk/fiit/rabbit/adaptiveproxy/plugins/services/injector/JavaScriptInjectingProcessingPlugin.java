@@ -103,7 +103,17 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 				
 				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-					String scripts = "<script src='" + scriptUrl + lastModifiedAppendix() + "'></script>";
+					String scripts =	"<script type=\"text/javascript\">\n" +
+								"(function() {\n" +
+								"var s = document.createElement('script');\n" + 
+								"s.type = 'text/javascript';\n" +
+								"s.async = true;\n" +
+								"s.src = '"+scriptUrl + lastModifiedAppendix()+"';\n" +
+								"var x = document.getElementsByTagName('script')[0];\n" +
+								"x.parentNode.insertBefore(s, x);\n" +
+								"})();" +
+								"</script>\n";
+					//String scripts = "<script src='" + scriptUrl + lastModifiedAppendix() + "'></script>";
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 				}
 			} catch (MalformedURLException e) {
