@@ -89,14 +89,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			piCouchDB = new PageInformation();
 			piCouchDB.pageTermsList = new ArrayList<PagesTerms>();
 			
-			if(this.connection == null) {
-				this.connection = connection;
-			}
-			
-			if(this.database == null) {
-				this.database = database;
-			}			
-			
 			extractPageInformation(pi);
 			
 			return pi;
