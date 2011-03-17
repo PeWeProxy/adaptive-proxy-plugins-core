@@ -36,6 +36,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	private Set<String> allowOnlyFor = new HashSet<String>();
 	private boolean generateResponse;
 	private String allowedDomain;
+	private String lastModifiedAppendix;
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
@@ -108,7 +109,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 								"var s = document.createElement('script');\n" + 
 								"s.type = 'text/javascript';\n" +
 								"s.async = true;\n" +
-								"s.src = '"+scriptUrl + lastModifiedAppendix()+"';\n" +
+								"s.src = '"+scriptUrl + lastModifiedAppendix +"';\n" +
 								"var x = document.getElementsByTagName('script')[0];\n" +
 								"x.parentNode.insertBefore(s, x);\n" +
 								"})();" +
@@ -150,6 +151,8 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		
 		generateResponse = props.getBoolProperty("generateResponse", false);
 		allowedDomain = props.getProperty("allowedDomain");
+		
+		lastModifiedAppendix = lastModifiedAppendix();
 		
 		return true;
 	}
