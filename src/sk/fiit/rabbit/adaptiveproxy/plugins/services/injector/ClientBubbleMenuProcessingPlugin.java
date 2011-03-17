@@ -1,13 +1,11 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import sk.fiit.peweproxy.headers.RequestHeader;
@@ -23,10 +21,11 @@ import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.InjectClientBubbleMenuItemService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 
-public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
-	
+public class ClientBubbleMenuProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
+
 	protected Logger logger = Logger.getLogger(JavaScriptInjectingProcessingPlugin.class);
 	
 	private String scriptUrl;
@@ -36,7 +35,11 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	private Set<String> allowOnlyFor = new HashSet<String>();
 	private boolean generateResponse;
 	private String allowedDomain;
-	private String lastModifiedAppendix;
+	private String menuButtonHTML;
+	private String menuWindowHTML;
+	private String menuScriptHTML;
+	//private String windowHTML;
+	
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
@@ -76,46 +79,41 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		return proxyRequest;
 	}
 	
-	private String lastModifiedAppendix(){
-		String lastModified = "";
-		if (scriptUrl.contains("/FileSender/public/")){
-			Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
-			Matcher matcher = pattern.matcher(scriptUrl);
-			if (matcher.matches()) {
-				try {
-					File script = new File("./htdocs/public/"+matcher.group(1));
-					lastModified = "?" + script.lastModified();
-				} catch (NullPointerException e){
-					lastModified = "";
-				}
-			}
-		}
-		return lastModified;
-	}
-	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
+		if(response.getServicesHandle().isServiceAvailable(InjectClientBubbleMenuItemService.class)) {
+			try {
+				if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
+					return ResponseProcessingActions.PROCEED;
+				}
+				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(InjectClientBubbleMenuItemService.class))) {
+					InjectClientBubbleMenuItemService clientMenuInjector = response.getServicesHandle().getService(InjectClientBubbleMenuItemService.class);
+					if ((menuButtonHTML != null) && (menuButtonHTML.length() > 0)) clientMenuInjector.injectButton(menuButtonHTML);
+					if ((menuWindowHTML != null) && (menuWindowHTML.length() > 0)) clientMenuInjector.injectWindow(menuWindowHTML);
+					if ((menuScriptHTML != null) && (menuScriptHTML.length() > 0)) clientMenuInjector.injectScript(menuScriptHTML);
+					//clientMenuInjector.injectScript("<script src=''>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</script>");
+				}
+			} catch (MalformedURLException e) {
+				logger.warn("Cannot provide client bubble menu injector service for invalid URL", e);
+			}
+
+		}
+		
 		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
 				&& response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)) {
 			try {
 				if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
 					return ResponseProcessingActions.PROCEED;
 				}
-				
+
 				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
-					String scripts =	"<script type=\"text/javascript\">\n" +
-								"(function() {\n" +
-								"var s = document.createElement('script');\n" + 
-								"s.type = 'text/javascript';\n" +
-								"s.async = true;\n" +
-								"s.src = '"+scriptUrl + lastModifiedAppendix +"';\n" +
-								"var x = document.getElementsByTagName('script')[0];\n" +
-								"x.parentNode.insertBefore(s, x);\n" +
-								"})();" +
-								"</script>\n";
-					//String scripts = "<script src='" + scriptUrl + lastModifiedAppendix() + "'></script>";
+					String scripts = "<script src='" + scriptUrl + "'></script>";
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
+					InjectClientBubbleMenuItemService clientMenuInjector = response.getServicesHandle().getService(InjectClientBubbleMenuItemService.class);
+					
+					clientMenuInjector.injectScript(additionalHTML + scripts); // TODO: do refactor
+					
 				}
 			} catch (MalformedURLException e) {
 				logger.warn("Cannot provide javascript injector service for invalid URL", e);
@@ -135,6 +133,9 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	
 	@Override
 	public boolean start(PluginProperties props) {
+		menuScriptHTML = props.getProperty("menuScriptHTML");
+		menuButtonHTML = props.getProperty("menuButtonHTML");
+		menuWindowHTML = props.getProperty("menuWindowHTML");
 		scriptUrl = props.getProperty("scriptUrl");
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
@@ -151,8 +152,6 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		
 		generateResponse = props.getBoolProperty("generateResponse", false);
 		allowedDomain = props.getProperty("allowedDomain");
-		
-		lastModifiedAppendix = lastModifiedAppendix();
 		
 		return true;
 	}
@@ -200,4 +199,5 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	@Override
 	public void processTransferedRequest(HttpRequest request) {
 	}
+
 }
