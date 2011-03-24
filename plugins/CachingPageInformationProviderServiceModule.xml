@@ -8,12 +8,17 @@
 		<lib>jkeyextractor.jar</lib>
 		<lib>ant.jar</lib>
 		<lib>apache-mime4j-0.6.jar</lib>
-		<lib>commons-codec-1.3.jar</lib>
+	  	<lib>commons-beanutils-1.8.3.jar</lib>
+	  	<lib>commons-codec-1.4.jar</lib>
+	  	<lib>commons-collections-3.2.1.jar</lib>
 		<lib>commons-httpclient-3.0.jar</lib>
+  		<lib>commons-lang-2.5.jar</lib>
 		<lib>commons-logging-1.1.1.jar</lib>
 		<lib>commons-logging.jar</lib>
+  		<lib>couchdb4j-0.1.2.jar</lib>
 		<lib>delicious-1.14.jar</lib>
 		<lib>dragontool.jar</lib>
+  		<lib>ezmorph-1.0.6.jar</lib>
 		<lib>google-api-translate-java-trunk-patched.jar</lib>
 		<lib>htmlcleaner2_1.jar</lib>
 		<lib>httpclient-4.0.jar</lib>
@@ -23,11 +28,14 @@
 		<lib>jatr.jar</lib>
 		<lib>jericho-html-2.6.jar</lib>
 		<lib>json_simple-1.1.jar</lib>
+	  	<lib>json-lib-2.4-jdk15.jar</lib>
 		<lib>junit-4.1.jar</lib>
 		<lib>junit.jar</lib>
 		<lib>log4j-1.2.15.jar</lib>
 		<lib>maxent-2.4.0.jar</lib>
 		<lib>opennlp-tools-1.3.0.jar</lib>
+	  	<lib>slf4j-api-1.5.11.jar</lib>
+	  	<lib>slf4j-simple-1.5.11.jar</lib>
 		<lib>text.jar</lib>
 		<lib>trove-2.0.4.jar</lib>
 		<lib>trove.jar</lib>
