@@ -77,6 +77,9 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	}
 	
 	private String lastModifiedAppendix(){
+		if ("".equals(scriptUrl) || scriptUrl == null) {
+			return "";
+		}
 		String lastModified = "";
 		if (scriptUrl.contains("/FileSender/public/")){
 			Pattern pattern = Pattern.compile("^.*/FileSender/public/(.*)$");
