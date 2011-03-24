@@ -139,8 +139,22 @@ namespace :after do
     end
 
 		#we need this jars for service definitions
-    FileUtils.cp(ENV["PROXY_ROOT"]+"/libs/couchdb4j-0.1.2.jar", ENV["PROXY_ROOT"]+"/plugins/services/")
+		libs = ["commons-beanutils-1.8.3.jar",
+			"commons-codec-1.4.jar",
+			"commons-collections-3.2.1.jar",
+			"commons-httpclient-3.0.jar",
+			"commons-lang-2.5.jar",
+			"commons-logging-1.1.1.jar",
+			"couchdb4j-0.1.2.jar",
+			"ezmorph-1.0.6.jar",
+			"json-lib-2.4-jdk15.jar",
+			"slf4j-api-1.5.11.jar",
+			"slf4j-simple-1.5.11.jar"
+		]
 
+		libs.each do |lib|
+			FileUtils.cp(ENV["PROXY_ROOT"]+"/libs/"+lib, ENV["PROXY_ROOT"]+"/plugins/services/")
+		end
   end
 end
 
