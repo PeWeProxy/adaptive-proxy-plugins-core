@@ -25,7 +25,7 @@
   	<param name="host">localhost</param>
   	<param name="port">5984</param>
   	<param name="dbName">proxy</param>
-    <param name="userName"></param>
-    <param name="password"></param>
+    <param name="userName">proxy</param>
+    <param name="password">rabbit</param>
   </parameters>
 </plugin>
