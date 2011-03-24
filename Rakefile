@@ -137,6 +137,10 @@ namespace :after do
       `ruby bin/update_filters`
 			FileUtils.cp("filter.txt", ENV['PROXY_ROOT'])
     end
+
+		#we need this jars for service definitions
+    FileUtils.cp(ENV["PROXY_ROOT"]+"/libs/couchdb4j-0.1.2.jar", ENV["PROXY_ROOT"]+"/plugins/services/")
+
   end
 end
 
