@@ -114,9 +114,9 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 						logger.warn(e);
 					}
 					
-					if(jsonArray == null) {
-						return;
-					}
+//					if(jsonArray == null) {
+//						return;
+//					}
 					pi.setId(log_id);
 					pi.setPageTermsList(Json2PagesTerms(jsonArray));
 					save(pi);
