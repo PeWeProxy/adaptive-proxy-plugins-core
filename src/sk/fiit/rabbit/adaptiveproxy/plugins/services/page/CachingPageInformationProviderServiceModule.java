@@ -114,9 +114,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 						logger.warn(e);
 					}
 					
-//					if(jsonArray == null) {
-//						return;
-//					}
 					pi.setId(log_id);
 					pi.setPageTermsList(Json2PagesTerms(jsonArray));
 					save(pi);
@@ -245,7 +242,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			
 			List<Document> list = vr.getResults();
 				
-			if(list.size() == 0) {
+			if(list == null || list.size() == 0) {
 				return;
 			}
 			
@@ -292,7 +289,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		private List<PagesTerms> Json2PagesTerms(JSONArray jsonArray) {
 
 			if(jsonArray == null) {
-				return(null);
+				return new JSONArray();
 			}
 			
 			Iterator<JSONObject> i = jsonArray.iterator();
