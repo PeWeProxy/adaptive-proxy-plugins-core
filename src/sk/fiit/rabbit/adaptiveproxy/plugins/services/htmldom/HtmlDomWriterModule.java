@@ -18,15 +18,15 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomSenderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomWriterService;
 
 
-public class HtmlDomSenderModule implements ResponseServiceModule {
+public class HtmlDomWriterModule implements ResponseServiceModule {
 	
-	private static final Logger logger = Logger.getLogger(HtmlDomSenderModule.class);
+	private static final Logger logger = Logger.getLogger(HtmlDomWriterModule.class);
 	
-	private class HtmlDomSenderProvider
-			implements HtmlDomSenderService, ResponseServiceProvider<HtmlDomSenderProvider> {
+	private class HtmlDomWriterProvider
+			implements HtmlDomWriterService, ResponseServiceProvider<HtmlDomWriterProvider> {
 
 		private Document document;
 		
@@ -36,7 +36,7 @@ public class HtmlDomSenderModule implements ResponseServiceModule {
 		}
 
 		@Override
-		public HtmlDomSenderProvider getService() {
+		public HtmlDomWriterProvider getService() {
 			return this;
 		}
 
@@ -96,7 +96,7 @@ public class HtmlDomSenderModule implements ResponseServiceModule {
 	@Override
 	public void getProvidedResponseServices(
 			Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(HtmlDomSenderService.class);
+		providedServices.add(HtmlDomWriterService.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -105,8 +105,8 @@ public class HtmlDomSenderModule implements ResponseServiceModule {
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if(serviceClass.equals(HtmlDomSenderService.class)) {
-			return (ResponseServiceProvider<Service>) new HtmlDomSenderProvider();
+		if(serviceClass.equals(HtmlDomWriterService.class)) {
+			return (ResponseServiceProvider<Service>) new HtmlDomWriterProvider();
 		}
 		
 		return null;

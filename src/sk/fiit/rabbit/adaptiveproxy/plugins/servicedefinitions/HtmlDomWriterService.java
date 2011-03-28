@@ -4,8 +4,8 @@ import org.jdom.Document;
 
 import sk.fiit.peweproxy.services.ProxyService;
 
-public interface HtmlDomBuilderService extends ProxyService {
+public interface HtmlDomWriterService extends ProxyService {
 	
-	public Document getHTMLDom();
+	public void setHTMLDom(Document document);
 
 }

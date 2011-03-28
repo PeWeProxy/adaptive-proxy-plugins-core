@@ -21,20 +21,20 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomBuilderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomReaderService;
 
 
-public class HtmlDomBuilderModule implements ResponseServiceModule {
+public class HtmlDomReaderModule implements ResponseServiceModule {
 	
-	private static final Logger logger = Logger.getLogger(HtmlDomBuilderModule.class);
+	private static final Logger logger = Logger.getLogger(HtmlDomReaderModule.class);
 	
-	private class HtmlDomBuilderProvider
-			implements HtmlDomBuilderService, ResponseServiceProvider<HtmlDomBuilderProvider> {
+	private class HtmlDomReaderProvider
+			implements HtmlDomReaderService, ResponseServiceProvider<HtmlDomReaderProvider> {
 
 		private String content;
 		private Document document;
 		
-		public HtmlDomBuilderProvider(String content) {
+		public HtmlDomReaderProvider(String content) {
 			this.content = content;
 		}
 		
@@ -66,7 +66,7 @@ public class HtmlDomBuilderModule implements ResponseServiceModule {
 		}
 
 		@Override
-		public HtmlDomBuilderProvider getService() {
+		public HtmlDomReaderProvider getService() {
 			return this;
 		}
 
@@ -105,7 +105,7 @@ public class HtmlDomBuilderModule implements ResponseServiceModule {
 	@Override
 	public void getProvidedResponseServices(
 			Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(HtmlDomBuilderService.class);
+		providedServices.add(HtmlDomReaderService.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -114,35 +114,11 @@ public class HtmlDomBuilderModule implements ResponseServiceModule {
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 		
-		if(serviceClass.equals(HtmlDomBuilderService.class)) {
+		if(serviceClass.equals(HtmlDomReaderService.class)) {
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
-			return (ResponseServiceProvider<Service>) new HtmlDomBuilderProvider(content);
+			return (ResponseServiceProvider<Service>) new HtmlDomReaderProvider(content);
 		}
 		
 		return null;
-	}
-
-	public static void main(String[] args) {
-		String content = "<html><body>";
-			for (int i = 0; i < 100; i++)
-				content += "<li><table><tr><td>222222222222222</table>\n";
-			content += "</body></html>";
-		
-		Document document = null;
-
-		// Create an instance of the tester and test
-        try {
-
-    		HtmlCleaner cleaner = new HtmlCleaner();
-    		CleanerProperties props = cleaner.getProperties();
-    		TagNode node = cleaner.clean(content);
-        	
-    		document = new JDomSerializer(props, true).createJDom(node);
-
-    		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-            outputter.output(document, System.out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } 
 	}
 }
