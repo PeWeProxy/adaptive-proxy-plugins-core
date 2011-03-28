@@ -121,7 +121,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 									"})();" +
 									"</script>\n";
 					} else {
-						scripts = "<script src='" + scriptUrl + lastModifiedAppendix() + "'></script>";
+						scripts = "<script src='" + scriptUrl + lastModifiedAppendix + "'></script>";
 					}
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
 				}
