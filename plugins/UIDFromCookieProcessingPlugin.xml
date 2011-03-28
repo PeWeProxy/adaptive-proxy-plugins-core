@@ -13,5 +13,6 @@
 		<param name="bypassPattern">${plugins-core:baseurl}/set_cookie/cookie.js</param>
 		<param name="generateResponse">true</param>
 		<param name="cookieDomain">${plugins-core:baseurl}</param>
+		<param name="loadAsynchronously">false</param>
 	</parameters>
 </plugin>
