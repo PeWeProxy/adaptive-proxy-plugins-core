@@ -77,7 +77,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		PageInformation piCouchDB;
 		
 		@Override
-		public PageInformation getPageInformation(Connection connection, Database database) {
+		public PageInformation getPageInformation() {
 			
 			if(pi != null) {
 				return pi;
@@ -90,6 +90,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			piCouchDB.pageTermsList = new ArrayList<PagesTerms>();
 			
 			extractPageInformation(pi);
+			extractPageInformationCouchDB(piCouchDB);
 			
 			return pi;
 		}
@@ -100,10 +101,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				connection = connectionService.getDatabaseConnection();
 				pi.url = requestURI;
 				
-				piCouchDB.url = requestURI;
-
 				loadPageInformationFromCache(pi);
-				loadPageInformationFromCacheCouchDB(piCouchDB);
 				
 				if(pi.id == null) {
 					try {
@@ -113,19 +111,39 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 					} catch (ParseException e) {
 						logger.warn(e);
 					}
-					
 					pi.setId(log_id);
 					pi.setPageTermsList(Json2PagesTerms(jsonArray));
 					save(pi);
-					
-					piCouchDB.setId(log_id);
-					piCouchDB.setPageTermsList(Json2PagesTerms(jsonArray));
-					saveCouchDB(piCouchDB);
-					
 				}
 			} finally {
 				SqlUtils.close(connection);
 				connection = null;
+			}
+		}
+		
+		private void extractPageInformationCouchDB(PageInformation piCouchDB) {
+			JSONArray jsonArray = null;
+		
+			try {
+				piCouchDB.url = requestURI;
+				loadPageInformationFromCacheCouchDB(piCouchDB);
+				
+				if(piCouchDB.id == null) {
+					try {
+						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
+					} catch (MetallClientException e) {
+						logger.warn(e);
+					} catch (ParseException e) {
+						logger.warn(e);
+					}
+				
+					piCouchDB.setId(log_id);
+					piCouchDB.setPageTermsList(Json2PagesTerms(jsonArray));
+					saveCouchDB(piCouchDB);
+				}
+				
+			} catch(Exception e) {
+				logger.error("Unable to extract page informations", e);
 			}
 		};
 		
@@ -223,45 +241,52 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		}
 		
 		private void loadPageInformationFromCacheCouchDB(PageInformation piCouchDB) {
-			
+
 			if(database == null) {
 				if(response.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
 					database = response.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
 				} else {
+					logger.error("Unable to get CouchDB database session when trying to loading page information from cache.");
 					return;
 				}
 			}
-			View view = new View("_design/page/_view/url");
-			view.setStartKey("\""+(piCouchDB.url)+"\"");
-			view.setEndKey("\""+(piCouchDB.url)+"\"");
-			ViewResults vr = database.view(view);
 			
-			if(vr == null || vr.size() == 0) {
-				return;
-			}
-			
-			List<Document> list = vr.getResults();
+			Document doc = null;
+			try {
+				View view = new View("_design/page/_view/url");
+				view.setStartKey("\""+(piCouchDB.url)+"\"");
+				view.setEndKey("\""+(piCouchDB.url)+"\"");
+				ViewResults vr = database.view(view);
 				
-			if(list == null || list.size() == 0) {
-				return;
+				if(vr == null || vr.size() == 0) {
+					return;
+				}
+				
+				List<Document> list = vr.getResults();
+					
+				if(list == null || list.size() == 0) {
+					return;
+				}
+				
+				doc = (Document)list.get(0);
+				
+				if(doc == null) {
+					return;
+				}
+				
+				doc = database.getDocumentWithRevisions((String)doc.get("id"));
+				
+			} catch (Exception e) {
+				logger.error("Unable to retrieve document from CouchDB view.", e);
 			}
-			
-			Document doc = (Document)list.get(0);
-			
+
 			if(doc == null) {
 				return;
 			}
-			
-			doc = database.getDocumentWithRevisions((String)doc.get("id"));
-			if(doc == null) {
-				return;
-			}
-			
 			
 			piCouchDB.id = doc.getId();
 			piCouchDB.url = doc.containsKey("url") ? doc.getString("url") : null;
 			piCouchDB.keywords = doc.containsKey("keywords") ? doc.getString("keywords") : null;
-			
 			
 			net.sf.json.JSONArray pages_terms = doc.getJSONArray("pages_terms");
 			
@@ -331,10 +356,11 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 		private String savePageInformation(PageInformation pi) {
 			
 			if(connection == null) {
+				logger.error("Connection to MySQL is null when trying to save page information");
 				return null;
 			}
 			
-			String query = "INSERT INTO pages(id, url, keywords) VALUES(?, ?, ?)";
+			String query = "INSERT INTO pages(id, url, keywords) VALUES(?, ?, '')";
 			PreparedStatement stmt = null;
 			ResultSet keys = null;
 			
@@ -342,7 +368,6 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				stmt.setString(1, pi.getId());
 				stmt.setString(2, pi.getUrl());
-				stmt.setString(3, pi.getKeywords());
 				
 				stmt.execute();
 				
@@ -470,6 +495,11 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			savePageInformation(pi);
 			
 			List<PagesTerms> ptList = pi.getPageTermsList();
+			
+			if(ptList == null) {
+				return;
+			}
+			
 			for (PagesTerms pagesTerms : ptList) {
 				pagesTerms.setPi(pi);
 
@@ -485,6 +515,7 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 				if(response.getServicesHandle().isServiceAvailable(DatabaseSessionProviderService.class)) {
 					database = response.getServicesHandle().getService(DatabaseSessionProviderService.class).getDatabase();
 				} else {
+					logger.error("Unable to get CouchDB database session when trying to save page informations");
 					return;
 				}
 			}
@@ -493,24 +524,25 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 			page.put("_id", piCouchDB.getId());
 			page.put("type", "PAGE");
 			page.put("url", piCouchDB.getUrl());
-			page.put("keywords", piCouchDB.getKeywords());
 			
 			JSONArray pages_terms = new JSONArray();
 			Document page_term = null;
 			List<PagesTerms> ptList = piCouchDB.getPageTermsList();
-			for (PagesTerms pt : ptList) {
-				page_term = new Document();
-				
-				page_term.put("label", pt.getTerm().getLabel());
-				page_term.put("term_type", pt.getTerm().getTermType());
-				page_term.put("weight", pt.getWeight());
-				page_term.put("created_at", new Date(pt.getCreatedAt().getTime()).toString());
-				page_term.put("updated_at", new Date(System.currentTimeMillis()).toString());
-				page_term.put("source", pt.getSource());
-				pages_terms.add(page_term);
+			if(ptList != null) {
+				for (PagesTerms pt : ptList) {
+					page_term = new Document();
+					
+					page_term.put("label", pt.getTerm().getLabel());
+					page_term.put("term_type", pt.getTerm().getTermType());
+					page_term.put("weight", pt.getWeight());
+					page_term.put("created_at", new Date(pt.getCreatedAt().getTime()).toString());
+					page_term.put("updated_at", new Date(System.currentTimeMillis()).toString());
+					page_term.put("source", pt.getSource());
+					pages_terms.add(page_term);
+				}
+				page.put("pages_terms", pages_terms);
 			}
 			
-			page.put("pages_terms", pages_terms);
 			try {
 				database.saveDocument(page);
 			} catch (Exception e) {

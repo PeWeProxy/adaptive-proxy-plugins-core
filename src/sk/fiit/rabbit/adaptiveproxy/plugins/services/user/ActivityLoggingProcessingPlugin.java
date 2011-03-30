@@ -92,7 +92,7 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 		try {
 			View view = new View("_all_docs");
 			view.setStartKey("\""+uuid+"\"");
-			view.setCount(1);
+			view.setEndKey("\""+uuid+"\"");
 			ViewResults vr = database.view(view);
 			
 			if(vr == null || vr.size() == 0) {
@@ -111,7 +111,7 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 				return(false);
 			}
 			
-			doc = database.getDocumentWithRevisions((String)doc.get("_id"));
+			doc = database.getDocumentWithRevisions((String)doc.get("id"));
 			
 			if(doc == null) {
 				return(false);
@@ -120,6 +120,13 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 			doc.put("time_on_page", period);
 			doc.put("scroll_count", scrolls);
 			doc.put("copy_count", copies);
+			
+			
+			try {
+				database.saveDocument(doc);
+			} catch (Exception e) {
+				System.err.println("Activiti log to CouchDB error");
+			}		
 			
 		} catch (Exception e) {
 			logger.error("Could not log activity to CouchDB", e);

@@ -21,6 +21,7 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.Checksum;
@@ -28,22 +29,17 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
+	PageInformation pi;
+	
 	@Override
 	public void processTransferedResponse(HttpResponse response) {
 	    	String reqURI = response.getRequest().getRequestHeader().getRequestURI();
 	    	if (reqURI.contains("?nologging") || reqURI.contains(".js?") || reqURI.endsWith(".js"))
 	    	    return;
 		if(response.getServicesHandle().isServiceAvailable(PageInformationProviderService.class)) {
-			response.getServicesHandle()
+			pi = response.getServicesHandle()
 					.getService(PageInformationProviderService.class)
-					.getPageInformation(
-							response.getServicesHandle()
-							.getService(DatabaseConnectionProviderService.class)
-							.getDatabaseConnection(),
-							response.getServicesHandle()
-							.getService(DatabaseSessionProviderService.class)
-							.getDatabase()
-					);
+					.getPageInformation();
 		}
 	}
 	
@@ -101,14 +97,14 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				access_log.put("userid", uid);
 				access_log.put("timestamp", formatedTimeStamp);
 				access_log.put("time_on_page", 0);
-				access_log.put("page_id", log_id);
+				access_log.put("page_id", (pi != null && pi.id != null) ? pi.id : log_id);
 				access_log.put("scroll_count", 0);
 				access_log.put("copy_count", 0);
 				access_log.put("referer", url);
 				access_log.put("ip", Checksum.md5(ip));
 				database.saveDocument(access_log);
 			} catch (Exception e) {
-				logger.error("Unknown exception:", e);
+				logger.error("Could not insert access_log to CouchDB ", e);
 			}
 			
 			try {
@@ -118,7 +114,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				log_stmt.setString(1, uuid);
 				log_stmt.setString(2, uid);
 				log_stmt.setString(3, formatedTimeStamp);
-				log_stmt.setString(4, log_id);
+				log_stmt.setString(4, (pi != null && pi.id != null) ? pi.id : log_id);
 				log_stmt.setString(5, url);
 				log_stmt.setString(6, Checksum.md5(ip));
 				log_stmt.execute();
