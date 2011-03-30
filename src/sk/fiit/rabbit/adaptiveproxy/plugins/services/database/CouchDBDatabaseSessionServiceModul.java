@@ -33,7 +33,9 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 	
 	private static String userName = null;
 	private static String password = null;
+	
 	private Session session = null;
+	private Database database = null;
 
 	private class CouchDBDatabaseSessionProvider implements
 	DatabaseSessionProviderService,
@@ -45,6 +47,10 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 		@Override
 		public Database getDatabase() {
 			try {
+				if(this.database != null) {
+					return(this.database);
+				}
+				
 				session = new Session(host, port);
 				
 				if(session == null) {
@@ -108,8 +114,16 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 		
 		this.userName = props.getProperty("userName");
 		this.password = props.getProperty("password");
+
+		try {
+			this.session = new Session(host, port);
 		
-		this.session = new Session(host, port);
+			this.database = session.getDatabase(dbName);
+			
+		} catch (Exception e) {
+			logger.error("Unable to create CouchDB Session ", e);
+			return false;
+		}
 		
 		return true;
 	}
