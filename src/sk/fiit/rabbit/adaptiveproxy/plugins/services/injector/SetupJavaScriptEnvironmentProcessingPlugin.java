@@ -36,7 +36,16 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		String scripts = "" +
                     "<script type='text/javascript'>" +
                       " page_uid = '" + page_uid + "';" +
-                      " log_id = '" + log_id + "';" +
+                      " log_id = '" + log_id + "';\n" +
+                      "var __ap_callback_functions = new Array();\n" +
+                      "function __ap_register_callback(call){\n" +
+                      "	__ap_callback_functions.push(call);\n" +
+					  "}\n" +
+					  "function __ap_fire_callback(){\n" +
+					  "	for (call in __ap_callback_functions) {\n" +
+					  "		eval(__ap_callback_functions[call]);\n" +
+					  "	}\n" +
+					  "}\n" +
                       "</script>" +
                       "<script src='" + jQueryPath + "'></script>" +
                       "<!-- __ap_scripts__ -->";
