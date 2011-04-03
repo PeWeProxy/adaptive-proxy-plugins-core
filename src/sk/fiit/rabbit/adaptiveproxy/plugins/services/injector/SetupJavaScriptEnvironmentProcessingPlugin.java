@@ -38,12 +38,16 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
                       " page_uid = '" + page_uid + "';" +
                       " log_id = '" + log_id + "';\n" +
                       "var __ap_callback_functions = new Array();\n" +
-                      "function __ap_register_callback(call){\n" +
-                      "	__ap_callback_functions.push(call);\n" +
-					  "}\n" +
+                      "function __ap_register_callback(function_to_register){\n" +
+                      "	if (typeof(__peweproxy_uid) == 'undefined' || __peweproxy_uid == null) {\n" +
+                      "		__ap_callback_functions.push(function_to_register);\n"+
+                      "	} else {\n"+
+                      "		function_to_register.call()\n" +
+					  "	}\n" +
+					  "}\n"+
 					  "function __ap_fire_callback(){\n" +
 					  "	for (call in __ap_callback_functions) {\n" +
-					  "		eval(__ap_callback_functions[call]);\n" +
+					  "		__ap_callback_functions[call].call();\n" +
 					  "	}\n" +
 					  "}\n" +
                       "</script>" +
