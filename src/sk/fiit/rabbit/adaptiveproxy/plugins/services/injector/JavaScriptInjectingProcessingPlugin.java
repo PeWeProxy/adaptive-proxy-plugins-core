@@ -111,14 +111,16 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 					String scripts = "";
 					if (loadAsynchronously){
 						scripts =	"<script type=\"text/javascript\">\n" +
+									"//<![CDATA[\n" +
 									"(function() {\n" +
-									"var s = document.createElement('script');\n" + 
-									"s.type = 'text/javascript';\n" +
-									"s.async = true;\n" +
-									"s.src = '"+scriptUrl + lastModifiedAppendix +"';\n" +
-									"var x = document.getElementsByTagName('script')[0];\n" +
-									"x.parentNode.insertBefore(s, x);\n" +
-									"})();" +
+									"	var s = document.createElement(\"script\");\n" + 
+									"	s.type = \"text/javascript\";\n" +
+									"	s.async = true;\n" +
+									"	s.src = \""+scriptUrl + lastModifiedAppendix +"\";\n" +
+									"	var x = document.getElementsByTagName(\"script\")[0];\n" +
+									"	x.parentNode.insertBefore(s, x);\n" +
+									"})();\n" +
+									"//]]>\n" +
 									"</script>\n";
 					} else {
 						scripts = "<script src='" + scriptUrl + lastModifiedAppendix + "'></script>";
