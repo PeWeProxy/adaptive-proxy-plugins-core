@@ -62,7 +62,7 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 	            //FIXME: this is just a hot fix, better parser needed
 	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
 	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
-	            modifiedContent = modifiedContent.replaceAll("<br></br>", "</br>");
+	            modifiedContent = modifiedContent.replaceAll("<br></br>", "<br/>");
 	            
 	            
 				if(modifiedContent != null) {
