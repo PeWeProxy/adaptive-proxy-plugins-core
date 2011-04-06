@@ -59,9 +59,11 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 				XMLOutputter outputter = new XMLOutputter(format);
 	            String modifiedContent = outputter.outputString(modifiedDocument);
 	            
-	            //TODO: refactor!
+	            //FIXME: this is just a hot fix, better parser needed
 	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
 	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
+	            modifiedContent = modifiedContent.replaceAll("<br></br>", "</br>");
+	            
 	            
 				if(modifiedContent != null) {
 					if(content != null) {
