@@ -8,12 +8,10 @@
 		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
-		<param name="bubbleMenuScript_bkp">${proxyurl}/FileSender/public/clientBubbleMenuScript.js</param>
-		<param name="bubbleMenuStyles">	
+		<param name="bubbleMenuScript">${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuScript.js</param>
+		<param name="bubbleMenuStyles">
 		
 		<![CDATA[
-			<script type="text/javascript" src="${proxyurl}/FileSender/public/jquery-1.3.2.min.js"></script>
-			<script type='text/javascript' src='http://localhost:9666/FileSender/public/clientBubbleMenuScript.js'></script>
 			<style type="text/css">
 				#peweproxy_addons_container{
 					position: absolute;
@@ -33,7 +31,7 @@
 					position: absolute;
 					top: 0;
 					right: 0;
-					background-image: url('${proxyurl}/FileSender/public/clientBubbleMenuImages/button_banner_wide.png');
+					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_banner_wide.png');
 					/*width: 79px;*/
 					height: 30px;
 				}
@@ -44,7 +42,7 @@
 					right: 0;
 					display: block;
 					background-repeat: no-repeat;
-					background-image: url('${proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png');
+					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png');
 					width: 12px;
 					height: 12px;
 				}

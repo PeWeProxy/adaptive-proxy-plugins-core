@@ -91,7 +91,8 @@ public class ClientBubbleMenuProcessingPlugin implements RequestProcessingPlugin
 					if ((menuButtonHTML != null) && (menuButtonHTML.length() > 0)) clientMenuInjector.injectButton(menuButtonHTML);
 					if ((menuWindowHTML != null) && (menuWindowHTML.length() > 0)) clientMenuInjector.injectWindow(menuWindowHTML);
 					if ((menuScriptHTML != null) && (menuScriptHTML.length() > 0)) clientMenuInjector.injectScript(menuScriptHTML);
-					//clientMenuInjector.injectScript("<script src=''>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</script>");
+					//HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
+					//htmlInjectionService.inject(menuScriptHTML, HtmlPosition.ON_MARK);
 				}
 			} catch (MalformedURLException e) {
 				logger.warn("Cannot provide client bubble menu injector service for invalid URL", e);
@@ -110,9 +111,9 @@ public class ClientBubbleMenuProcessingPlugin implements RequestProcessingPlugin
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 					String scripts = "<script src='" + scriptUrl + "'></script>";
 					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
-					InjectClientBubbleMenuItemService clientMenuInjector = response.getServicesHandle().getService(InjectClientBubbleMenuItemService.class);
+					//InjectClientBubbleMenuItemService clientMenuInjector = response.getServicesHandle().getService(InjectClientBubbleMenuItemService.class);
 					
-					clientMenuInjector.injectScript(additionalHTML + scripts); // TODO: do refactor
+					//clientMenuInjector.injectScript(additionalHTML + scripts); // TODO: do refactor
 					
 				}
 			} catch (MalformedURLException e) {

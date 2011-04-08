@@ -15,6 +15,8 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.InjectClientBubbleMenuItemService;
 
 
@@ -99,7 +101,7 @@ public class InjectClientBubbleMenuItemServiceModule implements ResponseServiceM
 			}
 		}
 		
-		private void injectClientBubbleMenuScript(StringBuilder content) {
+		private void injectClientBubbleMenuScript(ModifiableHttpResponse response, StringBuilder content) {
 			String html = content.toString().toLowerCase();
 			String htmlInjection = "";
 			insertIndex = 0;
@@ -110,14 +112,18 @@ public class InjectClientBubbleMenuItemServiceModule implements ResponseServiceM
 					if(insertIndex > 0) {
 						insertIndex++;
 					}
-					htmlInjection = "<!-- client bubble menu script -->" + "<script type='text/javascript' src='" + bubbleMenuScript  + "'></script>";
+					htmlInjection = "<!-- client bubble menu script -->";
+					content.insert(insertIndex, htmlInjection);
+					
+					html = content.toString().toLowerCase();
+					if (html.indexOf("<!-- __ap_scripts__ -->") > 0) {
+						insertIndex = html.indexOf("<!-- __ap_scripts__ -->");
+						content.insert(insertIndex, "<script type='text/javascript' src='" + bubbleMenuScript  + "'></script>");  // need refactor - dont use htmlInjectionService
+					}
+					
 				} else {
 					logger.debug("No <body> found for " + requestURI);
 				}
-			}
-			
-			if(insertIndex > 0) {
-				content.insert(insertIndex, htmlInjection);
 			}
 		}
 
@@ -192,7 +198,8 @@ public class InjectClientBubbleMenuItemServiceModule implements ResponseServiceM
 				if ((menuButtons.size() > 0) || (menuWindows.size() > 0) || (menuScripts.size() > 0)) {
 					injectClientBubbleMenu(content);
 					injectClientBubbleMenuStyles(content);
-					injectClientBubbleMenuScript(content);
+					injectClientBubbleMenuScript(response, content);
+					
 					
 					clientMenuHtml = "";
 					for (String menuButton : menuButtons) {
