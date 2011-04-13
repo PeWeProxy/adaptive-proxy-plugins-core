@@ -18,6 +18,7 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.peweproxy.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomReaderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomWriterService;
 
 
@@ -29,6 +30,11 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 			implements HtmlDomWriterService, ResponseServiceProvider<HtmlDomWriterProvider> {
 
 		private Document document;
+		private HtmlDomReaderService domReaderService; 
+		
+		public HtmlDomWriterProvider(Document document) {
+			this.document = document;
+		}
 		
 		@Override
 		public String getServiceIdentification() {
@@ -72,6 +78,11 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 				}
 			}
 		}
+
+		@Override
+		public Document getHTMLDom() {
+			return this.document;
+		}
 	}
 
 	@Override
@@ -93,6 +104,7 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 			Set<Class<? extends ProxyService>> desiredServices,
 			ResponseHeader webRPHeader) {
 		desiredServices.add(StringContentService.class);
+		desiredServices.add(HtmlDomReaderService.class);
 	}
 
 	@Override
@@ -106,9 +118,13 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
-		
+			
 		if(serviceClass.equals(HtmlDomWriterService.class)) {
-			return (ResponseServiceProvider<Service>) new HtmlDomWriterProvider();
+			Document document = null;
+			if(response.getServicesHandle().isServiceAvailable(HtmlDomReaderService.class)) {
+				document = response.getServicesHandle().getService(HtmlDomReaderService.class).getHTMLDom();
+			}
+			return (ResponseServiceProvider<Service>) new HtmlDomWriterProvider(document);
 		}
 		
 		return null;
