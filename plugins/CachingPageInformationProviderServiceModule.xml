@@ -5,7 +5,6 @@
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.page.CachingPageInformationProviderServiceModule</className>
 	<libraries>
-		<lib>jkeyextractor.jar</lib>
 		<lib>ant.jar</lib>
 		<lib>apache-mime4j-0.6.jar</lib>
 	  	<lib>commons-beanutils-1.8.3.jar</lib>
