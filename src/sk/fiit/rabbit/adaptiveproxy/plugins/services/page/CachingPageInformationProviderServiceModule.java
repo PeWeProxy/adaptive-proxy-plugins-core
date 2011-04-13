@@ -107,8 +107,10 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 					try {
 						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
 					} catch (MetallClientException e) {
+						jsonArray = null;
 						logger.warn(e);
 					} catch (ParseException e) {
+						jsonArray = null;
 						logger.warn(e);
 					}
 					pi.setId(log_id);
@@ -132,8 +134,10 @@ public class CachingPageInformationProviderServiceModule implements ResponseServ
 					try {
 						jsonArray = (JSONArray) new JSONParser().parse(new MetallClient().keywords(content));
 					} catch (MetallClientException e) {
+						jsonArray = null;
 						logger.warn(e);
 					} catch (ParseException e) {
+						jsonArray = null;
 						logger.warn(e);
 					}
 				
