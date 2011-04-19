@@ -80,6 +80,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	private boolean createDatabaseLog(Database database, Connection connection, String log_id, String uid,
 			String url, String ip, String uuid) {
 		PreparedStatement log_stmt = null;
+		ResultSet rs = null;
 
 		java.util.Date today = new java.util.Date();
 		String timestamp = new Timestamp(today.getTime()).toString();
@@ -124,7 +125,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				String query = "SELECT count(id) FROM access_logs WHERE id = ?";
 				log_stmt = connection.prepareStatement(query);
 				log_stmt.setString(1, uuid);
-				ResultSet rs = log_stmt.executeQuery();
+				rs = log_stmt.executeQuery();
 				
 				if(rs.next() && rs.getInt(1) == 0) {
 					log_stmt = connection
@@ -144,6 +145,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			} catch (SQLException e) {
 				logger.error("Could not insert access_log ", e);
 			} finally {
+				SqlUtils.close(rs);
 				SqlUtils.close(log_stmt);
 			}
 		} else {
