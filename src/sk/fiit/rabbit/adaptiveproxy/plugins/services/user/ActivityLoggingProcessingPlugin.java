@@ -95,7 +95,7 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 			view.setEndKey("\""+uuid+"\"");
 			ViewResults vr = database.view(view);
 			
-			if(vr == null || vr.size() == 0) {
+			if(vr == null || vr.getResults().size() == 0) {
 				return(false);
 			}
 			

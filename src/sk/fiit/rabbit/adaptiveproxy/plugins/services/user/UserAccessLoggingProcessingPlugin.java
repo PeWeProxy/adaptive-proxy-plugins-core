@@ -100,7 +100,8 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 				view.setEndKey("\""+uuid+"\"");
 				ViewResults vr = database.view(view);
 				
-				if(vr == null || vr.size() == 0) {
+				if(vr == null || vr.getResults().size() == 0) {
+					
 					Document access_log = new Document();
 					access_log.put("_id", uuid);
 					access_log.put("type", "ACCESS_LOG");
