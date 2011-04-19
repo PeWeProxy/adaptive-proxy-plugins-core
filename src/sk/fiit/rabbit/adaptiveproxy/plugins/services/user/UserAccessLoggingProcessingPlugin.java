@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.Set;
 
 import com.fourspaces.couchdb.Database;
 import com.fourspaces.couchdb.Document;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.ViewResults;
 
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
@@ -89,35 +92,55 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 			logger.warn(e);
 		}
 
-		if (!"".equals(uid)) {
+		if (!"".equals(uid) && database != null) {
 			try {
-				Document access_log = new Document();
-				access_log.put("_id", uuid);
-				access_log.put("type", "ACCESS_LOG");
-				access_log.put("userid", uid);
-				access_log.put("timestamp", formatedTimeStamp);
-				access_log.put("time_on_page", 0);
-				access_log.put("page_id", (pi != null && pi.id != null) ? pi.id : log_id);
-				access_log.put("scroll_count", 0);
-				access_log.put("copy_count", 0);
-				access_log.put("referer", url);
-				access_log.put("ip", Checksum.md5(ip));
-				database.saveDocument(access_log);
+				View view = new View("_all_docs");
+				view.setStartKey("\""+uuid+"\"");
+				view.setEndKey("\""+uuid+"\"");
+				ViewResults vr = database.view(view);
+				
+				if(vr == null || vr.size() == 0) {
+					Document access_log = new Document();
+					access_log.put("_id", uuid);
+					access_log.put("type", "ACCESS_LOG");
+					access_log.put("userid", uid);
+					access_log.put("timestamp", formatedTimeStamp);
+					access_log.put("time_on_page", 0);
+					access_log.put("page_id", (pi != null && pi.id != null) ? pi.id : log_id);
+					access_log.put("scroll_count", 0);
+					access_log.put("copy_count", 0);
+					access_log.put("referer", url);
+					access_log.put("ip", Checksum.md5(ip));
+					database.saveDocument(access_log);
+				} else {
+					logger.warn("Trying to save access_log but CouchDB ID "+uuid+" already exists.");
+				}
 			} catch (Exception e) {
 				logger.error("Could not insert access_log to CouchDB ", e);
 			}
 			
 			try {
-				log_stmt = connection
-					.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");
-					
+				
+				String query = "SELECT count(id) FROM access_logs WHERE id = ?";
+				log_stmt = connection.prepareStatement(query);
 				log_stmt.setString(1, uuid);
-				log_stmt.setString(2, uid);
-				log_stmt.setString(3, formatedTimeStamp);
-				log_stmt.setString(4, (pi != null && pi.id != null) ? pi.id : log_id);
-				log_stmt.setString(5, url);
-				log_stmt.setString(6, Checksum.md5(ip));
-				log_stmt.execute();
+				ResultSet rs = log_stmt.executeQuery();
+				
+				if(rs.next() && rs.getInt(1) == 0) {
+					log_stmt = connection
+						.prepareStatement("INSERT INTO `access_logs` (`id`, `userid`, `timestamp`, `time_on_page`, `page_id`, `scroll_count`, `copy_count`, `referer`, `ip`) VALUES (?, ?, ?, 0, ?, 0, 0, ?, ?);");
+						
+					log_stmt.setString(1, uuid);
+					log_stmt.setString(2, uid);
+					log_stmt.setString(3, formatedTimeStamp);
+					log_stmt.setString(4, (pi != null && pi.id != null) ? pi.id : log_id);
+					log_stmt.setString(5, url);
+					log_stmt.setString(6, Checksum.md5(ip));
+					log_stmt.execute();
+				} else {
+					logger.warn("Trying to save access_log but MySQL ID "+uuid+" already exists.");
+				}
+
 			} catch (SQLException e) {
 				logger.error("Could not insert access_log ", e);
 			} finally {
@@ -129,7 +152,7 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 
 		return true;
 	}
-
+	
 	@Override
 	public void desiredRequestServices(
 			Set<Class<? extends ProxyService>> desiredServices,
