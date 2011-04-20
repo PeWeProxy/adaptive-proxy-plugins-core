@@ -21,112 +21,107 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserSer
 
 public class PostDataParserServiceModule implements RequestServiceModule {
 
-    private static final Logger logger = Logger.getLogger(PostDataParserServiceModule.class);
-    
-    private class GettingPostDataProviderService implements PostDataParserService, 
-    								RequestServiceProvider<PostDataParserService> {
-	
-	protected String content;
-	
-	public GettingPostDataProviderService(String content) {
-	    this.content = content;
-	}
-	
-	private Map<String, String> postData;
-	@Override
-	public Map<String, String> getPostData() {
-	    if(postData != null) {
-		return postData;
-	    }
-        	
-	    postData = getPostDataFromRequest();
-        	
-	    return postData;
-	
-	}
-	
-    	 private Map<String, String> getPostDataFromRequest() {
-    		try {
-    			content = URLDecoder.decode(content, "utf-8");
-    		} catch (UnsupportedEncodingException e) {
-    			logger.warn(e);
-    		}
-    		Map<String, String> postData = new HashMap<String, String>();
-    		String attributeName;
-    		String attributeValue;
-    
-    		for (String postPair : content.split("&")) {
-    			if (postPair.split("=").length == 2) {
-    				attributeName = postPair.split("=")[0];
-    				attributeValue = postPair.split("=")[1];
-    				postData.put(attributeName, attributeValue);
-    			}
-    		}
-    
-    		return postData;
-    	    }
-	 
-	@Override
-	public String getServiceIdentification() {
-		return this.getClass().getName();
+	private static final Logger logger = Logger.getLogger(PostDataParserServiceModule.class);
+
+	private class GettingPostDataProviderService implements PostDataParserService, RequestServiceProvider<PostDataParserService> {
+
+		protected String content;
+
+		public GettingPostDataProviderService(String content) {
+			this.content = content;
+		}
+
+		private Map<String, String> postData;
+
+		@Override
+		public Map<String, String> getPostData() {
+			if (postData != null) {
+				return postData;
+			}
+
+			postData = getPostDataFromRequest();
+
+			return postData;
+		}
+
+		private Map<String, String> getPostDataFromRequest() {
+			try {
+				content = URLDecoder.decode(content, "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				logger.warn(e);
+			}
+			Map<String, String> postData = new HashMap<String, String>();
+			String attributeName;
+			String attributeValue;
+
+			for (String postPair : content.split("&")) {
+				if (postPair.split("=").length == 2) {
+					attributeName = postPair.split("=")[0];
+					attributeValue = postPair.split("=")[1];
+					postData.put(attributeName, attributeValue);
+				}
+			}
+
+			return postData;
+		}
+
+		@Override
+		public String getServiceIdentification() {
+			return this.getClass().getName();
+		}
+
+		@Override
+		public PostDataParserService getService() {
+			return this;
+		}
+
+		@Override
+		public boolean initChangedModel() {
+			return false;
+		}
+
+		@Override
+		public void doChanges(ModifiableHttpRequest request) {
+		}
+
 	}
 
 	@Override
-	public PostDataParserService getService() {
-		return this;
+	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
+			Class<Service> serviceClass) throws ServiceUnavailableException {
+
+		if (serviceClass.equals(PostDataParserService.class)
+				&& request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
+
+			String content = request.getServicesHandle().getService(StringContentService.class).getContent();
+
+			return (RequestServiceProvider<Service>) new GettingPostDataProviderService(content);
+		}
+
+		return null;
 	}
 
 	@Override
-	public boolean initChangedModel() {
-		return false;
+	public void getProvidedRequestServices(Set<Class<? extends ProxyService>> providedServices) {
+		providedServices.add(PostDataParserService.class);
 	}
 
-	
 	@Override
-	public void doChanges(ModifiableHttpRequest request) { 
+	public boolean start(PluginProperties props) {
+		return true;
 	}
 
-    }
-    
-    @Override
-    public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(
-	    HttpRequest request, Class<Service> serviceClass)
-	    throws ServiceUnavailableException {
-	
-	if(serviceClass.equals(PostDataParserService.class)
-		&& request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
-	
-	    String content = request.getServicesHandle().getService(StringContentService.class).getContent();
-	    
-	    return (RequestServiceProvider<Service>) new GettingPostDataProviderService(content);
+	@Override
+	public void stop() {
 	}
-	
-	return null;
-    }
-    
-    @Override
-    public void getProvidedRequestServices(
-	    Set<Class<? extends ProxyService>> providedServices) {
-	providedServices.add(PostDataParserService.class);
-    }
-    @Override
-    public boolean start(PluginProperties props) {
-	return true;
-    }
 
-    @Override
-    public void stop() {
-    }
+	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
+	}
 
-    @Override
-    public boolean supportsReconfigure(PluginProperties newProps) {
-	return true;
-    }
-
-    @Override
-    public void desiredRequestServices(
-	    Set<Class<? extends ProxyService>> desiredServices,
-	    RequestHeader clientRQHeader) {
-	desiredServices.add(StringContentService.class);
-    }
+	@Override
+	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices, RequestHeader clientRQHeader) {
+		desiredServices.add(StringContentService.class);
+	}
 }
