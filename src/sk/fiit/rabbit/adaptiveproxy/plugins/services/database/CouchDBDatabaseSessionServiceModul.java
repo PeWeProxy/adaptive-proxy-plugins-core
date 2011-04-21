@@ -24,160 +24,113 @@ import com.fourspaces.couchdb.Session;
 
 public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule, ResponseServiceModule {
 	
-	
 	private static final Logger logger = Logger.getLogger(CouchDBDatabaseSessionServiceModul.class);
 
-	private static String host = null;
-	private static Integer port = null;
-	private static String dbName = null;
-	
-	private static String userName = null;
-	private static String password = null;
-	
-	private Session session = null;
-	private Database database = null;
+	private Database database;
 
-	private class CouchDBDatabaseSessionProvider implements
-	DatabaseSessionProviderService,
-	RequestServiceProvider<DatabaseSessionProviderService>,
-	ResponseServiceProvider<DatabaseSessionProviderService> {
-	
-		Database database = null;
-				
+	private class CouchDBDatabaseSessionProvider implements DatabaseSessionProviderService,
+			RequestServiceProvider<DatabaseSessionProviderService>,
+			ResponseServiceProvider<DatabaseSessionProviderService> {
+
 		@Override
 		public Database getDatabase() {
-			try {
-				if(this.database != null) {
-					return(this.database);
-				}
-				
-				session = new Session(host, port);
-				
-				if(session == null) {
-					throw new Exception("Unable to create session to CouchDB");
-				}
-
-				database = session.getDatabase(dbName);
-				
-				if(database == null) {
-					throw new Exception("Unable to connect to CouchDB database.");
-				}
-				
-				return(database);
-				
-			} catch (Exception e) {
-				logger.error("Could not get CouchDB session", e);
-				return null;
-			}
+			return database;
 		}
-		
+
 		@Override
 		public String getServiceIdentification() {
 			return this.getClass().getName();
 		}
-		
+
 		@Override
 		public DatabaseSessionProviderService getService() {
 			return this;
 		}
-		
+
 		@Override
 		public boolean initChangedModel() {
 			return true;
 		}
-		
+
 		@Override
 		public void doChanges(ModifiableHttpResponse response) {
-			// TODO Auto-generated method stub
-			
+			// non-modifying service
 		}
-		
+
 		@Override
 		public void doChanges(ModifiableHttpRequest request) {
-			// TODO Auto-generated method stub
-			
+			// non-modifying service
 		}
-
 	}
-	
+
 	@Override
 	public boolean supportsReconfigure(PluginProperties newProps) {
-		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
-	
+
 	@Override
 	public boolean start(PluginProperties props) {
-		this.host = props.getProperty("host", "localhost");
-		this.port = props.getIntProperty("port", 5984);
-		this.dbName = props.getProperty("dbName", "proxy");
-		
-		this.userName = props.getProperty("userName");
-		this.password = props.getProperty("password");
+		String host = props.getProperty("host", "localhost");
+		int port = props.getIntProperty("port", 5984);
+		String dbName = props.getProperty("dbName", "proxy");
+
+		String userName = props.getProperty("userName");
+		String password = props.getProperty("password");
 
 		try {
-			this.session = new Session(host, port);
-		
+			Session session = new Session(host, port);
 			this.database = session.getDatabase(dbName);
-			
 		} catch (Exception e) {
 			logger.error("Unable to create CouchDB Session ", e);
 			return false;
 		}
-		
+
 		return true;
-	}
-	@Override
-	public void stop() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void desiredRequestServices(
-			Set<Class<? extends ProxyService>> desiredServices,
-			RequestHeader clientRQHeader) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void desiredResponseServices(
-			Set<Class<? extends ProxyService>> desiredServices,
-			ResponseHeader webRPHeader) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void getProvidedResponseServices(
-			Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(DatabaseSessionProviderService.class);	
+	public void stop() {
 	}
-	
+
+	@Override
+	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices, RequestHeader clientRQHeader) {
+		// no dependencies
+
+	}
+
+	@Override
+	public void desiredResponseServices(Set<Class<? extends ProxyService>> desiredServices, ResponseHeader webRPHeader) {
+		// no dependencies
+	}
+
+	@Override
+	public void getProvidedResponseServices(Set<Class<? extends ProxyService>> providedServices) {
+		providedServices.add(DatabaseSessionProviderService.class);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
-			HttpResponse response, Class<Service> serviceClass)
-			throws ServiceUnavailableException {
-		if(serviceClass.equals(DatabaseSessionProviderService.class)) {
+			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
+		if (serviceClass.equals(DatabaseSessionProviderService.class)) {
 			return (ResponseServiceProvider<Service>) new CouchDBDatabaseSessionProvider();
 		}
 		return null;
 	}
-	
-	@Override
-	public void getProvidedRequestServices(
-			Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(DatabaseSessionProviderService.class);
-		
-	}
 
 	@Override
-	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(
-			HttpRequest request, Class<Service> serviceClass)
-			throws ServiceUnavailableException {
-		if(serviceClass.equals(DatabaseSessionProviderService.class)) {
+	public void getProvidedRequestServices(Set<Class<? extends ProxyService>> providedServices) {
+		providedServices.add(DatabaseSessionProviderService.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
+			Class<Service> serviceClass) throws ServiceUnavailableException {
+		if (serviceClass.equals(DatabaseSessionProviderService.class)) {
 			return (RequestServiceProvider<Service>) new CouchDBDatabaseSessionProvider();
 		}
-		
+
 		return null;
 	}
 

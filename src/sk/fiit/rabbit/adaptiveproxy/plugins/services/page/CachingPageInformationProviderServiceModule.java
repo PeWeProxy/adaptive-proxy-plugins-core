@@ -33,6 +33,9 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.SqlUtils;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient.MetallClientException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
@@ -40,9 +43,6 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PagesTerms;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.Term;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.MetallClient.MetallClientException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.common.SqlUtils;
 
 public class CachingPageInformationProviderServiceModule implements ResponseServiceModule {
 	

@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.services.common;
+package sk.fiit.rabbit.adaptiveproxy.plugins.common;
 
 import java.io.IOException;
 
