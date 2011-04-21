@@ -17,10 +17,8 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
-import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomReaderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomWriterService;
-
 
 public class HtmlDomWriterModule implements ResponseServiceModule {
 	
@@ -30,7 +28,6 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 			implements HtmlDomWriterService, ResponseServiceProvider<HtmlDomWriterProvider> {
 
 		private Document document;
-		private HtmlDomReaderService domReaderService; 
 		
 		public HtmlDomWriterProvider(Document document) {
 			this.document = document;
@@ -57,26 +54,18 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 
 		@Override
 		public void doChanges(ModifiableHttpResponse response) {
-			StringBuilder content = response.getServicesHandle().getService(ModifiableStringService.class).getModifiableContent();
-			if(document != null) {
-				Document modifiedDocument = (Document)document.clone();
-				Format format = Format.getRawFormat();
-				format.setExpandEmptyElements(true);
-				XMLOutputter outputter = new XMLOutputter(format);
-	            String modifiedContent = outputter.outputString(modifiedDocument);
-	            
-	            //FIXME: this is just a hot fix, better parser needed
-	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
-	            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
-	            modifiedContent = modifiedContent.replaceAll("<br></br>", "<br/>");
-	            
-	            
-				if(modifiedContent != null) {
-					if(content != null) {
-						content.replace(0, content.length(), modifiedContent);
-					}
-				}
-			}
+			Document modifiedDocument = (Document) document.clone();
+			Format format = Format.getRawFormat();
+			format.setExpandEmptyElements(true);
+			XMLOutputter outputter = new XMLOutputter(format);
+            String modifiedContent = outputter.outputString(modifiedDocument);
+            
+            //FIXME: this is just a hot fix, better parser needed
+            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
+            modifiedContent = StringEscapeUtils.unescapeHtml(modifiedContent);
+            modifiedContent = modifiedContent.replaceAll("<br></br>", "<br/>");
+            
+            response.getServicesHandle().getService(ModifiableStringService.class).setContent(modifiedContent);
 		}
 
 		@Override
@@ -103,7 +92,7 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 	public void desiredResponseServices(
 			Set<Class<? extends ProxyService>> desiredServices,
 			ResponseHeader webRPHeader) {
-		desiredServices.add(StringContentService.class);
+		desiredServices.add(ModifiableStringService.class);
 		desiredServices.add(HtmlDomReaderService.class);
 	}
 
@@ -119,11 +108,11 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 			HttpResponse response, Class<Service> serviceClass)
 			throws ServiceUnavailableException {
 			
-		if(serviceClass.equals(HtmlDomWriterService.class)) {
-			Document document = null;
-			if(response.getServicesHandle().isServiceAvailable(HtmlDomReaderService.class)) {
-				document = response.getServicesHandle().getService(HtmlDomReaderService.class).getHTMLDom();
-			}
+		if (serviceClass.equals(HtmlDomWriterService.class)
+				&& response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)
+				&& response.getServicesHandle().isServiceAvailable(HtmlDomReaderService.class)) {
+			
+			Document document = response.getServicesHandle().getService(HtmlDomReaderService.class).getHTMLDom();
 			return (ResponseServiceProvider<Service>) new HtmlDomWriterProvider(document);
 		}
 		

@@ -9,8 +9,6 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.JDomSerializer;
 import org.htmlcleaner.TagNode;
 import org.jdom.Document;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
@@ -23,7 +21,6 @@ import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlDomReaderService;
 
-
 public class HtmlDomReaderModule implements ResponseServiceModule {
 	
 	private static final Logger logger = Logger.getLogger(HtmlDomReaderModule.class);
@@ -32,32 +29,31 @@ public class HtmlDomReaderModule implements ResponseServiceModule {
 			implements HtmlDomReaderService, ResponseServiceProvider<HtmlDomReaderProvider> {
 
 		private String content;
-		private Document document;
+		private Document document = null;
 		
 		public HtmlDomReaderProvider(String content) {
 			this.content = content;
 		}
 		
 		public Document getHTMLDom() {
-			Document document = null;
-
-	        try {
-	        	// initialize HtmlCleaner parser  
-	    		HtmlCleaner cleaner = new HtmlCleaner();
-	    		CleanerProperties props = cleaner.getProperties();
-	    		props.setUseCdataForScriptAndStyle(false);
-	    		
-	    		// parse
-	    		TagNode node = cleaner.clean(content);
-	    		
-	        	// store to jdom
-	    		document = new JDomSerializer(props, true).createJDom(node);
-
-	        } catch (IOException e) {
-	            logger.error("Html parser IO exception.", e);
-	        } 
-	        this.document = document; 
-			return (Document)document.clone();
+			if(document == null) {
+		        try {
+		        	// initialize HtmlCleaner parser  
+		    		HtmlCleaner cleaner = new HtmlCleaner();
+		    		CleanerProperties props = cleaner.getProperties();
+		    		props.setUseCdataForScriptAndStyle(false);
+		    		
+		    		// parse
+		    		TagNode node = cleaner.clean(content);
+		    		
+		        	// store to jdom
+		    		document = new JDomSerializer(props, true).createJDom(node);
+	
+		        } catch (IOException e) {
+		            logger.error("Html parser IO exception.", e);
+		        }
+			}
+			return (Document) document.clone();
 		}
 		
 		@Override
@@ -111,14 +107,14 @@ public class HtmlDomReaderModule implements ResponseServiceModule {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
-			HttpResponse response, Class<Service> serviceClass)
-			throws ServiceUnavailableException {
-		
-		if(serviceClass.equals(HtmlDomReaderService.class)) {
+			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
+
+		if (serviceClass.equals(HtmlDomReaderService.class)
+				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)) {
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			return (ResponseServiceProvider<Service>) new HtmlDomReaderProvider(content);
 		}
-		
+
 		return null;
 	}
 }
