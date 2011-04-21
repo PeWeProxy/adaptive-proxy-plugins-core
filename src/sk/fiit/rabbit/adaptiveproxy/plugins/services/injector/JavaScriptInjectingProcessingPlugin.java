@@ -38,6 +38,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	private boolean generateResponse;
 	private String allowedDomain;
 	private String lastModifiedAppendix;
+	private String scriptInjectingPosition;
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
@@ -125,7 +126,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 					} else {
 						scripts = "<script src='" + scriptUrl + lastModifiedAppendix + "'></script>";
 					}
-					htmlInjectionService.inject(additionalHTML + scripts, HtmlPosition.ON_MARK);
+					htmlInjectionService.injectAfter(getScriptInjectingPosition(), additionalHTML + scripts);
 				}
 			} catch (MalformedURLException e) {
 				logger.warn("Cannot provide javascript injector service for invalid URL", e);
@@ -135,6 +136,10 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		return ResponseProcessingActions.PROCEED;
 	}
 	
+	protected String getScriptInjectingPosition() {
+		return "<!-- __ap_scripts__ -->";
+	}
+
 	private boolean isAllowedDomain(String urlString) throws MalformedURLException {
 		if(allowedDomain == null) return true;
 		URL url = new URL(urlString);
@@ -148,10 +153,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		scriptUrl = props.getProperty("scriptUrl");
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
-		additionalHTML = props.getProperty("additionalHTML");
-		if(additionalHTML == null) {
-			additionalHTML = "";
-		}
+		additionalHTML = props.getProperty("additionalHTML", "");
 		
 		if(props.getProperty("allowOnlyFor") != null) {
 			for (String uid : props.getProperty("allowOnlyFor").split(",")) {

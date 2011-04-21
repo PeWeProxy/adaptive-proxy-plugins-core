@@ -1,8 +1,6 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.injector;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +16,7 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
+import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 
 public class HtmlInjectorServiceModule implements ResponseServiceModule {
@@ -26,54 +25,35 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 	
 	private class HtmlInjectorServiceProvider implements HtmlInjectorService, ResponseServiceProvider<HtmlInjectorService> {
 
-		private int insertIndex;
 		private String requestURI;
-		private String textToInsert;
+		private StringBuilder content;
 		
-		public HtmlInjectorServiceProvider(String requestURI) {
+		public HtmlInjectorServiceProvider(StringBuilder content, String requestURI) {
+			this.content = content;
 			this.requestURI = requestURI;
 		}
 		
-		private class InjectingInstruction {
-			String text;
-			HtmlPosition position;
-			public InjectingInstruction(String text, HtmlPosition position) {
-				this.text = text;
-				this.position = position;
-			}
-		}
-		
-		private List<InjectingInstruction> instructions = new LinkedList<InjectingInstruction>();
-		
 		@Override
 		public void inject(String text, HtmlPosition position) {
-			logger.warn("Som " + this + " a pridavam do queue s velkostou " + instructions.size());
-			instructions.add(new InjectingInstruction(text, position));
-		}
-		
-		private void injectToMessage(StringBuilder content, String text, HtmlPosition position) {
-			this.textToInsert = text;
-			
-			String html = content.toString().toLowerCase();
-			
+			int insertIndex;
 			switch(position) {
 			case END_OF_BODY:
-				insertIndex = html.indexOf("</body>");
+				insertIndex = content.indexOf("</body>");
 				if(insertIndex < 0) {
 					logger.debug("No </body> found for " + requestURI);
 					
 					for(Pattern exceptionPattern : endOfBodyExceptions) {
 						Matcher matcher = exceptionPattern.matcher(requestURI);
 						if(matcher.matches()) {
-							insertIndex = html.length();
+							insertIndex = content.length();
 						}
 					}
 				}
 				break;
 			case START_OF_BODY:
-				insertIndex = html.indexOf("<body");
+				insertIndex = content.indexOf("<body");
 				if(insertIndex > 0) {
-					insertIndex = html.indexOf(">", insertIndex);
+					insertIndex = content.indexOf(">", insertIndex);
 					if(insertIndex > 0) {
 						insertIndex++;
 					}
@@ -81,21 +61,27 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 					logger.debug("No <body> found for " + requestURI);
 				}
 				break;
-			case ON_MARK:
-				insertIndex = html.indexOf("<!-- __ap_scripts__ -->");
-				if(insertIndex > 0) {
-					insertIndex += "<!-- __ap_scripts__ -->".length();
-				}
-				break;
 			default:
 				throw new RuntimeException("Uknown position: " + position);
 			}
 			
 			if(insertIndex > 0) {
-				content.insert(insertIndex, textToInsert);
+				content.insert(insertIndex, text);
 			}
 		}
-
+		
+		@Override
+		public void injectAfter(String afterThis, String what) {
+			int insertIndex = content.indexOf(afterThis);
+			if(insertIndex > 0) {
+				insertIndex += afterThis.length();
+			}
+			
+			if(insertIndex > 0) {
+				content.insert(insertIndex, what);
+			}
+		}
+		
 		@Override
 		public String getServiceIdentification() {
 			return this.getClass().getName();
@@ -114,10 +100,7 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 		@Override
 		public void doChanges(ModifiableHttpResponse response) {
 			if(response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)) {
-				StringBuilder content = response.getServicesHandle().getService(ModifiableStringService.class).getModifiableContent();
-				for (InjectingInstruction instruction : instructions) {
-					injectToMessage(content, instruction.text, instruction.position);
-				}
+				response.getServicesHandle().getService(ModifiableStringService.class).setContent(content.toString());
 			}
 		}
 	}
@@ -162,7 +145,8 @@ public class HtmlInjectorServiceModule implements ResponseServiceModule {
 
 		if (serviceClass == HtmlInjectorService.class) {
 			String requestURI = response.getRequest().getOriginalRequest().getRequestHeader().getRequestURI();
-			return (ResponseServiceProvider<Service>) new HtmlInjectorServiceProvider(requestURI);
+			StringBuilder content = new StringBuilder(response.getServicesHandle().getService(StringContentService.class).getContent());
+			return (ResponseServiceProvider<Service>) new HtmlInjectorServiceProvider(content, requestURI);
 		}
 		
 		return null;

@@ -1,17 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>InjectClientBubbleMenuItemServiceModule</name>
+	<name>SetupBubbleEnvironmentProcessingPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.InjectClientBubbleMenuItemServiceModule</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin</className>
+	<libraries>
+	</libraries>
 	<types>
-		<type>ResponseServiceModule</type>
+		<type>RequestProcessingPlugin</type>
+		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="bubbleMenuScript">${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuScript.js</param>
-		<param name="bubbleMenuStyles">
-		
+		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuScript.js</param>
+		<param name="additionalHTML">
 		<![CDATA[
+			<div id="peweproxy_addons_container">
+				<a href="#" class="__peweproxy_addons_button"></a>
+				<div style="" id="peweproxy_icon_banner" class="hidden">
+					<table>
+						<tr><!-- bubble menu -->
+						</tr>
+					</table>
+	            </div>
+	            <!-- bubble windows -->
+	        </div>
+		    
 			<style type="text/css">
 				#peweproxy_addons_container{
 					position: absolute;
@@ -48,7 +61,6 @@
 				}
 			</style>
 		]]>
-		
 		</param>
 	</parameters>
 </plugin>
