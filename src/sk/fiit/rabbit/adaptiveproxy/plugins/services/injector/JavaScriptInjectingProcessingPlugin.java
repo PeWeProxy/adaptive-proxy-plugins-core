@@ -42,7 +42,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
-		if(request.getOriginalRequest().getRequestHeader().getRequestURI().contains(bypassPattern)) {
+		if(bypassPattern != null && request.getOriginalRequest().getRequestHeader().getRequestURI().contains(bypassPattern)) {
 			if(generateResponse) {
 				return RequestProcessingActions.FINAL_RESPONSE;
 			} else {

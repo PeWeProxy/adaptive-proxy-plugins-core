@@ -9,13 +9,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.fourspaces.couchdb.Database;
-import com.fourspaces.couchdb.Document;
-import com.fourspaces.couchdb.View;
-import com.fourspaces.couchdb.ViewResults;
-
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.services.ProxyService;
@@ -26,9 +22,14 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionPr
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
-public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin
+import com.fourspaces.couchdb.Database;
+import com.fourspaces.couchdb.Document;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.ViewResults;
+
+public class ActivityLoggingProcessingPluginBackup extends JavaScriptInjectingProcessingPlugin
 {
-	protected Logger logger = Logger.getLogger(ActivityLoggingProcessingPlugin.class);
+	protected Logger logger = Logger.getLogger(ActivityLoggingProcessingPluginBackup.class);
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
@@ -138,8 +139,8 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 	@Override
 	public void desiredRequestServices(
 			Set<Class<? extends ProxyService>> desiredServices,
-			RequestHeader clientRQHeader) {
-		super.desiredRequestServices(desiredServices, clientRQHeader);
+			RequestHeader webRQHeader) {
+		super.desiredRequestServices(desiredServices, webRQHeader);
 		desiredServices.add(ModifiableStringService.class);
 		desiredServices.add(DatabaseConnectionProviderService.class);
 		desiredServices.add(DatabaseSessionProviderService.class);

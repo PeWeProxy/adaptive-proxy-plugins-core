@@ -10,14 +10,10 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Set;
 
-import com.fourspaces.couchdb.Database;
-import com.fourspaces.couchdb.Document;
-import com.fourspaces.couchdb.View;
-import com.fourspaces.couchdb.ViewResults;
-
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
+import sk.fiit.peweproxy.messages.HttpRequest;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.services.ProxyService;
@@ -30,6 +26,11 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
+
+import com.fourspaces.couchdb.Database;
+import com.fourspaces.couchdb.Document;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.ViewResults;
 
 public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin {
 	PageInformation pi;
@@ -159,8 +160,8 @@ public class UserAccessLoggingProcessingPlugin extends JavaScriptInjectingProces
 	@Override
 	public void desiredRequestServices(
 			Set<Class<? extends ProxyService>> desiredServices,
-			RequestHeader clientRQHeader) {
-		super.desiredRequestServices(desiredServices, clientRQHeader);
+			RequestHeader webRQHeader) {
+		super.desiredRequestServices(desiredServices, webRQHeader);
 		desiredServices.add(ModifiableStringService.class); //FIXME: toto je docasny hack kvoli late processingu, spravne tu ma byt len StringContentService
 		desiredServices.add(DatabaseConnectionProviderService.class);
 	}

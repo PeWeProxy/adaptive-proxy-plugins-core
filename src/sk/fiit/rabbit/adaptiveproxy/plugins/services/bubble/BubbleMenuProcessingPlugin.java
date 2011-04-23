@@ -2,8 +2,8 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.bubble;
 
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.plugins.PluginProperties;
+import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin.ResponseProcessingActions;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
 public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlugin {

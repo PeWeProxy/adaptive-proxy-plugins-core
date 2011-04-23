@@ -25,18 +25,12 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 	
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
-	    if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
-		&& response.getServicesHandle().isServiceAvailable(PageIDService.class)) {
+	    if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)) {
 		
 		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
-		String page_uid = UUID.randomUUID().toString();
-		String log_id = response.getServicesHandle().getService(PageIDService.class).getID();
-		
 		String scripts = "" +
                     "<script type='text/javascript'>" +
-                      " page_uid = '" + page_uid + "';" +
-                      " log_id = '" + log_id + "';\n" +
                       "var __ap_callback_functions = new Array();\n" +
                       "function __ap_register_callback(function_to_register){\n" +
                       "	if (typeof(__peweproxy_uid) == 'undefined' || __peweproxy_uid == null) {\n" +

@@ -14,9 +14,7 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
 import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
-import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 
 public class PageIDServiceModule implements ResponseServiceModule {
 

@@ -64,9 +64,8 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	}
 	
 	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices,
-			RequestHeader clientRQHeader)
+			RequestHeader webRQHeader)
 	{
-		
 	}
 	
 	public boolean start(PluginProperties props)

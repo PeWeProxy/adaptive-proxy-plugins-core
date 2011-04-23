@@ -3,7 +3,7 @@
 <plugin>
 	<name>ActivityLoggingProcessingPlugin</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.ActivityLoggingProcessingPlugin</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.ActivityLoggingProcessingPlugin</className>
 	<libraries>
 	  	<lib>commons-beanutils-1.8.3.jar</lib>
 	  	<lib>commons-codec-1.4.jar</lib>

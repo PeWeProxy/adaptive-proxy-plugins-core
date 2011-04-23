@@ -7,10 +7,10 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 public class MetallClient {
-	private static final String METALL_BASE_URL = "http://peweproxy-staging.fiit.stuba.sk/metall";
+	private static final String METALL_BASE_URL = "http://localhost:9292";
 	
-	public class MetallClientException extends Exception {
-		private static final long serialVersionUID = 5797183739350787524L;
+	public class MetallClientException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
 		
 		public MetallClientException(String message) {
 			super(message);

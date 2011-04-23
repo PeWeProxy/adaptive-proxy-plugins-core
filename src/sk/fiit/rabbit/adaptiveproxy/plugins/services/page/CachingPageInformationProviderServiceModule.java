@@ -19,11 +19,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.fourspaces.couchdb.Database;
-import com.fourspaces.couchdb.Document;
-import com.fourspaces.couchdb.View;
-import com.fourspaces.couchdb.ViewResults;
-
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
@@ -34,8 +29,8 @@ import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient.MetallClientException;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageIDService;
@@ -43,6 +38,11 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformation;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PageInformationProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PagesTerms;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.Term;
+
+import com.fourspaces.couchdb.Database;
+import com.fourspaces.couchdb.Document;
+import com.fourspaces.couchdb.View;
+import com.fourspaces.couchdb.ViewResults;
 
 public class CachingPageInformationProviderServiceModule implements ResponseServiceModule {
 	
