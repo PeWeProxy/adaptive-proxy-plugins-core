@@ -518,3 +518,181 @@ Migrating to AddIndexes (22)
   [4;36;1mSQL (256.7ms)[0m   [0;1mCREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)[0m
   [4;35;1mSQL (235.8ms)[0m   [0mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`, `checksum`)[0m
   [4;36;1mSQL (32.6ms)[0m   [0;1mINSERT INTO schema_migrations (version) VALUES ('22')[0m
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (207.6ms)[0m  [1mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW KEYS FROM `schema_migrations`
+  [1m[36mSQL (223.3ms)[0m  [1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to CreateSchema (1)
+  [1m[35mSQL (154.1ms)[0m  CREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `url` varchar(4000), `keywords` varchar(1000)) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (231.1ms)[0m  CREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)
+  [1m[36mSQL (123.3ms)[0m  [1mCREATE TABLE `keyword_cache` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(1000), `checksum` varchar(32), `keywords` varchar(1000)) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW KEYS FROM `keyword_cache`
+  [1m[36mSQL (239.6ms)[0m  [1mCREATE INDEX `index_keyword_cache_on_checksum` ON `keyword_cache` (`checksum`)[0m
+  [1m[35mSQL (346.1ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('1')
+Migrating to AddTimeLogging (2)
+  [1m[36mSQL (279.3ms)[0m  [1mALTER TABLE `access_logs` ADD `checksum` varchar(32)[0m
+  [1m[35mSQL (274.3ms)[0m  ALTER TABLE `access_logs` ADD `time_on_page` int(11)
+  [1m[36mSQL (164.1ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('2')[0m
+Migrating to AddPages (3)
+  [1m[35mSQL (129.5ms)[0m  CREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000)) ENGINE=InnoDB
+  [1m[36mSQL (281.4ms)[0m  [1mALTER TABLE `access_logs` DROP `url`[0m
+  [1m[35mSQL (289.9ms)[0m  ALTER TABLE `access_logs` DROP `keywords`
+  [1m[36mSQL (297.8ms)[0m  [1mALTER TABLE `access_logs` DROP `checksum`[0m
+  [1m[35mSQL (281.7ms)[0m  ALTER TABLE `access_logs` ADD `page_id` int(11)
+  [1m[36mSQL (114.3ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('3')[0m
+Migrating to DropKeywordsCache (4)
+  [1m[35mSQL (56.9ms)[0m  DROP TABLE `keyword_cache`
+  [1m[36mSQL (139.9ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('4')[0m
+Migrating to CreateEmail (5)
+  [1m[35mSQL (113.0ms)[0m  CREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB
+  [1m[36mSQL (131.1ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('5')[0m
+Migrating to CreateStoredApuids (6)
+  [1m[35mSQL (113.0ms)[0m  CREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB
+  [1m[36mSQL (131.1ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('6')[0m
+Migrating to AddScrollCountAndCopyCount (7)
+  [1m[35mSQL (279.7ms)[0m  ALTER TABLE `access_logs` ADD `scroll_count` int(11)
+  [1m[36mSQL (273.1ms)[0m  [1mALTER TABLE `access_logs` ADD `copy_count` int(11)[0m
+  [1m[35mSQL (89.8ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('7')
+Migrating to AddReferer (8)
+  [1m[36mSQL (287.8ms)[0m  [1mALTER TABLE `access_logs` ADD `referer` varchar(255)[0m
+  [1m[35mSQL (118.4ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('8')
+Migrating to EnlargeReferer (9)
+  [1m[36mSQL (296.0ms)[0m  [1mALTER TABLE access_logs CHANGE referer referer VARCHAR(4000)[0m
+  [1m[35mSQL (106.1ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('9')
+Migrating to AddIpAddress (11)
+  [1m[36mSQL (287.6ms)[0m  [1mALTER TABLE `access_logs` ADD `ip` varchar(50)[0m
+  [1m[35mSQL (106.2ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('11')
+Migrating to AddChecksumIndex (12)
+  [1m[36mSQL (0.5ms)[0m  [1mSHOW KEYS FROM `pages`[0m
+  [1m[35mSQL (220.7ms)[0m  CREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)
+  [1m[36mSQL (122.8ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('12')[0m
+Migrating to ReworkIdForPages (14)
+  [1m[35mSQL (285.4ms)[0m  ALTER TABLE `access_logs` CHANGE `page_id` `page_id` varchar(40) DEFAULT NULL
+  [1m[36mSQL (298.3ms)[0m  [1mALTER TABLE `pages` CHANGE `id` `id` varchar(40) NOT NULL[0m
+  [1m[35mSQL (106.2ms)[0m  INSERT INTO `schema_migrations` (`version`) VALUES ('14')
+Migrating to ReworkPagesTerms (15)
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to CreateSchema (1)
+Migrating to AddTimeLogging (2)
+Migrating to AddPages (3)
+Migrating to DropKeywordsCache (4)
+Migrating to CreateEmail (5)
+Migrating to CreateStoredApuids (6)
+Migrating to AddScrollCountAndCopyCount (7)
+Migrating to AddReferer (8)
+Migrating to EnlargeReferer (9)
+Migrating to AddIpAddress (11)
+Migrating to AddChecksumIndex (12)
+Migrating to ReworkIdForPages (14)
+Migrating to ReworkPagesTerms (15)
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (230.8ms)[0m  [1mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW KEYS FROM `schema_migrations`
+  [1m[36mSQL (247.7ms)[0m  [1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to InitialSchema (20110421224123)
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.3ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to InitialSchema (20110421224123)
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (116.7ms)[0m  [1mDROP TABLE `access_logs`[0m
+  [1m[35mSQL (278.7ms)[0m  CREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `time_on_page` int(11), `page_id` varchar(40), `scroll_count` int(11), `copy_count` int(11), `referer` varchar(4000), `ip` varchar(50)) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (330.3ms)[0m  CREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (272.3ms)[0m  CREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)
+  [1m[36mSQL (0.5ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (81.2ms)[0m  DROP TABLE `broken_pages`
+  [1m[36mSQL (123.7ms)[0m  [1mCREATE TABLE `broken_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000) NOT NULL, `uid` varchar(32) NOT NULL, `timestamp` datetime NOT NULL) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.5ms)[0m  SHOW TABLES
+  [1m[36mSQL (56.7ms)[0m  [1mDROP TABLE `emails`[0m
+  [1m[35mSQL (132.3ms)[0m  CREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (56.7ms)[0m  DROP TABLE `pages`
+  [1m[36mSQL (132.3ms)[0m  [1mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000), `failed_at` datetime, `failure_reason` varchar(1000), `processed` tinyint) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW KEYS FROM `pages`
+  [1m[36mSQL (280.9ms)[0m  [1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW KEYS FROM `pages`
+  [1m[36mSQL (288.6ms)[0m  [1mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`(255), `checksum`)[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW TABLES
+  [1m[36mSQL (81.1ms)[0m  [1mDROP TABLE `pages_terms`[0m
+  [1m[35mSQL (146.6ms)[0m  CREATE TABLE `pages_terms` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `page_id` varchar(40), `term_id` int(11), `weight` float, `created_at` datetime, `updated_at` datetime, `source` varchar(20), `active` tinyint DEFAULT 1 NOT NULL) ENGINE=InnoDB
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (56.6ms)[0m  DROP TABLE `stored_apuids`
+  [1m[36mSQL (132.2ms)[0m  [1mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW TABLES
+  [1m[36mSQL (56.7ms)[0m  [1mDROP TABLE `terms`[0m
+  [1m[35mSQL (141.9ms)[0m  CREATE TABLE `terms` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `label` varchar(255), `term_type` varchar(255)) ENGINE=InnoDB
+  [1m[36mSQL (122.1ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('20110421224123')[0m
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (166.7ms)[0m  [1mCREATE TABLE `schema_migrations` (`version` varchar(255) NOT NULL) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW KEYS FROM `schema_migrations`
+  [1m[36mSQL (256.1ms)[0m  [1mCREATE UNIQUE INDEX `unique_schema_migrations` ON `schema_migrations` (`version`)[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to InitialSchema (20110421224123)
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (143.4ms)[0m  CREATE TABLE `access_logs` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `userid` varchar(32), `timestamp` datetime, `time_on_page` int(11), `page_id` varchar(40), `scroll_count` int(11), `copy_count` int(11), `referer` varchar(4000), `ip` varchar(50)) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (247.6ms)[0m  CREATE INDEX `index_access_logs_on_page_id` ON `access_logs` (`page_id`)
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (255.7ms)[0m  CREATE INDEX `index_access_logs_on_userid_and_timestamp` ON `access_logs` (`userid`, `timestamp`)
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (138.8ms)[0m  [1mCREATE TABLE `broken_pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000) NOT NULL, `uid` varchar(32) NOT NULL, `timestamp` datetime NOT NULL) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.2ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (139.2ms)[0m  CREATE TABLE `emails` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `email` varchar(255)) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (114.0ms)[0m  [1mCREATE TABLE `pages` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `url` varchar(4000), `checksum` varchar(32), `content_length` int(11), `keywords` varchar(4000), `failed_at` datetime, `failure_reason` varchar(1000), `processed` tinyint) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW KEYS FROM `pages`
+  [1m[36mSQL (247.9ms)[0m  [1mCREATE INDEX `index_pages_on_checksum` ON `pages` (`checksum`)[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW KEYS FROM `pages`
+  [1m[36mSQL (280.3ms)[0m  [1mCREATE INDEX `index_pages_on_url_and_checksum` ON `pages` (`url`(255), `checksum`)[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (137.3ms)[0m  CREATE TABLE `pages_terms` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `page_id` varchar(40), `term_id` int(11), `weight` float, `created_at` datetime, `updated_at` datetime, `source` varchar(20), `active` tinyint DEFAULT 1 NOT NULL) ENGINE=InnoDB
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.2ms)[0m  SHOW TABLES
+  [1m[36mSQL (138.7ms)[0m  [1mCREATE TABLE `stored_apuids` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `identifier` varchar(255), `uid` varchar(255), `valid_until` datetime) ENGINE=InnoDB[0m
+  [1m[35mSQL (0.4ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.3ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (138.9ms)[0m  CREATE TABLE `terms` (`id` int(11) DEFAULT NULL auto_increment PRIMARY KEY, `label` varchar(255), `term_type` varchar(255)) ENGINE=InnoDB
+  [1m[36mSQL (122.4ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('20110421224123')[0m
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.3ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to InitialSchema (20110421224123)
+Migrating to AddGuidToAccessLogs (20110422004417)
+  [1m[35mSQL (406.4ms)[0m  ALTER TABLE `access_logs` ADD `guid` varchar(40)
+  [1m[36mSQL (0.4ms)[0m  [1mSHOW KEYS FROM `access_logs`[0m
+  [1m[35mSQL (239.2ms)[0m  CREATE UNIQUE INDEX `index_access_logs_on_guid` ON `access_logs` (`guid`)
+  [1m[36mSQL (138.8ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('20110422004417')[0m
+  [1m[36mSQL (21.9ms)[0m  [1mSHOW TABLES[0m
+  [1m[35mSQL (0.3ms)[0m  SHOW TABLES
+  [1m[36mSQL (0.1ms)[0m  [1mSELECT `schema_migrations`.`version` FROM `schema_migrations`[0m
+Migrating to InitialSchema (20110421224123)
+Migrating to AddGuidToAccessLogs (20110422004417)
+Migrating to DefaultValueOfFeedbackIndicators (20110423110219)
+  [1m[35mSQL (157.4ms)[0m  ALTER TABLE `access_logs` CHANGE `time_on_page` `time_on_page` int(11) DEFAULT 0
+  [1m[36mSQL (83.0ms)[0m  [1mALTER TABLE `access_logs` CHANGE `scroll_count` `scroll_count` int(11) DEFAULT 0[0m
+  [1m[35mSQL (65.3ms)[0m  ALTER TABLE `access_logs` CHANGE `copy_count` `copy_count` int(11) DEFAULT 0
+  [1m[36mSQL (147.7ms)[0m  [1mINSERT INTO `schema_migrations` (`version`) VALUES ('20110423110219')[0m
