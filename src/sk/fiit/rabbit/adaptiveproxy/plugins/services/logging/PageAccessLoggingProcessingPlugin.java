@@ -24,15 +24,15 @@ import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.Checksum;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.JavaScript;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends.LoggingBackendFailure;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UIDFromCookieProcessingPlugin;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.Checksum;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.JavaScript;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.MetallClient;
 
 /**
  * Implementation of page and access logging.

@@ -22,11 +22,11 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.JdbcTemplate;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.SqlUtils;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.JdbcTemplate;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.MetallClient;
+import sk.fiit.rabbit.adaptiveproxy.plugins.utils.SqlUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

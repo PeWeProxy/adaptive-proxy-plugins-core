@@ -1,4 +1,4 @@
-package sk.fiit.rabbit.adaptiveproxy.plugins.common;
+package sk.fiit.rabbit.adaptiveproxy.plugins.utils;
 
 public class DatabaseAccessException extends RuntimeException {
 
