@@ -119,6 +119,9 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 	 */
 	@Override
 	public void processTransferedResponse(HttpResponse response) {
+		
+		if(response.getRequest().getRequestHeader().getRequestURI().contains("nologging")) return;
+		
 		String accessGUID = accessGUIDs.get(response);
 		
 		if(accessGUID != null && response.getServicesHandle().isServiceAvailable(LoggingBackendService.class)
