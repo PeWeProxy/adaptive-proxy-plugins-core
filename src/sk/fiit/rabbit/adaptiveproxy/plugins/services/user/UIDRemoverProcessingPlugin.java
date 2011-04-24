@@ -16,73 +16,69 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	private String pattern = null;
 	private String header = null;
 	private String exception = null;
-	
-	public RequestProcessingActions processRequest(ModifiableHttpRequest request)
-	{
-		if ((exception != null) && (!exception.equals("")) && (!(request.getRequestHeader().getRequestURI().contains(exception))))
-		{
+
+	@Override
+	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
+		if ((exception != null) && (!exception.equals(""))
+				&& (!(request.getRequestHeader().getRequestURI().contains(exception)))) {
 			{
 				String cookie = request.getRequestHeader().getField(header);
 				if (cookie != null) {
-				    cookie = removeUID(cookie);
-				    request.getRequestHeader().setField(header, cookie);
+					cookie = removeUID(cookie);
+					request.getRequestHeader().setField(header, cookie);
 				}
 			}
 		}
-		
+
 		return RequestProcessingActions.PROCEED;
 	}
-	
-	public HttpRequest getNewRequest(ModifiableHttpRequest request, HttpMessageFactory messageFactory)
-	{
+
+	@Override
+	public HttpRequest getNewRequest(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
 		return request;
 	}
-	
-	private String removeUID (String text)
-	{
+
+	private String removeUID(String text) {
 		String[] data = text.split(";");
 		String result = "";
-		
-		for (int i = 0; i < data.length; i++)
-		{
+
+		for (int i = 0; i < data.length; i++) {
 			String element = data[i];
 			result += element.indexOf(pattern) == -1 ? (element + ";") : "";
 		}
-		
+
 		result = result.substring(0, result.length() - 1);
 		return result;
 	}
-	
-	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory)
-	{
+
+	@Override
+	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
 		return null;
 	}
-	
-	public void processTransferedRequest(HttpRequest request)
-	{
-		
+
+	@Override
+	public void processTransferedRequest(HttpRequest request) {
+
 	}
-	
-	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices,
-			RequestHeader webRQHeader)
-	{
+
+	@Override
+	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices, RequestHeader webRQHeader) {
 	}
-	
-	public boolean start(PluginProperties props)
-	{
+
+	@Override
+	public boolean start(PluginProperties props) {
 		pattern = props.getProperty("pattern");
 		header = props.getProperty("header");
 		exception = props.getProperty("exception");
 		return true;
 	}
-	
-	public void stop()
-	{
-		
+
+	@Override
+	public void stop() {
 	}
-	
-	public boolean supportsReconfigure(PluginProperties newProps)
-	{
-		return false;
+
+	@Override
+	public boolean supportsReconfigure(PluginProperties newProps) {
+		return true;
 	}
 }
