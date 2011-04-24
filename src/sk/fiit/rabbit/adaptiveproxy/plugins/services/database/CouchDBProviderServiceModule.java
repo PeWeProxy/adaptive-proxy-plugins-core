@@ -18,17 +18,17 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
 import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.CouchDBProviderService;
 
-public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule, ResponseServiceModule {
+public class CouchDBProviderServiceModule implements RequestServiceModule, ResponseServiceModule {
 	
-	private static final Logger logger = Logger.getLogger(CouchDBDatabaseSessionServiceModul.class);
+	private static final Logger logger = Logger.getLogger(CouchDBProviderServiceModule.class);
 
 	private Database database;
 
-	private class CouchDBDatabaseSessionProvider implements DatabaseSessionProviderService,
-			RequestServiceProvider<DatabaseSessionProviderService>,
-			ResponseServiceProvider<DatabaseSessionProviderService> {
+	private class CouchDBDatabaseSessionProvider implements CouchDBProviderService,
+			RequestServiceProvider<CouchDBProviderService>,
+			ResponseServiceProvider<CouchDBProviderService> {
 
 		@Override
 		public Database getDatabase() {
@@ -41,7 +41,7 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 		}
 
 		@Override
-		public DatabaseSessionProviderService getService() {
+		public CouchDBProviderService getService() {
 			return this;
 		}
 
@@ -99,14 +99,14 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 
 	@Override
 	public void getProvidedResponseServices(Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(DatabaseSessionProviderService.class);
+		providedServices.add(CouchDBProviderService.class);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
-		if (serviceClass.equals(DatabaseSessionProviderService.class)) {
+		if (serviceClass.equals(CouchDBProviderService.class)) {
 			return (ResponseServiceProvider<Service>) new CouchDBDatabaseSessionProvider();
 		}
 		return null;
@@ -114,14 +114,14 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 
 	@Override
 	public void getProvidedRequestServices(Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(DatabaseSessionProviderService.class);
+		providedServices.add(CouchDBProviderService.class);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
 			Class<Service> serviceClass) throws ServiceUnavailableException {
-		if (serviceClass.equals(DatabaseSessionProviderService.class)) {
+		if (serviceClass.equals(CouchDBProviderService.class)) {
 			return (RequestServiceProvider<Service>) new CouchDBDatabaseSessionProvider();
 		}
 

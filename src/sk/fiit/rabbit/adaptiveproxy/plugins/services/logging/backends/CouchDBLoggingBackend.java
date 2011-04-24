@@ -23,7 +23,7 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.CouchDBProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
 
 public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServiceModule {
@@ -35,7 +35,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 		
 		private final Database couch;
 
-		public CouchDBLoggingBackendProvider(DatabaseSessionProviderService couchProvider) {
+		public CouchDBLoggingBackendProvider(CouchDBProviderService couchProvider) {
 			this.couch = couchProvider.getDatabase();
 		}
 
@@ -139,7 +139,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 
 	@Override
 	public void desiredResponseServices(Set<Class<? extends ProxyService>> desiredServices, ResponseHeader webRPHeader) {
-		desiredServices.add(DatabaseSessionProviderService.class);
+		desiredServices.add(CouchDBProviderService.class);
 	}
 
 	@Override
@@ -153,7 +153,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
-			DatabaseSessionProviderService couchProvider = response.getServicesHandle().getService(DatabaseSessionProviderService.class);
+			CouchDBProviderService couchProvider = response.getServicesHandle().getService(CouchDBProviderService.class);
 			return (ResponseServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider);
 		}
 
@@ -171,7 +171,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 			Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
-			DatabaseSessionProviderService couchProvider = request.getServicesHandle().getService(DatabaseSessionProviderService.class);
+			CouchDBProviderService couchProvider = request.getServicesHandle().getService(CouchDBProviderService.class);
 			return (RequestServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider);
 		}
 

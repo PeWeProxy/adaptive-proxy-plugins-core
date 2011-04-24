@@ -3,7 +3,7 @@
 <plugin>
   <name>CouchDBDatabaseSessionService</name>
   <classLocation/>
-  <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.CouchDBDatabaseSessionServiceModul</className>
+  <className>sk.fiit.rabbit.adaptiveproxy.plugins.services.database.CouchDBProviderServiceModule</className>
   <libraries>
   	<lib>commons-beanutils-1.8.3.jar</lib>
   	<lib>commons-codec-1.4.jar</lib>
