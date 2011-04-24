@@ -1,11 +1,19 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging;
 
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
 import org.apache.log4j.Logger;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import sk.fiit.peweproxy.headers.ResponseHeader;
 import sk.fiit.peweproxy.messages.HttpMessageFactory;
@@ -14,8 +22,11 @@ import sk.fiit.peweproxy.messages.ModifiableHttpResponse;
 import sk.fiit.peweproxy.plugins.PluginProperties;
 import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
+import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.JavaScript;
+import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
@@ -40,12 +51,13 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UIDFromCookieProcessin
  *   <li> The user identifier is later filled in by the activity logging plugin </li>
  * </ol>
  * 
- * <em>
  * The user identifier may not be known at this point. This is because of the cookie mechanism that is
  * employed in the identification process. When the particular domain is visited, the cookie is inserted
  * by JavaScript only after the first page has been processed by client browser. 
  * See {@link UIDFromCookieProcessingPlugin} for details.
- * </em>
+ * 
+ * The logging is provided by {@link LoggingBackendService}S. All available implementations are asked
+ * to perform the page access logging, which provides a facility for logging to multiple backend storages.
  */
 public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlugin {
 	
@@ -113,21 +125,59 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 				&& response.getServicesHandle().isServiceAvailable(StringContentService.class)
 				&& response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)) {
 			
+			
 			LoggingBackendService loggingBackend = response.getServicesHandle().getService(LoggingBackendService.class);
 			String userId = response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
 			String uri = response.getRequest().getRequestHeader().getRequestURI();
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
-			
+			String ip = response.getRequest().getClientSocketAddress().getAddress().toString();
+			String referrer = response.getRequest().getRequestHeader().getField("Referer");
+			String checksum = Checksum.md5(new MetallClient().cleartext(content));
+			List<Map> terms = getTerms(content);
+
 			try {
-				String ip = response.getRequest().getClientSocketAddress().getAddress().toString();
-				String referrer = response.getRequest().getRequestHeader().getField("Referer");
-				
-				loggingBackend.logPageAccess(accessGUID, userId, uri, content, referrer, ip);
-				
-			} catch (LoggingBackendFailure e) {
-				logger.error("Could not log to backend " + loggingBackend.getClass().getName(), e);
+				do {
+					try {
+						loggingBackend.logPageAccess(accessGUID, userId, uri, content, referrer, ip, checksum, terms);
+					} catch (LoggingBackendFailure e) {
+						logger.error("Could not log to backend " + loggingBackend.getClass().getName(), e);
+					}
+					
+					loggingBackend = response.getServicesHandle().getNextService(loggingBackend);
+				} while(true);
+			} catch(ServiceUnavailableException e) {
+				// no more logging backends to write to
 			}
 		}
 	}
-
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<Map> getTerms(String content) {
+		List terms = new LinkedList();
+		
+		JsonElement keywords = new JsonParser().parse(new MetallClient().keywords(content));
+		for(JsonElement keyword : keywords.getAsJsonArray()) {
+			JsonObject keywordObject = keyword.getAsJsonObject();
+			String name = keywordObject.get("name").getAsString();
+			String type = keywordObject.get("type").getAsString();
+			String relevance = keywordObject.get("relevance").getAsString();
+			try {
+				double floatRelevance = Double.parseDouble(relevance);
+				relevance = new DecimalFormat("#.##").format(floatRelevance);
+			} catch (NumberFormatException e) {
+				relevance = null;
+			}
+			String source = keywordObject.get("source").getAsString();
+			
+			Map term = new HashMap();
+			term.put("name", name);
+			term.put("type", type);
+			term.put("relevance", relevance);
+			term.put("source", source);
+			
+			terms.add(term);
+		}
+		
+		return terms;
+	}
 }

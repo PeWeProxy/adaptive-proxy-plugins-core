@@ -2,6 +2,8 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends;
 
 import java.sql.Connection;
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -20,7 +22,6 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.common.Checksum;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.JdbcTemplate;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.MetallClient;
 import sk.fiit.rabbit.adaptiveproxy.plugins.common.SqlUtils;
@@ -68,15 +69,15 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 		}
 		
 		@Override
-		public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip) throws LoggingBackendFailure {
+		public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip,
+								  String checksum, List<Map> terms) throws LoggingBackendFailure {
 			Connection connection = connectionProvider.getDatabaseConnection();
 			JdbcTemplate jdbc = new JdbcTemplate(connection);
 			try {
-				String checksum = Checksum.md5(new MetallClient().cleartext(content));
 				Integer pageId = (Integer) jdbc.queryFor("SELECT id FROM pages WHERE url = ? AND checksum = ?", new Object[] { uri, checksum }, Integer.class);
 				
 				if(pageId == null) {
-					pageId = createNewPage(jdbc, uri, content, checksum);
+					pageId = createNewPage(jdbc, uri, content, checksum, terms);
 				}
 				
 				jdbc.insert("INSERT INTO access_logs(guid, userid, timestamp, page_id, referer, ip) VALUES(?,?,NOW(),?,?,?)", 
@@ -86,43 +87,22 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 			}
 		}
 
-		private Integer createNewPage(JdbcTemplate jdbc, String uri, String content, String checksum) {
+		private Integer createNewPage(JdbcTemplate jdbc, String uri, String content, String checksum, List<Map> terms) {
 			Integer id = jdbc.insert("INSERT INTO pages(url, checksum, content_length) VALUES(?,?,?)", new Object[] { uri, checksum, content.length() });
-			
-			try {
-				logPagesTerms(jdbc, id, content);
-			} catch(Exception e) {
-				// swallow all exceptions, pages terms are not that important and if anything raises,
-				// we want the logging process to continue
-				logger.warn("Could not save pages terms", e);
-			}
-			
-			return id;
-		}
 
-		private void logPagesTerms(JdbcTemplate jdbc, Integer pageId, String content) {
-			JsonElement keywords = new JsonParser().parse(new MetallClient().keywords(content));
-			for(JsonElement keyword : keywords.getAsJsonArray()) {
-				JsonObject keywordObject = keyword.getAsJsonObject();
-				String name = keywordObject.get("name").getAsString();
-				String type = keywordObject.get("type").getAsString();
-				String relevance = keywordObject.get("relevance").getAsString();
-				try {
-					double floatRelevance = Double.parseDouble(relevance);
-					relevance = new DecimalFormat("#.##").format(floatRelevance);
-				} catch (NumberFormatException e) {
-					relevance = null;
-				}
-				String source = keywordObject.get("source").getAsString();
-				
-				Integer termId = (Integer) jdbc.queryFor("SELECT id FROM terms WHERE label = ? AND term_type = ?", new Object[] { name, type }, Integer.class);
+			for(Map term : terms) {
+				Integer termId = (Integer) jdbc.queryFor("SELECT id FROM terms WHERE label = ? AND term_type = ?", 
+						new Object[] { term.get("name"), term.get("type") }, Integer.class);
 				if (termId == null) {
-					termId = jdbc.insert("INSERT INTO terms(label, term_type) VALUES(?, ?)", new Object[] { name, type });
+					termId = jdbc.insert("INSERT INTO terms(label, term_type) VALUES(?, ?)", 
+							new Object[] { term.get("name"), term.get("type") });
 				}
 				
 				jdbc.insert("INSERT INTO pages_terms(page_id, term_id, weight, created_at, updated_at, source) VALUES (?,?,?,NOW(),NOW(),?)", 
-						new Object[] { pageId, termId, relevance, source });
+						new Object[] { id, termId, term.get("relevance"), term.get("source") });
 			}
+			
+			return id;
 		}
 
 		@Override

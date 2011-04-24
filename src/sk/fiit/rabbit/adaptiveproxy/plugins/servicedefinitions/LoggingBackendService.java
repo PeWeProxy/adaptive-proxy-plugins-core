@@ -1,7 +1,9 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
+import java.util.List;
+import java.util.Map;
+
 import sk.fiit.peweproxy.services.ProxyService;
-import sk.fiit.peweproxy.services.ProxyService.readonly;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends.LoggingBackendFailure;
 
 public interface LoggingBackendService extends ProxyService {
@@ -15,12 +17,13 @@ public interface LoggingBackendService extends ProxyService {
 	 * @param content textual content of the accessed page
 	 * @param referrer HTTP referrer
 	 * @param ip client's IP address
-	 * @param ip2 
+	 * @param terms list of terms extracted from the page content
+	 * @param checksum checksum of the page cleartext
 	 * 
 	 * @throws LoggingBackendFailure
 	 */
 	@readonly
-	public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip) throws LoggingBackendFailure;
+	public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip, String checksum, List<Map> terms) throws LoggingBackendFailure;
 
 	/**
 	 * Update activity on the specified access (identified by its GUID)

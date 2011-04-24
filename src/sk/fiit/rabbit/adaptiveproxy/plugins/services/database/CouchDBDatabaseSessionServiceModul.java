@@ -3,6 +3,7 @@ package sk.fiit.rabbit.adaptiveproxy.plugins.services.database;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.jcouchdb.db.Database;
 
 import sk.fiit.peweproxy.headers.RequestHeader;
 import sk.fiit.peweproxy.headers.ResponseHeader;
@@ -18,9 +19,6 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseSessionProviderService;
-
-import com.fourspaces.couchdb.Database;
-import com.fourspaces.couchdb.Session;
 
 public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule, ResponseServiceModule {
 	
@@ -74,12 +72,8 @@ public class CouchDBDatabaseSessionServiceModul implements RequestServiceModule,
 		int port = props.getIntProperty("port", 5984);
 		String dbName = props.getProperty("dbName", "proxy");
 
-		String userName = props.getProperty("userName");
-		String password = props.getProperty("password");
-
 		try {
-			Session session = new Session(host, port);
-			this.database = session.getDatabase(dbName);
+			database = new Database(host, port, dbName);
 		} catch (Exception e) {
 			logger.error("Unable to create CouchDB Session ", e);
 			return false;

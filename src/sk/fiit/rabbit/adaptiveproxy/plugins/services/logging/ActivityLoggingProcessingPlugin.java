@@ -10,11 +10,13 @@ import sk.fiit.peweproxy.messages.HttpMessageFactory;
 import sk.fiit.peweproxy.messages.HttpResponse;
 import sk.fiit.peweproxy.messages.ModifiableHttpRequest;
 import sk.fiit.peweproxy.services.ProxyService;
+import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
+import sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends.LoggingBackendFailure;
 
 public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessingPlugin
 {
@@ -29,7 +31,20 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 			LoggingBackendService loggingBackend = request.getServicesHandle().getService(LoggingBackendService.class);
 			String userId = request.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
 			
-			loggingBackend.logActivity(userId, post.get("access_guid"), post.get("period"), post.get("scrolls"), post.get("copies"));
+			
+			try {
+				do {
+					try {
+						loggingBackend.logActivity(userId, post.get("access_guid"), post.get("period"), post.get("scrolls"), post.get("copies"));
+					} catch (LoggingBackendFailure e) {
+						logger.error("Could not log activity to backend " + loggingBackend.getClass().getName(), e);
+					}
+					
+					loggingBackend = request.getServicesHandle().getNextService(loggingBackend);
+				} while(true);
+			} catch(ServiceUnavailableException e) {
+				// no more logging backends to write to
+			}
 		}
 		
 		return messageFactory.constructHttpResponse(null, "text/html");

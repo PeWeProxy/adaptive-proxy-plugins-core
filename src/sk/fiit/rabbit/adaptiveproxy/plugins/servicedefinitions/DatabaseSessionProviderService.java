@@ -1,9 +1,8 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions;
 
-import sk.fiit.peweproxy.services.ProxyService;
-import sk.fiit.peweproxy.services.ProxyService.readonly;
+import org.jcouchdb.db.Database;
 
-import com.fourspaces.couchdb.Database;
+import sk.fiit.peweproxy.services.ProxyService;
 
 public interface DatabaseSessionProviderService extends ProxyService {
 	
