@@ -155,27 +155,31 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 	private List<Map> getTerms(String content) {
 		List terms = new LinkedList();
 		
-		JsonElement keywords = new JsonParser().parse(new MetallClient().keywords(content));
-		for(JsonElement keyword : keywords.getAsJsonArray()) {
-			JsonObject keywordObject = keyword.getAsJsonObject();
-			String name = keywordObject.get("name").getAsString();
-			String type = keywordObject.get("type").getAsString();
-			String relevance = keywordObject.get("relevance").getAsString();
-			try {
-				double floatRelevance = Double.parseDouble(relevance);
-				relevance = new DecimalFormat("#.##").format(floatRelevance);
-			} catch (NumberFormatException e) {
-				relevance = null;
+		try {
+			JsonElement keywords = new JsonParser().parse(new MetallClient().keywords(content));
+			for(JsonElement keyword : keywords.getAsJsonArray()) {
+				JsonObject keywordObject = keyword.getAsJsonObject();
+				String name = keywordObject.get("name").getAsString();
+				String type = keywordObject.get("type").getAsString();
+				String relevance = keywordObject.get("relevance").getAsString();
+				try {
+					double floatRelevance = Double.parseDouble(relevance);
+					relevance = new DecimalFormat("#.##").format(floatRelevance);
+				} catch (NumberFormatException e) {
+					relevance = null;
+				}
+				String source = keywordObject.get("source").getAsString();
+				
+				Map term = new HashMap();
+				term.put("name", name);
+				term.put("type", type);
+				term.put("relevance", relevance);
+				term.put("source", source);
+				
+				terms.add(term);
 			}
-			String source = keywordObject.get("source").getAsString();
-			
-			Map term = new HashMap();
-			term.put("name", name);
-			term.put("type", type);
-			term.put("relevance", relevance);
-			term.put("source", source);
-			
-			terms.add(term);
+		} catch(Exception e) {
+			logger.warn("Could not retrieve terms.", e);
 		}
 		
 		return terms;
