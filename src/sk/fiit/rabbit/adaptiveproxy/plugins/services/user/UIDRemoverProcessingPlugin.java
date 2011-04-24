@@ -14,7 +14,6 @@ import sk.fiit.peweproxy.services.ProxyService;
 public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 
 	private String pattern = null;
-	private String header = null;
 	private String exception = null;
 
 	@Override
@@ -22,10 +21,10 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 		if ((exception != null) && (!exception.equals(""))
 				&& (!(request.getRequestHeader().getRequestURI().contains(exception)))) {
 			{
-				String cookie = request.getRequestHeader().getField(header);
+				String cookie = request.getRequestHeader().getField("Cookie");
 				if (cookie != null) {
 					cookie = removeUID(cookie);
-					request.getRequestHeader().setField(header, cookie);
+					request.getRequestHeader().setField("Cookie", cookie);
 				}
 			}
 		}
@@ -68,7 +67,6 @@ public class UIDRemoverProcessingPlugin implements RequestProcessingPlugin {
 	@Override
 	public boolean start(PluginProperties props) {
 		pattern = props.getProperty("pattern");
-		header = props.getProperty("header");
 		exception = props.getProperty("exception");
 		return true;
 	}

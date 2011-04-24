@@ -27,7 +27,6 @@ public class CookieUserIdentificationServiceModule implements RequestServiceModu
 	private static final Logger logger = Logger.getLogger(CookieUserIdentificationServiceModule.class);
 
 	String idPart = null;
-	String header = null;
 
 	private class UserServiceProvider implements UserIdentificationService,
 			RequestServiceProvider<UserIdentificationService>,
@@ -71,7 +70,7 @@ public class CookieUserIdentificationServiceModule implements RequestServiceModu
 	}
 	
 	private String getUIDForMessage(ReadableHeader headers) {
-		String cookies =  headers.getField(header);
+		String cookies =  headers.getField("Cookie");
 		
 		if (cookies != null) {
 			
@@ -94,7 +93,6 @@ public class CookieUserIdentificationServiceModule implements RequestServiceModu
 	@Override
 	public boolean start(PluginProperties props) {
 		idPart = props.getProperty("idPart");
-		header = props.getProperty("header");
 		return true;
 	}
 

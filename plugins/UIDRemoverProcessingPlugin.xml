@@ -10,6 +10,5 @@
 	<parameters>
 		<param name="exception">${plugins-core:baseurl}</param>
 		<param name="pattern">__peweproxy_uid=</param>
-		<param name="header">Cookie</param>
 	</parameters>
 </plugin>

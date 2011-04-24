@@ -9,7 +9,6 @@
 		<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
-		<param name="header">Cookie</param>
 		<param name="idPart">__peweproxy_uid=</param>
 	</parameters>
 </plugin>
