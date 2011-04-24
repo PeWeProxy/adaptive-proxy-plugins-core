@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.mysql.jdbc.Statement;
 
@@ -15,7 +17,7 @@ public class JdbcTemplate {
 		this.connection = connection;
 	}
 
-	public Object queryFor(String query, Object[] parameters, Class<?> ofClass) {
+	public <T> T queryFor(String query, Object[] parameters, Class<T> ofClass) {
 		PreparedStatement statement = null;
 		try {
 			statement = connection.prepareStatement(query);
@@ -24,7 +26,7 @@ public class JdbcTemplate {
 			ResultSet rs = statement.executeQuery();
 
 			if (rs.first()) {
-				return rs.getObject(1);
+				return (T) rs.getObject(1);
 			} else {
 				return null;
 			}
@@ -33,6 +35,52 @@ public class JdbcTemplate {
 		} finally {
 			SqlUtils.close(statement);
 		}
+	}
+	
+	public interface ResultProcessor<T> {
+		public T processRow(ResultSet rs) throws SQLException;
+	}
+	
+	public <T> List<T> findAll(String query, Object[] parameters, ResultProcessor<T> processor) {
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(query);
+			setStatementParameters(statement, parameters);
+
+			ResultSet rs = statement.executeQuery();
+			
+			List<T> results = new LinkedList<T>();
+
+			while(rs.next()) {
+				results.add(processor.processRow(rs));
+			}
+			
+			return results;
+		} catch (SQLException e) {
+			throw new DatabaseAccessException(e);
+		} finally {
+			SqlUtils.close(statement);
+		}		
+	}
+	
+	public <T> T find(String query, Object[] parameters, ResultProcessor<T> processor) {
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(query);
+			setStatementParameters(statement, parameters);
+
+			ResultSet rs = statement.executeQuery();
+			
+			if(rs.first()) {
+				return processor.processRow(rs);
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			throw new DatabaseAccessException(e);
+		} finally {
+			SqlUtils.close(statement);
+		}		
 	}
 	
 	public Integer insert(String query, Object[] parameters) {
