@@ -1,5 +1,9 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +26,8 @@ import sk.fiit.peweproxy.plugins.services.ResponseServiceModule;
 import sk.fiit.peweproxy.plugins.services.ResponseServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.CouchDBProviderService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
 
 public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServiceModule {
@@ -96,6 +100,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 			access.put("user_id", userId);
 			access.put("referrer", referrer);
 			access.put("ip", ip);
+			access.put("timestamp", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 			couch.createDocument(access);
 		}
 
