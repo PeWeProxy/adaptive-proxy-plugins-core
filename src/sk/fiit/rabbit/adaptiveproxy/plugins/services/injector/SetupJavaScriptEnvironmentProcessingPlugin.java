@@ -42,6 +42,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 					  "}\n" +
                       "</script>" +
                       "<script src='" + jQueryPath + "'></script>" +
+                      "<script src='http://127.0.0.1:9666/FileSender/public/peweproxy.js'></script>" +
                       "<!-- __ap_scripts__ -->";
 
 		htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);

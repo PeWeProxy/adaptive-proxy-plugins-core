@@ -102,8 +102,8 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 			accessGUIDs.put(response, accessGUID);
 
 			HtmlInjectorService htmlInjector = response.getServicesHandle().getService(HtmlInjectorService.class);
-			String script = String.format("var __access_guid='%s'", accessGUID);
-			htmlInjector.inject(JavaScript.wrap(script), HtmlPosition.START_OF_BODY);
+			String script = String.format("peweproxy.access_id='%s'", accessGUID);
+			htmlInjector.inject(JavaScript.wrap(script), HtmlPosition.END_OF_BODY);
 		}
 		return ResponseProcessingActions.PROCEED;
 	}

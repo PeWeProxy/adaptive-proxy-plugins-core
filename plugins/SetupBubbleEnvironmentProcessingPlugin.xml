@@ -11,7 +11,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuScript.js</param>
+		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/bubble.js</param>
 		<param name="additionalHTML">
 		<![CDATA[
 			<div id="peweproxy_addons_container">
