@@ -5,13 +5,13 @@
 [request]
 UIDFromCookieProcessingPlugin
 FilteringProcessingPlugin
-KeywordsDisplayProcessingPlugin
+KeyWordsProcessingPlugin
 ActivityLoggingProcessingPlugin
 
 [response]
 FilteringProcessingPlugin
 SetupJavaScriptEnvironmentProcessingPlugin
-KeywordsDisplayProcessingPlugin
+KeyWordsProcessingPlugin
 ActivityLoggingProcessingPlugin
-UserAccessLoggingProcessingPlugin
+PageAccessLoggingProcessingPlugin
 UIDFromCookieProcessingPlugin
