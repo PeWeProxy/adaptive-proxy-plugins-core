@@ -11,7 +11,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/bubble.js</param>
+		<param name="scriptUrl">${plugins-core:assets-path}/bubble.js</param>
 		<param name="additionalHTML">
 		<![CDATA[
 			<div id="peweproxy_addons_container">
@@ -44,14 +44,14 @@
 					position: absolute;
 					top: 0;
 					right: 0;
-					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_banner_wide.png');
+					background-image: url('${plugins-core:assets-path}/clientBubbleMenuImages/button_banner_wide.png');
 					/*width: 79px;*/
 					height: 30px;
 				}
 				
 				a.__peweproxy_addons_button{
 				    background-color: transparent !important;
-				    background-image: url("${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png");
+				    background-image: url("${plugins-core:assets-path}/clientBubbleMenuImages/button_small.png");
 				    background-repeat: no-repeat;
 				    display: block;
 				    height: 12px;
