@@ -13,10 +13,4 @@ peweproxy.register_module('bubble', function($) {
 			});
 		});
 	});
-
-	$(document).scroll(function() {
-		$('#peweproxy_addons_container').animate( {
-			'top' : $(document).scrollTop()
-		}, 'fast');
-	});
 });

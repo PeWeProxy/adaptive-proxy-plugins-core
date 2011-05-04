@@ -27,7 +27,7 @@
 		    
 			<style type="text/css">
 				#peweproxy_addons_container{
-					position: absolute;
+					position: fixed;
 					top: 0;
 					right: 0;
 					font-family: 'Trebuchet MS', Verdana, Arial;
