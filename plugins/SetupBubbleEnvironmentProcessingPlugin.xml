@@ -50,14 +50,19 @@
 				}
 				
 				a.__peweproxy_addons_button{
-					position: absolute;
-					top: 0;
-					right: 0;
-					display: block;
-					background-repeat: no-repeat;
-					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png');
-					width: 12px;
-					height: 12px;
+				    background-color: transparent !important;
+				    background-image: url("${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png");
+				    background-repeat: no-repeat;
+				    display: block;
+				    height: 12px;
+				    position: absolute;
+				    right: 0;
+				    top: 0;
+				    width: 12px;
+				}
+				
+				#peweproxy_addons_container a:link, #peweproxy_addons_container a:visited, #peweproxy_addons_container a:hover, #peweproxy_addons_container a:active {
+					background-color: transparent !important;
 				}
 			</style>
 		]]>
