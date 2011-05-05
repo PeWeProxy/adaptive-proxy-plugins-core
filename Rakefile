@@ -141,15 +141,15 @@ namespace :after do
 		#we need this jars for service definitions
 		libs = ["commons-beanutils-1.8.3.jar",
 			"commons-codec-1.4.jar",
-			"commons-collections-3.2.1.jar",
-			"commons-httpclient-3.0.jar",
-			"commons-lang-2.5.jar",
+			"commons-io-1.4.jar",
 			"commons-logging-1.1.1.jar",
-			"couchdb4j-0.1.2.jar",
-			"ezmorph-1.0.6.jar",
-			"json-lib-2.4-jdk15.jar",
+            "httpcore-4.0.1.jar",
+            "httpclient-4.0.jar",
+            "log4j-1.2.15.jar",
 			"slf4j-api-1.5.11.jar",
-			"slf4j-simple-1.5.11.jar"
+			"slf4j-simple-1.5.11.jar",
+            "svenson-1.4.0.jar",
+            "jcouchdb-1.0.1-1.jar"
 		]
 
 		libs.each do |lib|
