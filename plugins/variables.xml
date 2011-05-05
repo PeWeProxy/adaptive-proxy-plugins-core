@@ -2,5 +2,6 @@
 <!DOCTYPE variables SYSTEM "VariablesConfiguration.dtd">
 <variables>
 	<variable name="plugins-core:baseurl">http://peweproxy-staging.fiit.stuba.sk/proxy</variable>
-	<variable name="plugins-core:proxyurl">http://127.0.0.1:9666</variable>
+	<variable name="plugins-core:proxyurl">http://peweproxy-staging.fiit.stuba.sk:9666</variable>
+	<variable name="plugins-core:assets-path">http://peweproxy-staging.fiit.stuba.sk:9666/FileSender/public</variable>
 </variables>

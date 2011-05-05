@@ -8,6 +8,6 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="jQueryPath">${plugins-core:proxyurl}/FileSender/public/jquery-1.5.2.js</param>
+		<param name="jQueryPath">${plugins-core:assets-path}/jquery-1.5.2.js</param>
 	</parameters>
 </plugin>

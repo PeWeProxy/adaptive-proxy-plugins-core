@@ -11,7 +11,7 @@
 		<type>ResponseProcessingPlugin</type>
 	</types>
 	<parameters>
-		<param name="scriptUrl">${plugins-core:proxyurl}/FileSender/public/bubble.js</param>
+		<param name="scriptUrl">${plugins-core:assets-path}/bubble.js</param>
 		<param name="additionalHTML">
 		<![CDATA[
 			<div id="peweproxy_addons_container">
@@ -27,37 +27,51 @@
 		    
 			<style type="text/css">
 				#peweproxy_addons_container{
-					position: absolute;
+					position: fixed;
 					top: 0;
 					right: 0;
 					font-family: 'Trebuchet MS', Verdana, Arial;
 					font-size: 12px;
 					color: #2f2f2f;
 					text-align: left;
+					z-index: 16777271;
 				}
 				
 				div#peweproxy_addons_container .hidden{
 					display: none;
 				}
 				
+				#peweproxy_addons_container table{
+					border:0;
+				}
+				
+				#peweproxy_addons_container table td{
+					border:0;
+				}			
+				
 				div#peweproxy_icon_banner{
 					position: absolute;
 					top: 0;
 					right: 0;
-					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_banner_wide.png');
+					background-image: url('${plugins-core:assets-path}/clientBubbleMenuImages/button_banner_wide.png');
 					/*width: 79px;*/
 					height: 30px;
 				}
 				
 				a.__peweproxy_addons_button{
-					position: absolute;
-					top: 0;
-					right: 0;
-					display: block;
-					background-repeat: no-repeat;
-					background-image: url('${plugins-core:proxyurl}/FileSender/public/clientBubbleMenuImages/button_small.png');
-					width: 12px;
-					height: 12px;
+				    background-color: transparent !important;
+				    background-image: url("${plugins-core:assets-path}/clientBubbleMenuImages/button_small.png");
+				    background-repeat: no-repeat;
+				    display: block;
+				    height: 12px;
+				    position: absolute;
+				    right: 0;
+				    top: 0;
+				    width: 12px;
+				}
+				
+				#peweproxy_addons_container a:link, #peweproxy_addons_container a:visited, #peweproxy_addons_container a:hover, #peweproxy_addons_container a:active {
+					background-color: transparent !important;
 				}
 			</style>
 		]]>

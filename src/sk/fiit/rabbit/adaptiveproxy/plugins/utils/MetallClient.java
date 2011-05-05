@@ -17,7 +17,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 public class MetallClient {
-	private static final String METALL_BASE_URL = "http://localhost:9292";
+	private static final String METALL_BASE_URL = "http://peweproxy.fiit.stuba.sk/metall";
 	
 	public class MetallClientException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
