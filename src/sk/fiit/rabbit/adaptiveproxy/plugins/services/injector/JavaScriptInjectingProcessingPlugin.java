@@ -22,7 +22,6 @@ import sk.fiit.peweproxy.plugins.processing.RequestProcessingPlugin;
 import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService.HtmlPosition;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 
 public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {

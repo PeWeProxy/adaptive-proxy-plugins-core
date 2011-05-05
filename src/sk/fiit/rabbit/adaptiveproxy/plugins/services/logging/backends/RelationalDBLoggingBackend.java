@@ -1,7 +1,6 @@
 package sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends;
 
 import java.sql.Connection;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,12 +24,7 @@ import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.utils.JdbcTemplate;
-import sk.fiit.rabbit.adaptiveproxy.plugins.utils.MetallClient;
 import sk.fiit.rabbit.adaptiveproxy.plugins.utils.SqlUtils;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class RelationalDBLoggingBackend implements RequestServiceModule, ResponseServiceModule {
 	
