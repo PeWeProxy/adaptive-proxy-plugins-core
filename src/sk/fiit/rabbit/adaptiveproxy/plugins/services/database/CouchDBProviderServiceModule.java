@@ -74,6 +74,7 @@ public class CouchDBProviderServiceModule implements RequestServiceModule, Respo
 
 		try {
 			database = new Database(host, port, dbName);
+			database.getStatus();
 		} catch (Exception e) {
 			logger.error("Unable to create CouchDB Session ", e);
 			return false;
