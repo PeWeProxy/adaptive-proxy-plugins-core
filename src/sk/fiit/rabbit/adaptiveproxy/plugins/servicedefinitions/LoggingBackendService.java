@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import sk.fiit.peweproxy.services.ProxyService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.services.logging.backends.LoggingBackendFailure;
 
 public interface LoggingBackendService extends ProxyService {
 
