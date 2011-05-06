@@ -18,8 +18,8 @@
   <parameters>
     <param name="jdbcURL">jdbc:mysql://localhost:3306/proxy?characterEncoding=UTF-8</param>
     <param name="driver">com.mysql.jdbc.Driver</param>
-    <param name="userName">proxy</param>
-    <param name="password">rabbit</param>
+    <param name="userName">${core:mysql:user}</param>
+    <param name="password">${core:mysql:password}</param>
     <param name="validationQuery">SELECT 1</param>
     <param name="idleTestPeriod">1</param>
     <param name="partitionCount">1</param>
