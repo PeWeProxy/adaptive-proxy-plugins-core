@@ -9,5 +9,6 @@
 	</types>
 	<parameters>
 		<param name="jQueryPath">${plugins-core:assets-path}/jquery-1.5.2.js</param>
+		<param name="peweproxyPath">${plugins-core:assets-path}/peweproxy.js</param>
 	</parameters>
 </plugin>

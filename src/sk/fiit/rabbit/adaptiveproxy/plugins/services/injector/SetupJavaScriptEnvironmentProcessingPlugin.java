@@ -17,6 +17,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorServi
 public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProcessingPlugin {
 	
 	private String jQueryPath;
+	private String peweproxyPath;
 	protected Logger logger = Logger.getLogger(SetupJavaScriptEnvironmentProcessingPlugin.class);
 	
 	@Override
@@ -42,7 +43,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 					  "}\n" +
                       "</script>" +
                       "<script src='" + jQueryPath + "'></script>" +
-                      "<script src='http://127.0.0.1:9666/FileSender/public/peweproxy.js'></script>" +
+                      "<script src='" + peweproxyPath + "'></script>" +
                       "<!-- __ap_scripts__ -->";
 
 		htmlInjectionService.inject(scripts, HtmlPosition.START_OF_BODY);
@@ -54,6 +55,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 	@Override
 	public boolean start(PluginProperties props) {
 		jQueryPath = props.getProperty("jQueryPath");
+		peweproxyPath = props.getProperty("peweproxyPath");
 		return true;
 	}
 
