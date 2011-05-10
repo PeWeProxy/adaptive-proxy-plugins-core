@@ -25,3 +25,7 @@ facebook.com
 grooveshark.com
 soundz.fm
 toolbarqueries.google.com
+|http://www.facebook.com/plugins/like.php
+|http://multibanner.sme.sk/
+|http://www.facebook.com/connect
+|http://grooveshark.com/more.php

@@ -1,3 +1,7 @@
+|http://grooveshark.com/more.php
+|http://www.facebook.com/connect
+|http://multibanner.sme.sk/
+|http://www.facebook.com/plugins/like.php
 nimbus.fiit.stuba.sk/proxy
 https://www.usnews.com^*/ad-welcome.js
 https://www.i.com.com^*/ads/
