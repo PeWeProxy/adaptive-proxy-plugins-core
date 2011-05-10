@@ -28,6 +28,7 @@ import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.CouchDBProviderSe
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendFailure;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.MetadataExtractionService;
 
 public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServiceModule {
 	
@@ -37,9 +38,11 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 			RequestServiceProvider<LoggingBackendService>, ResponseServiceProvider<LoggingBackendService> {
 		
 		private final Database couch;
+		private MetadataExtractionService extractionService;
 
-		public CouchDBLoggingBackendProvider(CouchDBProviderService couchProvider) {
+		public CouchDBLoggingBackendProvider(CouchDBProviderService couchProvider, MetadataExtractionService extractionService) {
 			this.couch = couchProvider.getDatabase();
+			this.extractionService = extractionService;
 		}
 
 		@Override
@@ -68,7 +71,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip, 
-								  String checksum, List<Map> terms) throws LoggingBackendFailure {
+								  String checksum) throws LoggingBackendFailure {
 
 			HashMap page;
 			
@@ -78,7 +81,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 				if(!page.get("checksum").equals(checksum)) {
 					page.put("checksum", checksum);
 					page.put("content_length", content.length());
-					page.put("terms", terms);
+					page.put("terms", extractionService.metadata());
 					couch.updateDocument(page);
 				}
 			} catch (NotFoundException e) {
@@ -87,7 +90,7 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 				page.put("checksum", checksum);
 				page.put("type", "page");
 				page.put("content_length", content.length());
-				page.put("terms", terms);
+				page.put("terms", extractionService.metadata());
 				couch.createDocument(page);
 			}
 			
@@ -139,11 +142,14 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 
 	@Override
 	public void desiredRequestServices(Set<Class<? extends ProxyService>> desiredServices, RequestHeader clientRQHeader) {
+		desiredServices.add(CouchDBProviderService.class);
+		desiredServices.add(MetadataExtractionService.class);
 	}
 
 	@Override
 	public void desiredResponseServices(Set<Class<? extends ProxyService>> desiredServices, ResponseHeader webRPHeader) {
 		desiredServices.add(CouchDBProviderService.class);
+		desiredServices.add(MetadataExtractionService.class);
 	}
 
 	@Override
@@ -158,7 +164,8 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 			CouchDBProviderService couchProvider = response.getServicesHandle().getService(CouchDBProviderService.class);
-			return (ResponseServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider);
+			MetadataExtractionService extractionService = response.getServicesHandle().getService(MetadataExtractionService.class);
+			return (ResponseServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider, extractionService);
 		}
 
 		return null;
@@ -176,7 +183,8 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 			CouchDBProviderService couchProvider = request.getServicesHandle().getService(CouchDBProviderService.class);
-			return (RequestServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider);
+			MetadataExtractionService extractionService = request.getServicesHandle().getService(MetadataExtractionService.class);
+			return (RequestServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider, extractionService);
 		}
 
 		return null;

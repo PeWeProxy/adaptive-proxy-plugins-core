@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
+<plugin>
+	<name>MetadataExtractionServiceModule</name>
+	<classLocation/>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.meta.MetadataExtractionServiceModule</className>
+	<libraries>
+		<lib>gson-1.4.jar</lib>
+	</libraries>
+	<types>
+		<type>ResponseServiceModule</type>
+		<type>RequestServiceModule</type>
+	</types>
+	<parameters>
+	</parameters>
+</plugin>

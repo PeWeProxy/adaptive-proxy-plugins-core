@@ -135,13 +135,17 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 			String content = response.getServicesHandle().getService(StringContentService.class).getContent();
 			String ip = response.getRequest().getClientSocketAddress().getAddress().toString();
 			String referrer = response.getRequest().getRequestHeader().getField("Referer");
+			
+			System.err.println("Metall for " + response.getRequest().getRequestHeader().getRequestURI());
+			System.err.println("Content Type: " + response.getResponseHeader().getField("Content-Type"));
+			System.err.println("Content: " + response.getServicesHandle().getService(StringContentService.class).getContent().substring(0, 100));
+			
 			String checksum = Checksum.md5(new MetallClient().cleartext(content));
-			List<Map> terms = getTerms(content);
 
 			try {
 				do {
 					try {
-						loggingBackend.logPageAccess(accessGUID, userId, uri, content, referrer, ip, checksum, terms);
+						loggingBackend.logPageAccess(accessGUID, userId, uri, content, referrer, ip, checksum);
 					} catch (LoggingBackendFailure e) {
 						logger.error("Could not log to backend " + loggingBackend.getClass().getName(), e);
 					}
@@ -152,39 +156,5 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 				// no more logging backends to write to
 			}
 		}
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<Map> getTerms(String content) {
-		List terms = new LinkedList();
-		
-		try {
-			JsonElement keywords = new JsonParser().parse(new MetallClient().keywords(content));
-			for(JsonElement keyword : keywords.getAsJsonArray()) {
-				JsonObject keywordObject = keyword.getAsJsonObject();
-				String name = keywordObject.get("name").getAsString();
-				String type = keywordObject.get("type").getAsString();
-				String relevance = keywordObject.get("relevance").getAsString();
-				try {
-					double floatRelevance = Double.parseDouble(relevance);
-					relevance = new DecimalFormat("#.##").format(floatRelevance);
-				} catch (NumberFormatException e) {
-					relevance = null;
-				}
-				String source = keywordObject.get("source").getAsString();
-				
-				Map term = new HashMap();
-				term.put("name", name);
-				term.put("type", type);
-				term.put("relevance", relevance);
-				term.put("source", source);
-				
-				terms.add(term);
-			}
-		} catch(Exception e) {
-			logger.warn("Could not retrieve terms.", e);
-		}
-		
-		return terms;
 	}
 }

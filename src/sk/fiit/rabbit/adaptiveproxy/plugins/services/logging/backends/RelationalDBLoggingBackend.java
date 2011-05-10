@@ -24,6 +24,7 @@ import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.DatabaseConnectionProviderService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendFailure;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.MetadataExtractionService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.utils.JdbcTemplate;
 import sk.fiit.rabbit.adaptiveproxy.plugins.utils.SqlUtils;
 
@@ -35,9 +36,13 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 			RequestServiceProvider<LoggingBackendService>, ResponseServiceProvider<LoggingBackendService> {
 		
 		private final DatabaseConnectionProviderService connectionProvider;
+		private MetadataExtractionService extractionService;
 
-		public RelationalDBLoggingBackendProvider(DatabaseConnectionProviderService connectionProvider) {
+		public RelationalDBLoggingBackendProvider(
+				DatabaseConnectionProviderService connectionProvider,
+				MetadataExtractionService extractionService) {
 			this.connectionProvider = connectionProvider;
+			this.extractionService = extractionService;
 		}
 
 		@Override
@@ -65,14 +70,14 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 		
 		@Override
 		public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip,
-								  String checksum, List<Map> terms) throws LoggingBackendFailure {
+								  String checksum) throws LoggingBackendFailure {
 			Connection connection = connectionProvider.getDatabaseConnection();
 			JdbcTemplate jdbc = new JdbcTemplate(connection);
 			try {
 				Integer pageId = (Integer) jdbc.queryFor("SELECT id FROM pages WHERE url = ? AND checksum = ?", new Object[] { uri, checksum }, Integer.class);
 				
 				if(pageId == null) {
-					pageId = createNewPage(jdbc, uri, content, checksum, terms);
+					pageId = createNewPage(jdbc, uri, content, checksum, extractionService.metadata());
 				}
 				
 				jdbc.insert("INSERT INTO access_logs(guid, userid, timestamp, page_id, referer, ip) VALUES(?,?,NOW(),?,?,?)", 
@@ -154,7 +159,8 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 			DatabaseConnectionProviderService connectionProvider = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
-			return (ResponseServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider);
+			MetadataExtractionService extractionService = response.getServicesHandle().getService(MetadataExtractionService.class);
+			return (ResponseServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider, extractionService);
 		}
 
 		return null;
@@ -172,7 +178,8 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 		if (serviceClass.equals(LoggingBackendService.class)
 				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
 			DatabaseConnectionProviderService connectionProvider = request.getServicesHandle().getService(DatabaseConnectionProviderService.class);
-			return (RequestServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider);
+			MetadataExtractionService extractionService = request.getServicesHandle().getService(MetadataExtractionService.class);
+			return (RequestServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider, extractionService);
 		}
 
 		return null;

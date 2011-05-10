@@ -16,13 +16,12 @@ public interface LoggingBackendService extends ProxyService {
 	 * @param content textual content of the accessed page
 	 * @param referrer HTTP referrer
 	 * @param ip client's IP address
-	 * @param terms list of terms extracted from the page content
 	 * @param checksum checksum of the page cleartext
 	 * 
 	 * @throws LoggingBackendFailure
 	 */
 	@readonly
-	public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip, String checksum, List<Map> terms) throws LoggingBackendFailure;
+	public void logPageAccess(String accessGuid, String userId, String uri, String content, String referrer, String ip, String checksum) throws LoggingBackendFailure;
 
 	/**
 	 * Update activity on the specified access (identified by its GUID)
