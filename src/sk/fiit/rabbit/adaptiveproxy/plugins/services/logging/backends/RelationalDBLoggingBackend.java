@@ -157,7 +157,8 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
-				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)
+				&& response.getServicesHandle().isServiceAvailable(MetadataExtractionService.class)) {
 			DatabaseConnectionProviderService connectionProvider = response.getServicesHandle().getService(DatabaseConnectionProviderService.class);
 			MetadataExtractionService extractionService = response.getServicesHandle().getService(MetadataExtractionService.class);
 			return (ResponseServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider, extractionService);
@@ -176,7 +177,8 @@ public class RelationalDBLoggingBackend implements RequestServiceModule, Respons
 	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
 			Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
-				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)
+				&& request.getServicesHandle().isServiceAvailable(MetadataExtractionService.class)) {
 			DatabaseConnectionProviderService connectionProvider = request.getServicesHandle().getService(DatabaseConnectionProviderService.class);
 			MetadataExtractionService extractionService = request.getServicesHandle().getService(MetadataExtractionService.class);
 			return (RequestServiceProvider<Service>) new RelationalDBLoggingBackendProvider(connectionProvider, extractionService);

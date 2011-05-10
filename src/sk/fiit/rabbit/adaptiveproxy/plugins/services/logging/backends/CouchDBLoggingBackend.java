@@ -162,7 +162,8 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 	public <Service extends ProxyService> ResponseServiceProvider<Service> provideResponseService(
 			HttpResponse response, Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
-				&& response.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+				&& response.getServicesHandle().isServiceAvailable(CouchDBProviderService.class)
+				&& response.getServicesHandle().isServiceAvailable(MetadataExtractionService.class)) {
 			CouchDBProviderService couchProvider = response.getServicesHandle().getService(CouchDBProviderService.class);
 			MetadataExtractionService extractionService = response.getServicesHandle().getService(MetadataExtractionService.class);
 			return (ResponseServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider, extractionService);
@@ -181,7 +182,8 @@ public class CouchDBLoggingBackend implements RequestServiceModule, ResponseServ
 	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
 			Class<Service> serviceClass) throws ServiceUnavailableException {
 		if (serviceClass.equals(LoggingBackendService.class)
-				&& request.getServicesHandle().isServiceAvailable(DatabaseConnectionProviderService.class)) {
+				&& request.getServicesHandle().isServiceAvailable(CouchDBProviderService.class)
+				&& request.getServicesHandle().isServiceAvailable(MetadataExtractionService.class)) {
 			CouchDBProviderService couchProvider = request.getServicesHandle().getService(CouchDBProviderService.class);
 			MetadataExtractionService extractionService = request.getServicesHandle().getService(MetadataExtractionService.class);
 			return (RequestServiceProvider<Service>) new CouchDBLoggingBackendProvider(couchProvider, extractionService);
