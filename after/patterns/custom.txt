@@ -29,3 +29,4 @@ toolbarqueries.google.com
 |http://multibanner.sme.sk/
 |http://www.facebook.com/connect
 |http://grooveshark.com/more.php
+evercookie/cache

@@ -1,3 +1,4 @@
+evercookie/cache
 |http://grooveshark.com/more.php
 |http://www.facebook.com/connect
 |http://multibanner.sme.sk/
