@@ -14,7 +14,7 @@ import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.ModifiableStringService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendFailure;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.LoggingBackendService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.RequestDataParserService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.services.injector.JavaScriptInjectingProcessingPlugin;
 
@@ -24,10 +24,10 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 	
 	@Override
 	public HttpResponse getResponse(ModifiableHttpRequest request, HttpMessageFactory messageFactory) {
-		if(request.getServicesHandle().isServiceAvailable(PostDataParserService.class)
+		if(request.getServicesHandle().isServiceAvailable(RequestDataParserService.class)
 				&& request.getServicesHandle().isServiceAvailable(LoggingBackendService.class)) {
 			
-			Map<String, String> post = request.getServicesHandle().getService(PostDataParserService.class).getPostData();
+			Map<String, String> post = request.getServicesHandle().getService(RequestDataParserService.class).getDataFromPOST();
 			LoggingBackendService loggingBackend = request.getServicesHandle().getService(LoggingBackendService.class);
 			String userId = request.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
 			
@@ -57,7 +57,7 @@ public class ActivityLoggingProcessingPlugin extends JavaScriptInjectingProcessi
 			RequestHeader webRQHeader) {
 		super.desiredRequestServices(desiredServices, webRQHeader);
 		desiredServices.add(ModifiableStringService.class);
-		desiredServices.add(PostDataParserService.class);
+		desiredServices.add(RequestDataParserService.class);
 		desiredServices.add(LoggingBackendService.class);
 	}
 }

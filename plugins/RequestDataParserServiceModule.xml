@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>PostDataParserServiceModule</name>
+	<name>RequestDataParserServiceModule</name>
 	<classLocation/>
-	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.common.PostDataParserServiceModule</className>
+	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.common.RequestDataParserServiceModule</className>
 	<types>
 		<type>RequestServiceModule</type>
 	</types>

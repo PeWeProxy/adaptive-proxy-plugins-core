@@ -17,61 +17,84 @@ import sk.fiit.peweproxy.plugins.services.RequestServiceProvider;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.peweproxy.services.ServiceUnavailableException;
 import sk.fiit.peweproxy.services.content.StringContentService;
-import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.PostDataParserService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.RequestDataParserService;
 
-public class PostDataParserServiceModule implements RequestServiceModule {
+public class RequestDataParserServiceModule implements RequestServiceModule {
 
-	private static final Logger logger = Logger.getLogger(PostDataParserServiceModule.class);
+	private static final Logger logger = Logger.getLogger(RequestDataParserServiceModule.class);
 
-	private class GettingPostDataProviderService implements PostDataParserService, RequestServiceProvider<PostDataParserService> {
+	private class GettingPostDataProviderService implements RequestDataParserService, RequestServiceProvider<RequestDataParserService> {
 
 		protected String content;
-
-		public GettingPostDataProviderService(String content) {
+		protected String url;
+		
+		public GettingPostDataProviderService(String content, String url) {
 			this.content = content;
+			this.url = url;
 		}
 
 		private Map<String, String> postData;
-
+		private Map<String, String> getData;
+		
 		@Override
-		public Map<String, String> getPostData() {
+		public Map<String, String> getDataFromPOST() {
 			if (postData != null) {
 				return postData;
 			}
 
-			postData = getPostDataFromRequest();
+			postData = getDataFromPostRequest();
 
 			return postData;
 		}
 
-		private Map<String, String> getPostDataFromRequest() {
+		private Map<String, String> getDataFromPostRequest() {
 			try {
 				content = URLDecoder.decode(content, "utf-8");
 			} catch (UnsupportedEncodingException e) {
 				logger.warn(e);
 			}
-			Map<String, String> postData = new HashMap<String, String>();
-			String attributeName;
-			String attributeValue;
 
-			for (String postPair : content.split("&")) {
-				if (postPair.split("=").length == 2) {
-					attributeName = postPair.split("=")[0];
-					attributeValue = postPair.split("=")[1];
-					postData.put(attributeName, attributeValue);
-				}
-			}
-
-			return postData;
+			return getDataMap(content);
 		}
 
+		@Override
+		public Map<String, String> getDataFromGET() {
+			if (getData != null) {
+				return getData;
+			}
+
+			getData = getDataFromGetRequest();
+
+			return getData;
+		}
+		
+		private Map<String, String> getDataFromGetRequest() {
+			String data = url.split("?")[1];
+
+			return getDataMap(data);
+		}
+		
+		private Map<String, String> getDataMap(String data) {
+		    Map<String, String> map = new HashMap<String, String>();
+		    String attributeName;
+		    String attributeValue;
+		    for (String postPair : data.split("&")) {
+			if (postPair.split("=").length == 2) {
+			    attributeName = postPair.split("=")[0];
+			    attributeValue = postPair.split("=")[1];
+			    getData.put(attributeName, attributeValue);
+        		}
+		    }
+
+		    return map;
+		}
 		@Override
 		public String getServiceIdentification() {
 			return this.getClass().getName();
 		}
 
 		@Override
-		public PostDataParserService getService() {
+		public RequestDataParserService getService() {
 			return this;
 		}
 
@@ -90,12 +113,13 @@ public class PostDataParserServiceModule implements RequestServiceModule {
 	public <Service extends ProxyService> RequestServiceProvider<Service> provideRequestService(HttpRequest request,
 			Class<Service> serviceClass) throws ServiceUnavailableException {
 
-		if (serviceClass.equals(PostDataParserService.class)
+		if (serviceClass.equals(RequestDataParserService.class)
 				&& request.getServicesHandle().isServiceAvailable(StringContentService.class)) {
 
 			String content = request.getServicesHandle().getService(StringContentService.class).getContent();
-
-			return (RequestServiceProvider<Service>) new GettingPostDataProviderService(content);
+			String url = request.getRequestHeader().getRequestURI();
+			
+			return (RequestServiceProvider<Service>) new GettingPostDataProviderService(content, url);
 		}
 
 		return null;
@@ -103,7 +127,7 @@ public class PostDataParserServiceModule implements RequestServiceModule {
 
 	@Override
 	public void getProvidedRequestServices(Set<Class<? extends ProxyService>> providedServices) {
-		providedServices.add(PostDataParserService.class);
+		providedServices.add(RequestDataParserService.class);
 	}
 
 	@Override
