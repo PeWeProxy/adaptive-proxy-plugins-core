@@ -82,7 +82,7 @@ public class RequestDataParserServiceModule implements RequestServiceModule {
 			if (postPair.split("=").length == 2) {
 			    attributeName = postPair.split("=")[0];
 			    attributeValue = postPair.split("=")[1];
-			    getData.put(attributeName, attributeValue);
+			    map.put(attributeName, attributeValue);
         		}
 		    }
 
