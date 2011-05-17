@@ -3,7 +3,7 @@ var PeWeProxy = function() {
 	var uid_ready_listeners = [];
 	
 	var is_uid_ready = function() {
-		return this.uid != null;
+		return peweproxy.uid != null;
 	}
 	
 	this.on_uid_ready = function(callback) {

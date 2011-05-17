@@ -27,7 +27,7 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 		HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 		
 		String scripts = "" +
-                    "<script type='text/javascript'>" +
+                    /*"<script type='text/javascript'>" +
                       "var __ap_callback_functions = new Array();\n" +
                       "function __ap_register_callback(function_to_register){\n" +
                       "	if (typeof(__peweproxy_uid) == 'undefined' || __peweproxy_uid == null) {\n" +
@@ -41,8 +41,8 @@ public class SetupJavaScriptEnvironmentProcessingPlugin implements ResponseProce
 					  "		__ap_callback_functions[call].call();\n" +
 					  "	}\n" +
 					  "}\n" +
-                      "</script>" +
-                      "<script src='" + jQueryPath + "'></script>" +
+                      "</script>" +*/
+                      //"<script src='" + jQueryPath + "'></script>" +
                       "<script src='" + peweproxyPath + "'></script>" +
                       "<!-- __ap_scripts__ -->";
 
