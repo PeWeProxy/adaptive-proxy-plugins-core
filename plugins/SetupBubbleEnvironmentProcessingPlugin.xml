@@ -18,11 +18,39 @@
 				<a href="#" class="__peweproxy_addons_button"></a>
 				<div style="" id="peweproxy_icon_banner" class="hidden">
 					<table>
-						<tr><!-- bubble menu -->
+						<tr>
+							<!-- bubble menu -->
+							<td>
+								<a href="#" class="__peweproxy_preference_button"></a>
+							</td>
 						</tr>
 					</table>
 	            </div>
 	            <!-- bubble windows -->
+	          
+	            <div id="__peweproxy_preferences">
+					<div class="__peweproxy_preferences_head">
+						<a class="__peweproxy_preference_closebutton" href="#"></a>
+					</div>
+	
+					<div class="__peweproxy_preferences_body">
+						<div>
+							<span class="header">
+								<span class="left_floated">Nastavenia používateľa</span>
+							</span>
+						</div>
+						<div id="peweproxy_keywords_content">
+							<div class="__peweproxy_keyword">
+							</div>
+						</div>
+						
+						<!-- preference tables -->
+						
+					</div>
+					<div class="__peweproxy_preferences_foot"></div>
+				</div>
+	            
+	            
 	        </div>
 		    
 			<style type="text/css">
@@ -73,6 +101,44 @@
 				#peweproxy_addons_container a:link, #peweproxy_addons_container a:visited, #peweproxy_addons_container a:hover, #peweproxy_addons_container a:active {
 					background-color: transparent !important;
 				}
+				
+				
+				
+				#__peweproxy_preferences .__peweproxy_preferences_head { background-image: url("${plugins-core:assets-path}/clientBubbleMenuImages/panel_top.png"); float: left; height: 25px; width: 332px; }
+				#__peweproxy_preferences .__peweproxy_preferences_body { background-image: url("${plugins-core:assets-path}/clientBubbleMenuImages/panel_body.png"); float: left; padding: 0 20px 0 16px; width: 296px; }
+				#__peweproxy_preferences .__peweproxy_preferences_foot { background-image: url("${plugins-core:assets-path}/clientBubbleMenuImages/panel_bottom.png"); float: left; height: 15px; width: 332px; }
+				
+				#__peweproxy_preferences .__peweproxy_preferences_head a.__peweproxy_preference_closebutton { display: block; position: absolute; right: 1px; top: 1px; height: 22px; width: 22px; background-image: url('${plugins-core:assets-path}/clientBubbleMenuImages/close_button.png'); background-position: top; }
+				#__peweproxy_preferences .__peweproxy_preferences_head a.__peweproxy_preference_closebutton:hover { background-position: bottom; }
+				div.__peweproxy_preferences_body span.header{ background-position:left center; background-repeat: no-repeat; display:block; font-size:17px; height:22px; margin-top:-5px; padding-left:30px; background-image: url('${plugins-core:assets-path}/preferenceImages/setting_tools.png'); background-repeat: no-repeat; background-position: 1px 2px; }
+				
+				
+				div#__peweproxy_preferences { position: absolute; top: 0; right: 0; display:none; }
+				a.__peweproxy_preference_button { background-image:url("${plugins-core:assets-path}/preferenceImages/setting_tools.png"); display:block; float:left; height: 20px; margin-left:5px; margin-top:2px; width: 20px; }
+				table.__peweproxy_preferences_table { width: 296px; margin-bottom: 5px; margin-top: 10px; border-bottom: 1px solid #D2D28B; border-collapse: collapse; }
+				table.__peweproxy_preferences_table.activated { color: #1D2D3D; }
+				table.__peweproxy_preferences_table.deactivated { color: #909090; }
+				table.__peweproxy_preferences_table.deactivated thead th { color: #707070; background-color: #E5E59B; }
+				table.__peweproxy_preferences_table.activated a.__peweproxy_preference_activate_btn { display: none; background-image: url("${plugins-core:assets-path}/preferenceImages/button_activate.png"); }
+				table.__peweproxy_preferences_table.activated a.__peweproxy_preference_deactivate_btn { display: inline; background-image: url("${plugins-core:assets-path}/preferenceImages/button_deactivate.png"); }
+				table.__peweproxy_preferences_table.deactivated a.__peweproxy_preference_activate_btn { display: inline; background-image: url("${plugins-core:assets-path}/preferenceImages/button_activate.png"); }
+				table.__peweproxy_preferences_table.deactivated a.__peweproxy_preference_deactivate_btn { display: none; background-image: url("${plugins-core:assets-path}/preferenceImages/button_deactivate.png"); }
+				table.__peweproxy_preferences_table thead th { background-color: #D2D28B; }
+				table.__peweproxy_preferences_table thead th input { border: 1px solid green; background-color: #d7d753; width: 84px; float: right; cursor: pointer; }
+				table.__peweproxy_preferences_table thead th.__peweproxy_preference_name { font-size: 16px; color: #1D2D3D; text-align: center; }
+				table.__peweproxy_preferences_table.deactivated thead th.__peweproxy_preference_name { background-color: #EEEEEE; color: #707070; }
+				table.__peweproxy_preferences_table thead th.__peweproxy_preference_table_btn { width: 10px; }
+				table.__peweproxy_preferences_table thead th a { background-position: center top; color: #2F2F2F; float: right; font-size: 12px; font-weight: normal; height: 17px; padding-top: 3px; text-decoration: none; width: 86px; }
+				table.__peweproxy_preferences_table thead th a:hover { background-position: center bottom; cursor: pointer; }
+				table.__peweproxy_preferences_table tbody tr td { font-size: 13px; padding-top: 1px; padding-bottom: 2px; height: 23px; }
+				table.__peweproxy_preferences_table tbody tr.odd td { background-color: #F6F6C2; }
+				table.__peweproxy_preferences_table tbody tr td.__peweproxy_preference_table_value { text-align: right; padding-right: 5px; }
+				table.__peweproxy_preferences_table tbody tr td.__peweproxy_preference_table_value input { font-size: 12px; width: 100px; height: 16px; border: 1px solid #78731E; color: #909090; }
+				table.__peweproxy_preferences_table tbody tr td.__peweproxy_preference_update_btn { width: 25px; text-align: center; width: 36px; }
+				table.__peweproxy_preferences_table tbody tr td.__peweproxy_preference_update_btn img { /* margin-left: 1px; margin-right: 1px; */ position: relative; top: 2px; }
+				table.__peweproxy_preferences_table tbody tr td .__peweproxy_preference_row_display { }
+				table.__peweproxy_preferences_table tbody tr td .__peweproxy_preference_row_updating { display: none; }
+
 			</style>
 		]]>
 		</param>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin SYSTEM "PluginConfiguration.dtd">
 <plugin>
-	<name>A</name>
+	<name>UserPreferencesProviderServiceModule</name>
 	<classLocation/>
 	<className>sk.fiit.rabbit.adaptiveproxy.plugins.services.user.UserPreferencesProviderServiceModule</className>
 	<types>
 		<type>RequestServiceModule</type>
+    	<type>ResponseServiceModule</type>
 	</types>
 	<parameters>
 	</parameters>
