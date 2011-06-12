@@ -119,7 +119,7 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"			</span>" +
 				"			<span class='__peweproxy_preference_row_updating'>" +
 				"				<a onclick='peweproxy.modules.preferences.confirmUpdate(\"[:preferenceId:]\");' href='#'><img alt='ok' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/ok_icon.png'></a>" +
-				"				<a alt='cancel' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\");' href='#'><img alt='ok' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/delete_icon.png'></a>" +
+				"				<a alt='cancel' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\");' href='#'><img alt='cancel' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/delete_icon.png'></a>" +
 				"			</span>" +
 				"			<span class='__peweproxy_preference_function_call' style='display: none;'>[:functionCall:]</span>" +
 				"		</td>" +
@@ -129,8 +129,8 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"	<thead>" +
 				"		<tr>" +
 				"			<th colspan='3' class='__peweproxy_preference_name'>[:preferenceLabel:]" + 
-				"				<a class='__peweproxy_preference_activate_btn' onclick='peweproxy.modules.preferences.activatePlugin(\"[:preference:]\")'>Aktivovaù'</a>" +
-				"				<a class='__peweproxy_preference_deactivate_btn' onclick='peweproxy.modules.preferences.deactivatePlugin(\"[:preference:]\")'>Deaktivovaù'</a>" +
+				"				<a class='__peweproxy_preference_activate_btn' onclick='peweproxy.modules.preferences.activatePlugin(\"[:preference:]\")'>Aktivova≈•'</a>" +
+				"				<a class='__peweproxy_preference_deactivate_btn' onclick='peweproxy.modules.preferences.deactivatePlugin(\"[:preference:]\")'>Deaktivova≈•'</a>" +
 				"			</th>" +
 				"		</tr>" +
 				"	</thead>" +
