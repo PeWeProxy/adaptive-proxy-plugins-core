@@ -56,6 +56,8 @@ public class UserPreferencesProviderServiceModule implements RequestServiceModul
 				SqlUtils.close(connection);
 			}
 			
+			System.err.println("a vraciam   " + userPreference);
+			
 			return userPreference;
 		}
 		
@@ -63,9 +65,6 @@ public class UserPreferencesProviderServiceModule implements RequestServiceModul
 		public void setProperty(String preferenceName, String propertyValue, String userUid, String preferenceNamespace) {
 			Connection connection = connectionProvider.getDatabaseConnection();
 			JdbcTemplate jdbc = new JdbcTemplate(connection);
-			
-			System.err.println("QQQQ");
-			System.err.println("SELECT ID FROM user_preferences WHERE user = " + userUid + " AND preference_name =  " + preferenceName + " LIMIT 1");
 			
 			try {
 				String userPreferenceExists = 

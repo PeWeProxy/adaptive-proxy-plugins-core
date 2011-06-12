@@ -116,6 +116,9 @@
 				div#__peweproxy_preferences { position: absolute; top: 0; right: 0; display:none; }
 				a.__peweproxy_preference_button { background-image:url("${plugins-core:assets-path}/preferenceImages/setting_tools.png"); display:block; float:left; height: 20px; margin-left:5px; margin-top:2px; width: 20px; }
 				table.__peweproxy_preferences_table { width: 296px; margin-bottom: 5px; margin-top: 10px; border-bottom: 1px solid #D2D28B; border-collapse: collapse; }
+				table.__peweproxy_preferences_table a.__peweproxy_preference_edit_btn { background-image: url("${plugins-core:assets-path}/preferenceImages/edit_icon.png"); display: block; height: 16px; width: 16px; }
+				table.__peweproxy_preferences_table a.__peweproxy_preference_confirm_btn { background-image: url("${plugins-core:assets-path}/preferenceImages/ok_icon.png"); display: block; height: 16px; width: 16px; float: right; }
+				table.__peweproxy_preferences_table a.__peweproxy_preference_cancel_btn { background-image: url("${plugins-core:assets-path}/preferenceImages/delete_icon.png"); display: block; height: 16px; width: 16px; margin-left: 3px; float: right; }
 				table.__peweproxy_preferences_table.activated { color: #1D2D3D; }
 				table.__peweproxy_preferences_table.deactivated { color: #909090; }
 				table.__peweproxy_preferences_table.deactivated thead th { color: #707070; background-color: #E5E59B; }

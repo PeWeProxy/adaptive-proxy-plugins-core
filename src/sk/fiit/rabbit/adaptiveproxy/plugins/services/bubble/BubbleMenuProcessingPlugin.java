@@ -26,7 +26,8 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		if ((response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)) &&
 				response.getServicesHandle().isServiceAvailable(UserPreferencesProviderService.class) &&
-				response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)) {
+				response.getServicesHandle().isServiceAvailable(UserIdentificationService.class) &&
+				(!"".equals(preferenceNamespace))) {
 			
 			HtmlInjectorService htmlInjector = response.getServicesHandle().getService(HtmlInjectorService.class);
 			userId = response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
@@ -90,8 +91,8 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 		buttonHTML = props.getProperty("buttonHTML", "");
 		windowHTML = props.getProperty("windowHTML", "");
 		functionCall = props.getProperty("functionCall", "");
-		preferenceNamespace = props.getProperty("preferenceNamespace", "global");
-		preferenceLabel = props.getProperty("preferenceLabel", "Globalne nastavenia");
+		preferenceNamespace = props.getProperty("preferenceNamespace");
+		preferenceLabel = props.getProperty("preferenceLabel", preferenceNamespace);
 		
 		if(props.getProperty("preferences") != null) {
 			preferences.clear();
@@ -104,7 +105,6 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 
 	private void setTemplates() {
 		// unable to set through xml config 
-		// TODO: remove static address
 		tableRowTemplate = "<tr id='[:preferenceId:]'>" +
 				"		<td>[:preferenceName:]</td>" +
 				"		<td class='__peweproxy_preference_table_value'>" +
@@ -115,11 +115,11 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"		</td>" +
 				"		<td class='__peweproxy_preference_update_btn'>" +
 				"			<span class='__peweproxy_preference_row_display'>" +
-				"				<a onclick='peweproxy.modules.preferences.updateField(\"[:preferenceId:]\");' href='#'><img alt='edit' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/edit_icon.png'></a>" +
+				"				<a class='__peweproxy_preference_edit_btn' onclick='peweproxy.modules.preferences.updateField(\"[:preferenceId:]\");' href='#'></a>" +
 				"			</span>" +
 				"			<span class='__peweproxy_preference_row_updating'>" +
-				"				<a onclick='peweproxy.modules.preferences.confirmUpdate(\"[:preferenceId:]\");' href='#'><img alt='ok' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/ok_icon.png'></a>" +
-				"				<a alt='cancel' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\");' href='#'><img alt='cancel' src='http://127.0.0.1:9666/FileSender/public/preferenceImages/delete_icon.png'></a>" +
+				"				<a class='__peweproxy_preference_cancel_btn' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\");' href='#'></a>" +
+				"				<a class='__peweproxy_preference_confirm_btn' onclick='peweproxy.modules.preferences.confirmUpdate(\"[:preferenceId:]\");' href='#'></a>" +
 				"			</span>" +
 				"			<span class='__peweproxy_preference_function_call' style='display: none;'>[:functionCall:]</span>" +
 				"		</td>" +
