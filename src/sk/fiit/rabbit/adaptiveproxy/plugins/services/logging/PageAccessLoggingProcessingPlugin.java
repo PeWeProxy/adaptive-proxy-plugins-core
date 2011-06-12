@@ -138,7 +138,7 @@ public class PageAccessLoggingProcessingPlugin implements ResponseProcessingPlug
 			
 			System.err.println("Metall for " + response.getRequest().getRequestHeader().getRequestURI());
 			System.err.println("Content Type: " + response.getResponseHeader().getField("Content-Type"));
-			System.err.println("Content: " + response.getServicesHandle().getService(StringContentService.class).getContent().substring(0, 100));
+			System.err.println("Content: " + ((content.length() > 100) ? content.substring(0, 100) : content));
 			
 			String checksum = Checksum.md5(new MetallClient().cleartext(content));
 

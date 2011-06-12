@@ -109,7 +109,6 @@ public class HtmlDomWriterModule implements ResponseServiceModule {
 			throws ServiceUnavailableException {
 			
 		if (serviceClass.equals(HtmlDomWriterService.class)
-				&& response.getServicesHandle().isServiceAvailable(ModifiableStringService.class)
 				&& response.getServicesHandle().isServiceAvailable(HtmlDomReaderService.class)) {
 			
 			Document document = response.getServicesHandle().getService(HtmlDomReaderService.class).getHTMLDom();
