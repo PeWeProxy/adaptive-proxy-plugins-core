@@ -115,11 +115,11 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"		</td>" +
 				"		<td class='__peweproxy_preference_update_btn'>" +
 				"			<span class='__peweproxy_preference_row_display'>" +
-				"				<a class='__peweproxy_preference_edit_btn' onclick='peweproxy.modules.preferences.updateField(\"[:preferenceId:]\");' href='#'></a>" +
+				"				<a class='__peweproxy_preference_edit_btn' onclick='peweproxy.modules.preferences.updateField(\"[:preferenceId:]\"); return false;' href='#'></a>" +
 				"			</span>" +
 				"			<span class='__peweproxy_preference_row_updating'>" +
-				"				<a class='__peweproxy_preference_cancel_btn' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\");' href='#'></a>" +
-				"				<a class='__peweproxy_preference_confirm_btn' onclick='peweproxy.modules.preferences.confirmUpdate(\"[:preferenceId:]\");' href='#'></a>" +
+				"				<a class='__peweproxy_preference_cancel_btn' onclick='peweproxy.modules.preferences.cancelUpdate(\"[:preferenceId:]\"); return false;' href='#'></a>" +
+				"				<a class='__peweproxy_preference_confirm_btn' onclick='peweproxy.modules.preferences.confirmUpdate(\"[:preferenceId:]\"); return false;' href='#'></a>" +
 				"			</span>" +
 				"			<span class='__peweproxy_preference_function_call' style='display: none;'>[:functionCall:]</span>" +
 				"		</td>" +
@@ -129,8 +129,8 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"	<thead>" +
 				"		<tr>" +
 				"			<th colspan='3' class='__peweproxy_preference_name'>[:preferenceLabel:]" + 
-				"				<a class='__peweproxy_preference_activate_btn' onclick='peweproxy.modules.preferences.activatePlugin(\"[:preference:]\")'>Aktivovať'</a>" +
-				"				<a class='__peweproxy_preference_deactivate_btn' onclick='peweproxy.modules.preferences.deactivatePlugin(\"[:preference:]\")'>Deaktivovať'</a>" +
+				"				<a class='__peweproxy_preference_activate_btn' onclick='peweproxy.modules.preferences.activatePlugin(\"[:preference:]\"); return false;'>Aktivovať'</a>" +
+				"				<a class='__peweproxy_preference_deactivate_btn' onclick='peweproxy.modules.preferences.deactivatePlugin(\"[:preference:]\"); return false;'>Deaktivovať'</a>" +
 				"			</th>" +
 				"		</tr>" +
 				"	</thead>" +
