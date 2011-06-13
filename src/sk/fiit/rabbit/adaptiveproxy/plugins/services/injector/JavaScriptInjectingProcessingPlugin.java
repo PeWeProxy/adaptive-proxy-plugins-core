@@ -23,6 +23,7 @@ import sk.fiit.peweproxy.plugins.processing.ResponseProcessingPlugin;
 import sk.fiit.peweproxy.services.ProxyService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.HtmlInjectorService;
 import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserIdentificationService;
+import sk.fiit.rabbit.adaptiveproxy.plugins.servicedefinitions.UserPreferencesProviderService;
 
 public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlugin, ResponseProcessingPlugin {
 	
@@ -38,6 +39,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	private String allowedDomain;
 	private String lastModifiedAppendix;
 	private String scriptInjectingPosition;
+	private String preferenceNamespace;
 	
 	@Override
 	public RequestProcessingActions processRequest(ModifiableHttpRequest request) {
@@ -100,13 +102,20 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 	@Override
 	public ResponseProcessingActions processResponse(ModifiableHttpResponse response) {
 		if(response.getServicesHandle().isServiceAvailable(HtmlInjectorService.class)
-				&& response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)) {
+				&& response.getServicesHandle().isServiceAvailable(UserIdentificationService.class)
+				&& response.getServicesHandle().isServiceAvailable(UserPreferencesProviderService.class)) {
 			try {
 				if(!isAllowedDomain(response.getRequest().getRequestHeader().getRequestURI())) {
 					return ResponseProcessingActions.PROCEED;
 				}
 				
-				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification())) {
+				String userId = response.getServicesHandle().getService(UserIdentificationService.class).getClientIdentification();
+				String activity = response.getServicesHandle().getService(UserPreferencesProviderService.class).getProperty("activity", userId, preferenceNamespace);
+				if ((activity != null) && (activity.toLowerCase().equals("false"))) {
+					return ResponseProcessingActions.PROCEED;
+				}
+				
+				if(allowOnlyFor.isEmpty() || allowOnlyFor.contains(userId)) {
 					HtmlInjectorService htmlInjectionService = response.getServicesHandle().getService(HtmlInjectorService.class);
 					String scripts = "";
 					if (loadAsynchronously){
@@ -153,6 +162,7 @@ public class JavaScriptInjectingProcessingPlugin implements RequestProcessingPlu
 		bypassPattern = props.getProperty("bypassPattern");
 		bypassTo = props.getProperty("bypassTo");
 		additionalHTML = props.getProperty("additionalHTML", "");
+		preferenceNamespace = props.getProperty("preferenceNamespace", "");
 		
 		if(props.getProperty("allowOnlyFor") != null) {
 			for (String uid : props.getProperty("allowOnlyFor").split(",")) {
