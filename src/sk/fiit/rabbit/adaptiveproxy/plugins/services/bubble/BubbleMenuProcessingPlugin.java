@@ -110,7 +110,7 @@ public class BubbleMenuProcessingPlugin extends JavaScriptInjectingProcessingPlu
 				"		<td class='__peweproxy_preference_table_value'>" +
 				"			<span class='__peweproxy_preference_row_display'>[:preferenceValue:]</span>" +
 				"			<span class='__peweproxy_preference_row_updating'>" +
-				"				<input value='[:preferenceValue:]'>" +
+				"				<input type='text' value='[:preferenceValue:]' />" +
 				"			</span>" +
 				"		</td>" +
 				"		<td class='__peweproxy_preference_update_btn'>" +
